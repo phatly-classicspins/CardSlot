@@ -19,3 +19,37 @@ lose.title,Out of space!
 lose.subtitle,Level {0}
 lose.retry,Retry
 lose.home,Home
+win.reward,+{0}
+lose.continue_free,Continue free
+lose.continue_coins,Continue
+lose.no_thanks,No thanks
+lose.failed_title,Level failed
+pause.title,Paused
+pause.resume,Resume
+pause.restart,Restart
+pause.home,Home
+settings.title,Settings
+settings.sound,Sound
+settings.music,Music
+settings.haptics,Haptics
+settings.on,ON
+settings.off,OFF
+booster.undo.name,Undo
+booster.add_slot.name,Extra Space
+booster.undo.desc,Take back your last tap.
+booster.add_slot.desc,Get more room to hold cards.
+booster.buy.title,Need a boost?
+booster.buy.free,Free
+booster.buy.not_enough,Not enough coins
+ads.not_available,Ad not available
+unlock.undo.title,New booster: Undo!
+unlock.add_slot.title,New booster: Extra Space!
+unlock.got_it,Got it
+gameplay.restart.confirm,Restart level?
+gameplay.restart.note,Boosters used won't come back.
+gameplay.restart.yes,Yes
+gameplay.restart.no,No
+ftue.l1.step1,Tap a stack to send its cards!
+ftue.l1.step2,Fill the targets to clear them!
+ftue.l2.buffer,"No match? Cards wait here."
+ftue.l2.warn,Don't let it fill up!

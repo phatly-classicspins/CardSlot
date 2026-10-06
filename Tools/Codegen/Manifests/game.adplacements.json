@@ -1,0 +1,15 @@
+{
+  "namespace": "Game.Gen",
+  "container": "AdPlacements",
+  "valueType": "AdPlacement",
+  "usings": [
+    "ClassicSpins.PrototypeFramework.Domain"
+  ],
+  "summary": "Typed AdPlacement values for the SKU (features/ads.md, D-007: served by the framework's fake ads in MVP). Codegen-owned; never hand-edit the generated file.",
+  "outputPath": "Assets/CardSlot/Gen/AdPlacements.gen.cs",
+  "entries": [
+    { "id": "RewardedContinue", "value": "rewarded_continue", "order": 0 },
+    { "id": "RewardedBooster", "value": "rewarded_booster", "order": 1 },
+    { "id": "InterstitialLevelEnd", "value": "interstitial_level_end", "order": 2 }
+  ]
+}

@@ -52,12 +52,14 @@ namespace Game.Application
             return Transact(p => p.StartCoinsGranted = true, CardSlotResources.Coin, _tuning.StartCoins);
         }
 
-        /// <summary>Count the attempt and unlock a booster whose unlock level this is (gift included, once).</summary>
+        /// <summary>Count the attempt and unlock the first booster whose unlock level has been reached (gift
+        /// included, once). "Reached", not "equal": a player already past a re-tuned unlock level still gets it,
+        /// one booster per level start.</summary>
         public LevelStartInfo BeginLevel(int level)
         {
             BoosterId? unlocked = null;
             foreach (BoosterId id in Enum.GetValues(typeof(BoosterId)))
-                if (_tuning.UnlockLevelOf(id) == level && !IsUnlocked(id)) unlocked = id;
+                if (_tuning.UnlockLevelOf(id) <= level && !IsUnlocked(id)) { unlocked = id; break; }
             bool ok = Transact(p =>
             {
                 p.Attempts++;

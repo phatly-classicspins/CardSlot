@@ -1,0 +1,12 @@
+{
+  "kind": "Dialog",
+  "entries": [
+    { "id": "Win" },
+    { "id": "Lose" },
+    { "id": "Pause" },
+    { "id": "Settings" },
+    { "id": "BoosterBuy" },
+    { "id": "BoosterUnlock" },
+    { "id": "RestartConfirm" }
+  ]
+}

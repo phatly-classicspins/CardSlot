@@ -145,3 +145,15 @@ Quyết định (người chốt: Phat):
 Phương án: nghiêng 30° · 35° · 40° (50° loại: mặt lá bị dẹt) — ảnh `docs/mockups/3d/tilt-compare.png`
 Quyết định: **35°**, camera GamePlay giữ orthographic của rig (phối cảnh cần sửa rig framework = thay đổi spine) — người chốt: Phat
 Ghi chú: mock-up gameplay 3D v02 = `docs/mockups/3d/gameplay-3d-tilt35-v02.png`; shadowDistance của URP asset 50 → 2500 cho thước 1 px = 1 đơn vị.
+
+### D-026 · 06-10-2026 · Bước 6 · Duyệt mốc 6b
+Quyết định: mốc 6b (save thật qua IUserData, 7 dialog, thanh booster, Continue bằng xu / quảng cáo giả, FTUE L1–L2, dim theo token) được duyệt như bản đã kiểm tra trong play mode — ảnh `docs/captures/6b/` — người chốt: Phat
+Ghi chú: booster mở khi **đã đến** level mở khoá (không còn "đúng level"), mỗi lần vào level mở tối đa 1 booster; Settings thay chỗ Pause rồi Pause mở lại.
+
+### CR-004 · phát sinh ở Bước 6 (sau mốc 6b) · ảnh hưởng GDD v1.2 §2 (cách hiển thị), mock-up gameplay 3D v02, `Board3DView`, `LevelData`, `LevelGenerator`
+Vấn đề: Phat so với game tham khảo: (1) đích đủ khi có **18 lá**, mỗi lần chạm thường đẩy lên một nhóm **6 lá**; (2) chồng bài không chỉ xếp thẳng mà còn **xoè** (vòng cung, hai bên).
+Quyết định (người chốt: Phat):
+- Đơn vị lá: a) **một "lá" trong luật = một tập 6 lá mỏng khi vẽ**; đích 3 tập = 18 lá, bộ đếm hiện x/18; ô tạm đếm theo tập · b) 18 lá rời thật (sửa luật, sinh lại level) → **a**.
+- Kiểu bày: thêm **xoè vòng cung** (lá xoay quanh một tâm, lá trên cùng ở đầu cung); chồng thẳng hiện tại vẫn dùng. Xoè hai bên / so le: không làm.
+- Thứ tự: commit 6b trước, rồi làm CR-004: mock-up 3D chồng xoè để duyệt → rồi mới code.
+Ảnh hưởng: luật R-1…R-18, solver, kinh tế, save **không đổi**; 30 level giữ nguyên luật, chỉ có thể thêm trường hiển thị `style` cho chồng (luật bỏ qua); mock-up gameplay 3D lên v03.

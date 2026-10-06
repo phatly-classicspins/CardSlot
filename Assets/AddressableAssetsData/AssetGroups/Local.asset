@@ -15,6 +15,16 @@ MonoBehaviour:
   m_GroupName: Local
   m_GUID: 79ed3d86cbd731344a35813f5fb6493a
   m_SerializeEntries:
+  - m_GUID: 3363d562e12a05d499e0e225c15eb0a1
+    m_Address: SettingsDialog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3a4703c9ee4decd42b3d0b7006515b38
+    m_Address: WinDialog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3d2c6df56612a46458071536c18280e1
     m_Address: Content/LevelCatalog
     m_ReadOnly: 0
@@ -40,6 +50,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 94325799ad77b7246972629434b35790
+    m_Address: BoosterUnlockDialog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 97928457d60d3194a8bbe415b2dae9cb
     m_Address: Scenes/Gameplay
     m_ReadOnly: 0
@@ -52,6 +67,26 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9c19b8e6b5232314a822d811d9dd9f44
     m_Address: Scenes/Main
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9c5c8b223af93e44ebcfcf02df54e81a
+    m_Address: LoseDialog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ba5b54ca8fef93e478f6b53d43cb234c
+    m_Address: PauseDialog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bb05ca1bcefe48b46ba8516f71c5aa54
+    m_Address: BoosterBuyDialog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bc43ed38872b78a469d6ef4bc885947b
+    m_Address: RestartConfirmDialog
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

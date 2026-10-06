@@ -17,6 +17,14 @@ namespace Game.Composition
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterEntryScreen<GameplayScreen>();
+            // dialogs are resolved Transient from the scope that shows them (DialogService); they die with this screen
+            builder.Register<WinDialog>(Lifetime.Transient);
+            builder.Register<LoseDialog>(Lifetime.Transient);
+            builder.Register<PauseDialog>(Lifetime.Transient);
+            builder.Register<SettingsDialog>(Lifetime.Transient);
+            builder.Register<BoosterBuyDialog>(Lifetime.Transient);
+            builder.Register<BoosterUnlockDialog>(Lifetime.Transient);
+            builder.Register<RestartConfirmDialog>(Lifetime.Transient);
         }
     }
 }

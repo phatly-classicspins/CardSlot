@@ -107,14 +107,21 @@ namespace Game.Editor
                 Set(so, "_iconPause", S("ui", "icon_pause"));
                 Set(so, "_iconRestart", S("ui", "icon_restart"));
                 Set(so, "_coin", S("ui", "coin"));
-                Set(so, "_panel", S("ui", "panel"));
-                Set(so, "_ribbon", S("ui", "ribbon_secondary"));
-                Set(so, "_ribbonDanger", S("ui", "ribbon_danger"));
-                Set(so, "_buttonPrimary", S("ui", "btn_primary"));
                 Set(so, "_badge", S("ui", "badge"));
+                Set(so, "_badgePrimary", S("ui", "badge_primary"));
+                Set(so, "_boostTile", S("ui", "boost_tile"));
+                Set(so, "_iconUndo", S("ui", "icon_undo"));
+                Set(so, "_iconSpace", S("ui", "icon_space"));
+                Set(so, "_priceTag", S("ui", "pill_ink"));
+                Set(so, "_hand", S("ui", "hand_pointer"));
+                Set(so, "_ring", S("ui", "ftue_ring"));
                 Set(so, "_font", font);
-                SetBool(so, "_draw2DBoard", false);   // CR-003: the board is 3D; this view keeps HUD, labels, result card
+                SetBool(so, "_draw2DBoard", false);   // CR-003: the board is 3D; this view keeps HUD, labels, boosters, tap areas
             });
+
+            // the scaffolded dialog prefab variants (Scaffold.Sync owns them; this only wires their sprites)
+            foreach (var id in new[] { "Win", "Lose", "Pause", "Settings", "BoosterBuy", "BoosterUnlock", "RestartConfirm" })
+                WireDialog($"Assets/CardSlot/Content/UI/{id}/Prefabs/{id}Dialog.prefab", $"Game.Views.{id}DialogView, Game.Views", font);
 
             Save("Gameplay/Board3DView", "Game.Views.Board3DView, Game.Views", so =>
             {
@@ -137,6 +144,56 @@ namespace Game.Editor
             var levels = Directory.GetFiles(LevelsRoot, "level_*.json").OrderBy(p => p, StringComparer.Ordinal)
                 .Select(p => (UnityEngine.Object)AssetDatabase.LoadAssetAtPath<TextAsset>(p.Replace('\\', '/'))).ToArray();
             Save("Content/LevelCatalog", "Game.Infrastructure.LevelCatalog, Game.Infrastructure", so => Set(so, "_levels", levels));
+        }
+
+        private static void WireDialog(string path, string viewType, UnityEngine.Object font)
+        {
+            var type = Type.GetType(viewType);
+            if (type == null) { Debug.LogError($"{Tag} type {viewType} not found — compile first."); return; }
+            var root = PrefabUtility.LoadPrefabContents(path);
+            try
+            {
+                // The template carries a plain DialogViewBase ([DisallowMultipleComponent]); the dialog's own view
+                // (a DialogViewBase subclass) replaces it on the variant, so LoadViewAsync still finds a DialogViewBase.
+                var view = root.GetComponent(type);
+                if (view == null)
+                {
+                    var plain = root.GetComponent("DialogViewBase");
+                    if (plain != null && plain.GetType().Name == "DialogViewBase") UnityEngine.Object.DestroyImmediate(plain, true);
+                    view = root.AddComponent(type);
+                }
+                // the template's sample "Panel" would draw under ours: deactivate it (an override, not a stripped node)
+                foreach (var t in root.GetComponentsInChildren<Transform>(true))
+                    if (t.name == "Panel" && t.GetComponent<UnityEngine.UI.Image>() != null && t.parent != null && t.parent.name != "Content") t.gameObject.SetActive(false);
+                var so = new SerializedObject(view);
+                Set(so, "_panel", S("ui", "panel"));
+                Set(so, "_ribbon", S("ui", "ribbon_secondary"));
+                Set(so, "_ribbonDanger", S("ui", "ribbon_danger"));
+                Set(so, "_buttonPrimary", S("ui", "btn_primary"));
+                Set(so, "_buttonSecondary", S("ui", "btn_secondary"));
+                Set(so, "_buttonDisabled", S("ui", "btn_disabled"));
+                Set(so, "_coin", S("ui", "coin"));
+                Set(so, "_iconPlay", S("ui", "icon_play"));
+                Set(so, "_iconLock", S("ui", "icon_lock"));
+                Set(so, "_iconClose", S("ui", "icon_close"));
+                Set(so, "_iconUndo", S("ui", "icon_undo"));
+                Set(so, "_iconSpace", S("ui", "icon_space"));
+                Set(so, "_iconGear", S("ui", "icon_gear"));
+                Set(so, "_iconHolder", S("ui", "icon_holder"));
+                Set(so, "_closeButton", S("ui", "close_btn"));
+                Set(so, "_rowSunken", S("ui", "row_sunken"));
+                Set(so, "_toggleOn", S("ui", "toggle_on"));
+                Set(so, "_toggleOff", S("ui", "toggle_off"));
+                Set(so, "_toggleKnob", S("ui", "toggle_knob"));
+                Set(so, "_pillSunken", S("ui", "pill_sunken"));
+                Set(so, "_badge", S("ui", "badge"));
+                Set(so, "_roundButton", S("ui", "rbtn_secondary"));
+                Set(so, "_cardFace", Six("gameplay", "card_face_"));
+                Set(so, "_font", font);
+                so.ApplyModifiedPropertiesWithoutUndo();
+                PrefabUtility.SaveAsPrefabAsset(root, path);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(root); }
         }
 
         private static void Save(string address, string componentType, Action<SerializedObject> wire, bool rectTransform = true)

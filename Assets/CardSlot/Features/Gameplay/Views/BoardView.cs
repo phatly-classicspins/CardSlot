@@ -34,11 +34,12 @@ namespace Game.Views
         public string HoldingLabel, BufferCountLabel, NextLabel;
     }
 
-    /// <summary>A result card over the board (6a: the simple win/lose card; the full dialogs come in 6b).</summary>
-    public sealed class ResultVisual
+    /// <summary>One booster button. Not visible = still locked. <see cref="Badge"/> (count) or <see cref="Price"/>
+    /// (coins) is shown — whichever the controller set.</summary>
+    public struct BoosterVisual
     {
-        public string Title, Subtitle, PrimaryLabel, SecondaryLabel;
-        public bool Danger;
+        public bool Visible, Enabled;
+        public string Name, Badge, Price;
     }
 
     /// <summary>
@@ -64,25 +65,28 @@ namespace Game.Views
         [SerializeField] private Sprite _bufferCell;
         [SerializeField] private Sprite _bufferCellWarn;
         [SerializeField] private Sprite _ground;
-        [Header("HUD and result card")]
+        [Header("HUD, boosters, tutorial")]
         [SerializeField] private Sprite _pill;
         [SerializeField] private Sprite _roundButton;
         [SerializeField] private Sprite _iconPause;
         [SerializeField] private Sprite _coin;
         [SerializeField] private Sprite _iconRestart;
-        [SerializeField] private Sprite _panel;
-        [SerializeField] private Sprite _ribbon;
-        [SerializeField] private Sprite _ribbonDanger;
-        [SerializeField] private Sprite _buttonPrimary;
         [SerializeField] private Sprite _badge;
+        [SerializeField] private Sprite _badgePrimary;
+        [SerializeField] private Sprite _boostTile;
+        [SerializeField] private Sprite _iconUndo;
+        [SerializeField] private Sprite _iconSpace;
+        [SerializeField] private Sprite _priceTag;
+        [SerializeField] private Sprite _hand;
+        [SerializeField] private Sprite _ring;
         [SerializeField] private TMP_FontAsset _font;
-        [Tooltip("False when the board is drawn in 3D (CR-003): this view then draws only the HUD, labels and result card.")]
+        [Tooltip("False when the board is drawn in 3D (CR-003): this view then draws only the HUD, labels, boosters and tap areas.")]
         [SerializeField] private bool _draw2DBoard = true;
 
         public event Action<int> StackTapped;
-        public event Action PausePressed, RestartPressed, ResultPrimaryPressed, ResultSecondaryPressed;
+        public event Action PausePressed, RestartPressed, UndoPressed, AddSlotPressed;
 
-        private RectTransform _root, _boardLayer, _resultLayer;
+        private RectTransform _root, _boardLayer, _boosterLayer, _tutorialLayer;
         private TextMeshProUGUI _levelLabel, _hardBadge, _coinsLabel;
         private Image _hardBadgeImage;
 
@@ -100,7 +104,8 @@ namespace Game.Views
             }
             _boardLayer = UiKit.Stretch("Board", _root);
             BuildHud();
-            _resultLayer = UiKit.Stretch("Result", _root);
+            _boosterLayer = UiKit.Stretch("Boosters", _root);
+            _tutorialLayer = UiKit.Stretch("Tutorial", _root);
         }
 
         private void BuildHud()
@@ -272,32 +277,62 @@ namespace Game.Views
             }
         }
 
-        public void ShowResult(ResultVisual r)
+        /// <summary>The two booster buttons at the bottom (mock-up gameplay-v01 / gameplay-warning-v01).</summary>
+        public void SetBoosters(BoosterVisual undo, BoosterVisual addSlot)
         {
             EnsureBuilt();
-            HideResult();
-            UiKit.Fill("Scrim", _resultLayer, DesignTokens.Scrim, true);
-            float side = DesignTokens.PanelSideInset, w = 1080f - 2f * side, h = 760f;
-            float top = (Height - h) / 2f + 40f;
-            var panel = UiKit.Image("Panel", _resultLayer, _panel, side, top, w, h, sliced: true);
-            var ribbon = UiKit.Image("Ribbon", panel.transform, r.Danger ? _ribbonDanger : _ribbon, -DesignTokens.RibbonOverhang, -DesignTokens.RibbonRise,
-                w + 2f * DesignTokens.RibbonOverhang, DesignTokens.RibbonHeight, sliced: true);
-            UiKit.Text("Title", ribbon.transform, _font, r.Title, DesignTokens.TitleSize(r.Title?.Length ?? 0), DesignTokens.OnColor, 0f, 0f, w + 60f, 170f);
-            UiKit.Text("Subtitle", panel.transform, _font, r.Subtitle, DesignTokens.TypeHeading, DesignTokens.InkSoft, 0f, 170f, w, 80f);
-            var primary = UiKit.Image("Primary", panel.transform, _buttonPrimary, w / 2f - 280f, 360f, 560f, 164f, sliced: true);
-            UiKit.Text("Label", primary.transform, _font, r.PrimaryLabel, DesignTokens.TypeButton, DesignTokens.OnColor, 0f, 0f, 560f, 150f);
-            UiKit.Button(primary, () => ResultPrimaryPressed?.Invoke());
-            // a uGUI GameObject holds one Graphic: the transparent hit area and the label are separate nodes
-            var hit = UiKit.Image("Secondary", panel.transform, null, w / 2f - 200f, 580f, 400f, 80f);
-            hit.color = Color.clear;
-            UiKit.Text("Label", hit.transform, _font, r.SecondaryLabel, DesignTokens.TypeBody - 2f, DesignTokens.InkSoft, 0f, 0f, 400f, 80f);
-            UiKit.Button(hit, () => ResultSecondaryPressed?.Invoke());
+            for (int i = _boosterLayer.childCount - 1; i >= 0; i--) Destroy(_boosterLayer.GetChild(i).gameObject);
+            Booster(undo, _iconUndo, 250f, () => UndoPressed?.Invoke());
+            Booster(addSlot, _iconSpace, 660f, () => AddSlotPressed?.Invoke());
         }
 
-        public void HideResult()
+        private void Booster(BoosterVisual b, Sprite icon, float x, Action onPress)
         {
-            if (_resultLayer == null) return;
-            for (int i = _resultLayer.childCount - 1; i >= 0; i--) Destroy(_resultLayer.GetChild(i).gameObject);
+            if (!b.Visible) return;
+            float t = DesignTokens.BoosterTile, y = DesignTokens.BoosterBottom + 70f;
+            var tile = UiKit.Image("Booster", _boosterLayer, _boostTile, x, y, t, t + 12f, fromBottom: true);
+            if (!b.Enabled) tile.color = DesignTokens.CoveredTint;
+            UiKit.Image("Icon", tile.transform, icon, 43f, 43f, 84f, 84f).color = b.Enabled ? DesignTokens.Secondary : DesignTokens.Disabled;
+            if (b.Badge != null)
+            {
+                var badge = UiKit.Image("Badge", tile.transform, _badgePrimary, t - 48f, -16f, 64f, 70f, sliced: true);
+                UiKit.Text("Count", badge.transform, _font, b.Badge, 36f, DesignTokens.OnColor, 0f, 0f, 64f, 64f);
+            }
+            else if (b.Price != null)
+            {
+                var tag = UiKit.Image("Price", tile.transform, _priceTag, (t - 120f) / 2f, t - 28f, 120f, 56f, sliced: true);
+                UiKit.Image("Coin", tag.transform, _coin, 8f, 7f, 42f, 42f);
+                UiKit.Text("Amount", tag.transform, _font, b.Price, 30f, DesignTokens.OnColor, 52f, 0f, 64f, 56f, TextAlignmentOptions.Left);
+            }
+            UiKit.Text("Name", tile.transform, _font, b.Name, 28f, DesignTokens.InkSoft, -20f, t + 40f, t + 40f, 40f);
+            UiKit.Button(tile, onPress);
+        }
+
+        /// <summary>FTUE (features/ftue.md): a hand + ring over <paramref name="pointAt"/> (world rect; empty = no
+        /// hand) and a bubble with <paramref name="text"/>.</summary>
+        public void ShowTutorial(Rect pointAt, string text)
+        {
+            EnsureBuilt();
+            HideTutorial();
+            if (pointAt.width > 0f)
+            {
+                var c = _root.InverseTransformPoint(new Vector3(pointAt.center.x, pointAt.center.y, _root.position.z));
+                float x = c.x - _root.rect.xMin, y = _root.rect.yMax - c.y;
+                var ring = UiKit.Image("Ring", _tutorialLayer, _ring, x - 85f, y - 85f, 170f, 170f);
+                ring.color = new Color(1f, 1f, 1f, 0.85f);
+                UiKit.Image("Hand", _tutorialLayer, _hand, x + 10f, y + 10f, 150f, 172f);
+            }
+            if (!string.IsNullOrEmpty(text))
+            {
+                var bubble = UiKit.Image("Bubble", _tutorialLayer, _pill, 120f, 760f, 840f, 120f, sliced: true);
+                UiKit.Text("Text", bubble.transform, _font, text, 44f, DesignTokens.Ink, 20f, 0f, 800f, 112f);
+            }
+        }
+
+        public void HideTutorial()
+        {
+            if (_tutorialLayer == null) return;
+            for (int i = _tutorialLayer.childCount - 1; i >= 0; i--) Destroy(_tutorialLayer.GetChild(i).gameObject);
         }
     }
 }

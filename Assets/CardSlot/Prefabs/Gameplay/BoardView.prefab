@@ -97,10 +97,13 @@ MonoBehaviour:
   _iconPause: {fileID: 21300000, guid: 95ad5b0d56320414a9e4f5d23f9bb01d, type: 3}
   _coin: {fileID: 21300000, guid: 1573b3c2b977d904da27d39b6ab43606, type: 3}
   _iconRestart: {fileID: 21300000, guid: 606e3b01f5de1a249b13ff50e28f6185, type: 3}
-  _panel: {fileID: 21300000, guid: a3ca6b52183c40b4aa9d0de8751f3b41, type: 3}
-  _ribbon: {fileID: 21300000, guid: 59fca8db0be128d469eba55f3afa4c4a, type: 3}
-  _ribbonDanger: {fileID: 21300000, guid: 9815f16050f3d3e43afb12aeb0b6cdea, type: 3}
-  _buttonPrimary: {fileID: 21300000, guid: 33684b627971d3e4eb6519afd883a092, type: 3}
   _badge: {fileID: 21300000, guid: 3c0f0ac6a69ae0740b7da74d4812b3f4, type: 3}
+  _badgePrimary: {fileID: 21300000, guid: 69cc3e23f88bb8a44977f1ee7fb3b654, type: 3}
+  _boostTile: {fileID: 21300000, guid: d6c3a3a1506e8434f8d175b191cd9f22, type: 3}
+  _iconUndo: {fileID: 21300000, guid: e471e6e9af329714596ebd2e6e9cdb2e, type: 3}
+  _iconSpace: {fileID: 21300000, guid: b4e316927ac7b3449a2e506f8dc72d09, type: 3}
+  _priceTag: {fileID: 21300000, guid: b99a15447c3796f4ba45e1957713b058, type: 3}
+  _hand: {fileID: 21300000, guid: b14c3eb3880fbf141a03caf764bdddc5, type: 3}
+  _ring: {fileID: 21300000, guid: 4ac879da17696924aa1d70334cad3216, type: 3}
   _font: {fileID: 11400000, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
   _draw2DBoard: 0

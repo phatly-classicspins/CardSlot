@@ -40,18 +40,23 @@ namespace Game.Composition
         }
 
         /// <summary>
-        /// Session-long game services shared by Home and Gameplay (D-023). 6a keeps progress in memory
-        /// (<see cref="InMemoryProgressStore"/>); 6b swaps in the adapter over <c>IUserData</c> and moves
-        /// <see cref="EconomyTuning"/> onto config keys.
+        /// Session-long game services shared by Home and Gameplay (D-023). Progress and settings persist
+        /// through the framework's <c>IUserData</c> (<see cref="UserDataProgressStore"/>); coins and boosters
+        /// through <c>IWalletService</c>. The dialog dim takes the token scrim (rule #17).
         /// </summary>
         private static void InstallGame(IContainerBuilder builder)
         {
             builder.RegisterInstance(new EconomyTuning());
-            builder.Register<InMemoryProgressStore>(Lifetime.Singleton).As<IProgressStore>();
+            // save models: defaults the framework's FileUserData loads into (D-023, schema v1)
+            builder.Register<ProgressModel>(Lifetime.Singleton).As<IUserModel>();
+            builder.Register<SettingsModel>(Lifetime.Singleton).As<IUserModel>();
+            builder.Register<UserDataProgressStore>(Lifetime.Singleton).As<IProgressStore>();
             builder.Register<LevelProgressService>(Lifetime.Singleton);
             builder.Register<BoosterService>(Lifetime.Singleton);
             builder.Register<AdPacing>(Lifetime.Singleton);
             builder.Register<AddressableLevelSource>(Lifetime.Singleton).As<Game.Presentation.ILevelSource>();
+            var scrim = Game.Views.DesignTokens.Scrim;
+            builder.RegisterInstance(new DialogDimStyle(scrim.r, scrim.g, scrim.b, opacity: scrim.a));
         }
 
         /// <summary>

@@ -80,6 +80,15 @@ namespace CardSlot.SkuHeadlessTests.Meta
         }
 
         [Test]
+        public void A_player_past_an_unlock_level_still_gets_it_one_booster_per_start()
+        {
+            Assert.That(svc.BeginLevel(1).Unlocked, Is.Null);
+            Assert.That(svc.BeginLevel(12).Unlocked, Is.EqualTo(BoosterId.Undo), "lowest first");
+            Assert.That(svc.BeginLevel(12).Unlocked, Is.EqualTo(BoosterId.AddSlot));
+            Assert.That(svc.BeginLevel(12).Unlocked, Is.Null);
+        }
+
+        [Test]
         public void G18_a_failed_save_on_win_rolls_back_progress_and_coins()
         {
             store.Fail = true;

@@ -74,8 +74,11 @@ namespace Game.Views
         {
             image.raycastTarget = true;
             var b = image.gameObject.AddComponent<Button>();
-            b.targetGraphic = image;
             b.transition = Selectable.Transition.None;
+            b.targetGraphic = image;
+            // AddComponent may already have run a default ColorTint transition (e.g. the "disabled" tint while a
+            // dialog's CanvasGroup is non-interactable during its show leg); None never undoes it, so reset it here
+            image.canvasRenderer.SetColor(Color.white);
             b.onClick.AddListener(() => onClick?.Invoke());
             return b;
         }
