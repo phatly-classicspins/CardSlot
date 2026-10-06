@@ -31,6 +31,12 @@
   <Import Project="SkuEngineFree.props" />
 
   <ItemGroup>
+    <!-- The level file codec lives in Game.Infrastructure (it needs Newtonsoft) but is engine-free;
+         named include so the shipped-level replay tests read levels exactly as the game does. -->
+    <Compile Include="$(SkuRepoRoot)Assets/CardSlot/Features/Board/Infrastructure/LevelJson.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="NUnit" Version="4.2.2" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />

@@ -1,0 +1,217 @@
+{
+  "id": "level_019",
+  "revision": 1,
+  "seed": 1900020,
+  "hard": false,
+  "n_slots": 3,
+  "buffer_capacity": 10,
+  "targets": [
+    {
+      "color": "color_0",
+      "capacity": 3
+    },
+    {
+      "color": "color_1",
+      "capacity": 3
+    },
+    {
+      "color": "color_0",
+      "capacity": 3
+    },
+    {
+      "color": "color_1",
+      "capacity": 3
+    },
+    {
+      "color": "color_4",
+      "capacity": 3
+    },
+    {
+      "color": "color_4",
+      "capacity": 3
+    },
+    {
+      "color": "color_2",
+      "capacity": 3
+    },
+    {
+      "color": "color_3",
+      "capacity": 3
+    },
+    {
+      "color": "color_2",
+      "capacity": 3
+    },
+    {
+      "color": "color_3",
+      "capacity": 3
+    }
+  ],
+  "stacks": [
+    {
+      "id": "s0",
+      "x": 40,
+      "y": 40,
+      "w": 150,
+      "h": 222,
+      "layer": 0,
+      "cards": [
+        "color_2",
+        "color_3"
+      ]
+    },
+    {
+      "id": "s1",
+      "x": 260,
+      "y": 40,
+      "w": 150,
+      "h": 222,
+      "layer": 0,
+      "cards": [
+        "color_2",
+        "color_1"
+      ]
+    },
+    {
+      "id": "s2",
+      "x": 700,
+      "y": 40,
+      "w": 150,
+      "h": 222,
+      "layer": 0,
+      "cards": [
+        "color_3",
+        "color_1"
+      ]
+    },
+    {
+      "id": "s3",
+      "x": 40,
+      "y": 330,
+      "w": 150,
+      "h": 254,
+      "layer": 0,
+      "cards": [
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_4"
+      ]
+    },
+    {
+      "id": "s4",
+      "x": 260,
+      "y": 330,
+      "w": 150,
+      "h": 254,
+      "layer": 0,
+      "cards": [
+        "color_3",
+        "color_3",
+        "color_1",
+        "color_1"
+      ]
+    },
+    {
+      "id": "s5",
+      "x": 700,
+      "y": 330,
+      "w": 150,
+      "h": 222,
+      "layer": 0,
+      "cards": [
+        "color_4",
+        "color_1"
+      ]
+    },
+    {
+      "id": "s6",
+      "x": 95,
+      "y": 330,
+      "w": 150,
+      "h": 222,
+      "layer": 1,
+      "cards": [
+        "color_0",
+        "color_0"
+      ]
+    },
+    {
+      "id": "s7",
+      "x": 370,
+      "y": 40,
+      "w": 150,
+      "h": 222,
+      "layer": 2,
+      "cards": [
+        "color_0",
+        "color_0"
+      ]
+    },
+    {
+      "id": "s8",
+      "x": 590,
+      "y": 40,
+      "w": 150,
+      "h": 254,
+      "layer": 2,
+      "cards": [
+        "color_3",
+        "color_4",
+        "color_4",
+        "color_4"
+      ]
+    },
+    {
+      "id": "s9",
+      "x": 645,
+      "y": 40,
+      "w": 150,
+      "h": 254,
+      "layer": 3,
+      "cards": [
+        "color_1",
+        "color_0",
+        "color_3",
+        "color_0"
+      ]
+    },
+    {
+      "id": "s10",
+      "x": 645,
+      "y": 330,
+      "w": 150,
+      "h": 222,
+      "layer": 3,
+      "cards": [
+        "color_4",
+        "color_2"
+      ]
+    }
+  ],
+  "ftue": null,
+  "solution": [
+    "s6",
+    "s7",
+    "s9",
+    "s9",
+    "s0",
+    "s0",
+    "s1",
+    "s1",
+    "s3",
+    "s3",
+    "s4",
+    "s4",
+    "s10",
+    "s9",
+    "s9",
+    "s8",
+    "s8",
+    "s10",
+    "s2",
+    "s2",
+    "s5",
+    "s5"
+  ]
+}

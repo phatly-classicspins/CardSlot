@@ -20,6 +20,7 @@
   "targets": [ {"color": "color_0", "capacity": 3}, {"color": "color_1", "capacity": 3} ],
   "stacks": [ {"id": "s0", "x": -300, "y": -500, "w": 180, "h": 240, "layer": 0,
                "cards": ["color_0", "color_0", "color_1"]} ],
+  "hard": false,
   "ftue": null
 }
 ```

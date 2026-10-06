@@ -1,0 +1,163 @@
+{
+  "id": "level_003",
+  "revision": 1,
+  "seed": 300009,
+  "hard": false,
+  "n_slots": 3,
+  "buffer_capacity": 14,
+  "targets": [
+    {
+      "color": "color_0",
+      "capacity": 3
+    },
+    {
+      "color": "color_0",
+      "capacity": 3
+    },
+    {
+      "color": "color_0",
+      "capacity": 3
+    },
+    {
+      "color": "color_3",
+      "capacity": 3
+    },
+    {
+      "color": "color_2",
+      "capacity": 3
+    },
+    {
+      "color": "color_2",
+      "capacity": 3
+    },
+    {
+      "color": "color_3",
+      "capacity": 3
+    },
+    {
+      "color": "color_2",
+      "capacity": 3
+    },
+    {
+      "color": "color_3",
+      "capacity": 3
+    }
+  ],
+  "stacks": [
+    {
+      "id": "s0",
+      "x": 260,
+      "y": 40,
+      "w": 150,
+      "h": 270,
+      "layer": 0,
+      "cards": [
+        "color_2",
+        "color_2",
+        "color_3",
+        "color_3",
+        "color_2"
+      ]
+    },
+    {
+      "id": "s1",
+      "x": 480,
+      "y": 40,
+      "w": 150,
+      "h": 254,
+      "layer": 0,
+      "cards": [
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_0"
+      ]
+    },
+    {
+      "id": "s2",
+      "x": 700,
+      "y": 40,
+      "w": 150,
+      "h": 254,
+      "layer": 0,
+      "cards": [
+        "color_0",
+        "color_3",
+        "color_3",
+        "color_2"
+      ]
+    },
+    {
+      "id": "s3",
+      "x": 40,
+      "y": 330,
+      "w": 150,
+      "h": 238,
+      "layer": 0,
+      "cards": [
+        "color_3",
+        "color_3",
+        "color_0"
+      ]
+    },
+    {
+      "id": "s4",
+      "x": 260,
+      "y": 330,
+      "w": 150,
+      "h": 270,
+      "layer": 0,
+      "cards": [
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_0"
+      ]
+    },
+    {
+      "id": "s5",
+      "x": 480,
+      "y": 330,
+      "w": 150,
+      "h": 238,
+      "layer": 0,
+      "cards": [
+        "color_0",
+        "color_0",
+        "color_0"
+      ]
+    },
+    {
+      "id": "s6",
+      "x": 700,
+      "y": 330,
+      "w": 150,
+      "h": 238,
+      "layer": 0,
+      "cards": [
+        "color_0",
+        "color_0",
+        "color_2"
+      ]
+    }
+  ],
+  "ftue": null,
+  "solution": [
+    "s2",
+    "s5",
+    "s1",
+    "s0",
+    "s1",
+    "s6",
+    "s4",
+    "s0",
+    "s0",
+    "s4",
+    "s6",
+    "s2",
+    "s2",
+    "s3",
+    "s3"
+  ]
+}

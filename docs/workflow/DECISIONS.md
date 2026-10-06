@@ -112,3 +112,22 @@ Câu hỏi và quyết định (người chốt: Phat):
 ### D-022 · 06-10-2026 · Bước 4 · Duyệt animation
 Quyết định: `animation-list.md` v1.0 (21 animation P0+P1, 2 prefab hạt, token chuyển động) và cảm giác trong `art/motion/preview.html` được duyệt — người chốt: Phat
 Ghi chú: cổng "chạy đúng trong runtime" của Bước 4 chuyển sang kiểm ở Bước 6 (animation là code trong `Game.Views`).
+
+### CR-002 · phát sinh ở Bước 5 · ảnh hưởng GDD v1.1 §2.2, §5, §12 và `level-design.md` §2 (đã duyệt)
+Vấn đề: khi code phát hiện 4 chỗ GDD chưa trả lời.
+Quyết định (người chốt: Phat) — đồng ý cả 4 đề xuất:
+1. Hai `stack` cùng `layer` không được giao nhau; level vi phạm bị loader từ chối (R-1b).
+2. Level khó đánh dấu bằng trường `hard: true` trong file level (G20), không suy từ số thứ tự.
+3. `attempt_no` = số lần bắt đầu level hiện tại, lưu trong save (`attempts`), về 0 khi thắng.
+4. Save lưu `highest_cleared` (level cao nhất đã thắng) thay cho `max_level_reached`; thắng level ≤ `highest_cleared` là chơi lại (L30: `replay_reward`).
+GDD lên v1.2.
+
+### D-023 · 06-10-2026 · Bước 5 · Save, nội dung level, độ sâu test
+Quyết định (người chốt: Phat):
+- Save: `IUserData` của framework (envelope JSON). Schema v1 = bản ship đầu; đổi định dạng = tăng `SaveSchema` + migrator mới + fixture, không sửa migrator đã ship (rule #2). Xu và booster là tài nguyên trong `IWalletService` (cổng duy nhất cho số dư, AD-5); tiến trình là model `IUserModel` của SKU. Nội dung level đổi revision không ảnh hưởng save (lưu theo số level, không lưu giữa level). Save mới hơn app → không ghi đè.
+- Level: generator + solver sinh ứng viên theo `level-design.md` §4, AI chọn 30 level khớp đường cong; Phat duyệt báo cáo độ khó (và chơi thử ở Bước 6).
+- Test: đủ theo quy trình — luật R-1…R-18, trường hợp biên, lưu/khôi phục, giao dịch kinh tế có giả lập lưu lỗi, chạy lại lời giải đã kiểm chứng của cả 30 level.
+
+### D-024 · 06-10-2026 · Bước 5 · Duyệt logic và level
+Quyết định: code luật/meta, 30 level (`level-report.md`, không level nào lệch đường cong > 0.12) và `architecture-notes.md` được duyệt, đóng cổng Bước 5 — người chốt: Phat
+Ghi chú: Bước 6 chia mốc 6a (chơi được trong Editor) → 6b (đủ tính năng) → 6c (hoàn thiện) → 6d (APK, tuỳ chọn).

@@ -1,0 +1,88 @@
+{
+  "id": "level_002",
+  "revision": 1,
+  "seed": 200141,
+  "hard": false,
+  "n_slots": 2,
+  "buffer_capacity": 14,
+  "targets": [
+    {
+      "color": "color_4",
+      "capacity": 3
+    },
+    {
+      "color": "color_4",
+      "capacity": 3
+    },
+    {
+      "color": "color_1",
+      "capacity": 3
+    },
+    {
+      "color": "color_1",
+      "capacity": 3
+    }
+  ],
+  "stacks": [
+    {
+      "id": "s0",
+      "x": 260,
+      "y": 40,
+      "w": 150,
+      "h": 222,
+      "layer": 0,
+      "cards": [
+        "color_1",
+        "color_1"
+      ]
+    },
+    {
+      "id": "s1",
+      "x": 480,
+      "y": 40,
+      "w": 150,
+      "h": 238,
+      "layer": 0,
+      "cards": [
+        "color_1",
+        "color_1",
+        "color_1"
+      ]
+    },
+    {
+      "id": "s2",
+      "x": 700,
+      "y": 40,
+      "w": 150,
+      "h": 270,
+      "layer": 0,
+      "cards": [
+        "color_1",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4"
+      ]
+    },
+    {
+      "id": "s3",
+      "x": 480,
+      "y": 330,
+      "w": 150,
+      "h": 222,
+      "layer": 0,
+      "cards": [
+        "color_4",
+        "color_4"
+      ]
+    }
+  ],
+  "ftue": "ftue.l2",
+  "solution": [
+    "s3",
+    "s0",
+    "s1",
+    "s2",
+    "s2"
+  ]
+}

@@ -9,7 +9,7 @@
 1. **Home (`MainScreen`):** logo, `CoinCounter`, nút Play lớn ghi "Level N" (`current_level`), nút Settings. Chạm Play → `GameplayScreen`.
 2. **Thắng (R-11):**
    1. Tính thưởng: `win_reward` (+ `win_reward_hard_bonus` ở level khó).
-   2. **Lưu trước**: `coins += thưởng`, `current_level = min(level + 1, 30)`, `max_level_reached` → commit nguyên tử (G18, G19).
+   2. **Lưu trước**: `coins += thưởng`, `current_level = min(level + 1, 30)`, `highest_cleared = max(highest_cleared, level)`, `attempts = 0` → commit nguyên tử (G18, G19).
    3. Phát `level_won` → mở `WinDialog`: tiêu đề, xu đếm lên, nút **Next** (và **Home**).
 3. Next → (có thể có interstitial, `features/ads.md`) → level tiếp theo.
 4. **Level 30 thắng:** `WinDialog` ghi "More levels coming soon", nút Next đổi thành **Play again** (chơi lại Level 30, thưởng `replay_reward`).
@@ -20,7 +20,7 @@ Home: bình thường · đã hết level. WinDialog: thường · level khó ·
 
 ## Dữ liệu lưu
 
-`current_level`, `max_level_reached`, `coins`.
+`current_level`, `highest_cleared`, `attempts`, `coins` (v1.1, CR-002).
 
 ## Trường hợp biên
 

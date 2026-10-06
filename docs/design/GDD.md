@@ -1,6 +1,6 @@
 # CardSlot — Game Design Document
 
-> v1.1 · Bước 1 · đã duyệt (Phat, 06-10-2026) · v1.1: CR-001 (Bước 2). Đầu vào: `concept.md` v0.2 (đã duyệt), D-006…D-014.
+> v1.2 · Bước 1 · đã duyệt (Phat, 06-10-2026) · v1.1: CR-001 (Bước 2) · v1.2: CR-002 (Bước 5). Đầu vào: `concept.md` v0.2 (đã duyệt), D-006…D-014.
 > ID chuẩn: `glossary.md`. Đi kèm: `level-design.md`, `economy-sheet.md`, `screen-inventory.md`, `features/*.md`.
 > Các mục **[XÁC NHẬN]** do AI đề xuất đã được duyệt cùng GDD (D-015).
 
@@ -27,6 +27,7 @@ Mọi luật dưới đây là luật của **model thuần** (không phụ thu�
 
 ### 2.2 Chạm được hay không
 
+- **R-1b** (v1.2, CR-002) Hai `stack` cùng `layer` không được giao nhau (diện tích > 0). Level vi phạm bị loader từ chối.
 - **R-3** Một `stack` là `covered` nếu có `stack` khác còn lá, có `layer` **lớn hơn**, và hình chữ nhật hai chồng giao nhau với diện tích > 0.
 - **R-4** `tap` chỉ hợp lệ trên `stack` còn lá, không `covered`, khi kết quả là `playing`. `tap` không hợp lệ thì bị bỏ qua: không đổi trạng thái, không tính là nước đi.
 - **R-5** `stack` hết lá thì bị xoá khỏi `board`; các chồng bên dưới có thể trở thành `open`.
@@ -94,9 +95,10 @@ Xem `level-design.md`: 30 level, đường cong răng cưa, generator + solver.
 |---|---|---|
 | `schema_version` | int | 1 |
 | `current_level` | int (1..30) | 1 |
-| `max_level_reached` | int | 1 |
+| `highest_cleared` (v1.2) | int (0..30) — level cao nhất đã thắng; thắng level ≤ giá trị này là chơi lại | 0 |
+| `attempts` (v1.2) | int ≥ 0 — số lần bắt đầu level hiện tại; về 0 khi thắng | 0 |
 | `coins` | int ≥ 0 | `start_coins` |
-| `boosters.undo` / `boosters.add_slot` | int ≥ 0 | 0 |
+| `boosters.undo` / `boosters.add_slot` | int ≥ 0 — tài nguyên trong `IWalletService` cùng `coins` (D-023) | 0 |
 | `boosters_unlocked` | set | rỗng |
 | `ftue.completed_steps` | set | rỗng |
 | `settings.sound` / `music` / `haptics` | bool | true |
@@ -162,7 +164,7 @@ Rung (`haptics`): nhẹ khi `target` hoàn thành, vừa khi thua.
 
 | Sự kiện | Tham số |
 |---|---|
-| `level_started` | `level_index`, `attempt_no` |
+| `level_started` | `level_index`, `attempt_no` (= `attempts` trong save, CR-002) |
 | `level_won` | `level_index`, `taps`, `duration_s`, `boosters_used`, `continued` |
 | `level_failed` | `level_index`, `taps`, `duration_s`, `cards_left` |
 | `level_quit` | `level_index`, `taps` |
@@ -192,3 +194,4 @@ Các sự kiện đều ở thì quá khứ, là sự thật đã xảy ra (rule
 |---|---|---|
 | v1.0 | 06-10-2026 | Duyệt lần đầu (D-015). |
 | v1.1 | 06-10-2026 | CR-001 (phát sinh ở Bước 2): giới hạn tiêu đề 18 → 26 ký tự, ribbon tự thu nhỏ chữ; thêm key `gameplay.restart.note`. Ảnh hưởng: `features/core-gameplay.md`, mock-up `win-hard`, `win-final`, `unlock-space`, `restart-confirm`. |
+| v1.2 | 06-10-2026 | CR-002 (phát sinh ở Bước 5): R-1b cấm hai chồng cùng layer giao nhau; level khó = trường `hard` trong file level; save thêm `attempts`, đổi `max_level_reached` → `highest_cleared`. Ảnh hưởng: `level-design.md` §2, `features/level-progression.md`. |
