@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CardSlot motion preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<!--
+  Motion preview for Bước 4 (D-021). Plays every P0/P1 animation of docs/design/animation-list.md on
+  the approved sprites (art/export). Timings come from MOTION below, which is the source for
+  DesignTokens.Motion in Bước 6. This page is a reference for feel, not game code.
+  ?anim=<name>&t=<seconds> freezes that animation at time t (used for screenshots).
+-->
+<style>
+  :root{--ink:#5A3415;--inkSoft:#9A6A3F}
+  html,body{margin:0;height:100%;background:#2B2B33;font-family:Fredoka,'Segoe UI',sans-serif;color:#fff;overflow:hidden}
+  #ui{position:fixed;left:0;top:0;bottom:0;width:300px;padding:14px;box-sizing:border-box;overflow:auto;background:#1F1F25}
+  #ui h1{font-size:20px;margin:0 0 8px} #ui h2{font-size:14px;margin:14px 0 6px;color:#aaa;font-weight:600}
+  #ui button{display:block;width:100%;margin:3px 0;padding:7px 10px;border:0;border-radius:8px;background:#3A3A46;color:#fff;font:600 14px Fredoka,sans-serif;text-align:left;cursor:pointer}
+  #ui button.on{background:#21B8A6} #ui label{display:flex;gap:8px;align-items:center;font-size:14px;margin:6px 0}
+  #wrap{position:fixed;left:300px;right:0;top:0;bottom:0;display:grid;place-items:center}
+  #stage{position:relative;width:1080px;height:1920px;overflow:hidden;transform-origin:center;
+    background:url(../export/bg/bg_ground.png) center/100% 100%}
+  .s{position:absolute;display:block;pointer-events:none}
+  .nine{position:absolute;box-sizing:border-box}
+  .txt{position:absolute;font-weight:700;color:var(--ink);text-align:center;white-space:nowrap}
+  .cover{filter:brightness(.68)}
+  .hatch{position:absolute;inset:0;background:url(../export/gameplay/card_covered_hatch.png) top/150px 206px no-repeat}
+  .dim{position:absolute;inset:0;background:rgba(70,35,10,.55)}
+</style>
+</head>
+<body>
+<div id="ui">
+  <h1>CardSlot · motion</h1>
+  <label><input type="checkbox" id="reduced"> Tắt animation (pose cuối)</label>
+  <label><input type="checkbox" id="slow"> Chậm ×4</label>
+  <div id="list"></div>
+</div>
+<div id="wrap"><div id="stage"></div></div>
+<script>
+// ── Motion tokens (seconds) — become DesignTokens.Motion in Bước 6 ───────────────────────────────
+const MOTION = {
+  fly:0.32, flyStagger:0.05, flyArc:120, flyTilt:8, toBuffer:0.28, release:0.32, compact:0.15,
+  landBump:0.12, landBumpScale:0.9, complete:0.35, completeOvershoot:1.15, enter:0.25, enterOffset:120,
+  reveal:0.18, press:0.08, pressScale:0.94, shake:0.25, shakeAmp:10, warnPeriod:0.8, overflow:0.4,
+  expand:0.35, rewind:0.25, dialog:0.2, dialogFrom:0.9, btnPress:0.08, btnRelease:0.15, btnScale:0.95,
+  countUp:1.2, confetti:1.2, confettiCount:40, burstCount:16, handPeriod:1.0, unlockPop:0.4, unlockGiftDelay:0.15,
+  revealDelay:1.0, revealDur:0.25,
+};
+// LitMotion eases used by the game, as CSS cubic-bezier
+const EASE = { Linear:'linear', OutQuad:'cubic-bezier(.25,.46,.45,.94)', InQuad:'cubic-bezier(.55,.085,.68,.53)',
+  OutBack:'cubic-bezier(.34,1.56,.64,1)', InBack:'cubic-bezier(.36,0,.66,-.56)', InOutSine:'cubic-bezier(.37,0,.63,1)', OutCubic:'cubic-bezier(.33,1,.68,1)' };
+const outQuad = t => 1 - (1-t)*(1-t);
+const P = new URLSearchParams(location.search);
+let reduced = false, slow = 1;
+const stage = document.getElementById('stage');
+const G = '../export/gameplay/', U = '../export/ui/';
+
+// ── scene ─────────────────────────────────────────────────────────────────────────────────────────
+const el = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; };
+const img = (src, x, y, w, h, extra='') => el(`<img class="s" src="${src}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;${extra}">`);
+const nine = (src, s, x, y, w, h, extra='') => el(`<div class="nine" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;border-style:solid;border-width:${s[1]}px ${s[2]}px ${s[3]}px ${s[0]}px;border-image:url(${src}) ${s[1]} ${s[2]} ${s[3]} ${s[0]} fill;${extra}"></div>`);
+const BOARD = {x:62, y:922};
+const TARGET_X = i => 40 + i*340, TARGET_CARD_Y = 320;
+const CELL = i => ({x: 74 + i*80, y: 680});
+let S; // scene handles
+
+function card(k, x, y, cover=false){
+  const c = el(`<div class="s" style="left:${x}px;top:${y}px;width:150px;height:216px"></div>`);
+  c.appendChild(img(`${G}card_face_${k}.png`, 0, 0, 150, 216));
+  if (cover) { c.firstChild.classList.add('cover'); c.appendChild(el('<div class="hatch"></div>')); }
+  return c;
+}
+function stack(x, y, cards, cover){
+  const g = el(`<div class="s" style="left:${BOARD.x+x}px;top:${BOARD.y+y}px;width:150px;height:${216+16*cards.length}px"></div>`);
+  for (let i = cards.length-1; i >= 1; i--) g.appendChild(img(`${G}card_under_${cards[i]}.png`, 0, i*16, 150, 214, cover?'filter:brightness(.68)':''));
+  const top = card(cards[0], 0, 0, cover); g.appendChild(top); g._top = top; g._cards = cards.slice();
+  return g;
+}
+function build(o = {}){
+  stage.innerHTML = '';
+  S = {targets:[], cells:[], stacks:[]};
+  // HUD
+  stage.appendChild(nine(`${U}pill_surface.png`, [50,0,50,0], 40, 70, 228, 104));
+  stage.appendChild(img(`${U}coin.png`, 54, 84, 68, 68));
+  stage.appendChild(S.coins = el(`<div class="txt" style="left:122px;top:92px;width:140px;font-size:44px">${o.coins ?? '9,999'}</div>`));
+  stage.appendChild(nine(`${U}pill_surface.png`, [50,0,50,0], 416, 70, 248, 104));
+  stage.appendChild(el(`<div class="txt" style="left:416px;top:92px;width:248px;font-size:44px">Level 23</div>`));
+  stage.appendChild(img(`${U}rbtn_secondary.png`, 800, 66, 104, 114)); stage.appendChild(img(`${U}icon_restart.png`, 826, 86, 52, 52));
+  stage.appendChild(img(`${U}rbtn_secondary.png`, 936, 66, 104, 114)); stage.appendChild(img(`${U}icon_pause.png`, 964, 88, 48, 48));
+  // targets: [color, filled]
+  (o.targets ?? [[0,2],[1,0],[2,1]]).forEach(([k,f], i) => {
+    const slot = el(`<div class="s" style="left:${TARGET_X(i)}px;top:200px;width:300px;height:400px"></div>`);
+    slot.appendChild(nine(`${G}target_slot_bg.png`, [44,50,44,48], 0, 0, 300, 408));
+    const pile = el('<div class="s" style="left:0;top:0;width:300px;height:400px"></div>'); slot.appendChild(pile);
+    for (let j=0;j<f;j++) pile.appendChild(img(`${G}card_face_${k}.png`, 75, 120 - j*34, 150, 216));
+    const base = img(`${G}target_base_${k}.png`, 35, 296, 230, 80); slot.appendChild(base);
+    const cnt = el(`<div class="txt" style="left:0;top:306px;width:300px;font-size:40px;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.25)">${f}/3</div>`); slot.appendChild(cnt);
+    stage.appendChild(slot); S.targets.push({slot, pile, base, cnt, k, f});
+  });
+  // buffer
+  const cap = o.cap ?? 12;
+  stage.appendChild(el(`<div class="txt" style="left:70px;top:606px;font-size:30px;color:var(--inkSoft);font-weight:600">Holding area</div>`));
+  stage.appendChild(S.bufCount = el(`<div class="txt" style="right:70px;top:606px;font-size:30px">${(o.buf ?? []).length} / ${cap}</div>`));
+  S.rail = nine(`${G}${o.warn ? 'buffer_rail_warn' : 'buffer_rail'}.png`, [56,56,56,56], 40, 650, 1000, 200); stage.appendChild(S.rail);
+  S.railWarn = nine(`${G}buffer_rail_warn.png`, [56,56,56,56], 40, 650, 1000, 200, 'opacity:0'); stage.appendChild(S.railWarn);
+  for (let i=0;i<cap;i++){ const c = CELL(i); const e = img(`${G}buffer_cell.png`, c.x, c.y, 66, 140); stage.appendChild(e); S.cells.push(e); }
+  S.buf = [];
+  (o.buf ?? []).forEach((k,i) => { const c = CELL(i); const e = img(`${G}card_mini_${k}.png`, c.x, c.y, 66, 146); stage.appendChild(e); S.buf.push({e,k}); });
+  // board
+  stage.appendChild(nine(`${G}tray_rim.png`, [56,56,56,70], 40, 900, 1000, 664));
+  stage.appendChild(nine(`${G}tray_inner.png`, [40,40,40,40], 62, 922, 956, 606));
+  (o.stacks ?? [[60,60,[1,1,4,0],0],[250,30,[5,5,2],1],[480,60,[2,2,2,3],0],[310,110,[0,0,1],0],[630,30,[4,3],1],[720,90,[3,0,0,5],0],[120,330,[5,1,1],0],[380,360,[1,2],0],[620,330,[4,4,0],0]])
+    .forEach(([x,y,c,cov]) => { const s = stack(x,y,c,cov); stage.appendChild(s); S.stacks.push(s); });
+  // boosters
+  [['icon_undo',250,'2'],['icon_space',660,null]].forEach(([ic,x,n]) => {
+    const t = el(`<div class="s" style="left:${x}px;top:1628px;width:170px;height:182px"></div>`);
+    t.appendChild(img(`${U}boost_tile.png`, 0, 0, 170, 182)); t.appendChild(img(`${U}${ic}.png`, 43, 43, 84, 84, 'filter:brightness(0) saturate(100%) invert(39%) sepia(80%) saturate(1500%) hue-rotate(345deg)'));
+    if (n) { t.appendChild(img(`${U}badge_primary.png`, 122, -16, 64, 70)); t.appendChild(el(`<div class="txt" style="left:122px;top:-10px;width:64px;font-size:36px;color:#fff">${n}</div>`)); }
+    stage.appendChild(t); (S.boost ??= []).push(t);
+  });
+}
+
+// ── tween helpers (Web Animations; mirrors what LitMotion does in game) ──────────────────────────
+const D = s => reduced ? 0 : s * 1000 * slow;
+function anim(e, frames, dur, ease='OutQuad', delay=0, opts={}) {
+  return e.animate(frames, {duration:D(dur), delay:reduced?0:delay*1000*slow, easing:EASE[ease], fill:'both', ...opts});
+}
+// card flight along a quadratic bezier arc (eased t, sampled into keyframes)
+function fly(e, from, to, dur, delay=0, {arc=MOTION.flyArc, tilt=MOTION.flyTilt, scaleTo=1, easeFn=outQuad}={}) {
+  const c = {x:(from.x+to.x)/2, y:Math.min(from.y,to.y) - arc}, f = [];
+  for (let i=0;i<=12;i++){ const t = easeFn(i/12), u = 1-t;
+    const x = u*u*from.x + 2*u*t*c.x + t*t*to.x, y = u*u*from.y + 2*u*t*c.y + t*t*to.y;
+    f.push({transform:`translate(${x-from.x}px,${y-from.y}px) rotate(${tilt*(1-t)*(i%2?1:1)}deg) scale(${1+(scaleTo-1)*t})`}); }
+  return e.animate(f, {duration:D(dur), delay:reduced?0:delay*1000*slow, easing:'linear', fill:'both'});
+}
+const pos = e => { const r = e.getBoundingClientRect(), s = stage.getBoundingClientRect(), k = 1080 / s.width; return {x:(r.left-s.left)*k, y:(r.top-s.top)*k}; };
+const wait = s => new Promise(r => setTimeout(r, D(s)));
+function float(src, x, y, w, h){ const e = img(src, x, y, w, h, 'z-index:20'); stage.appendChild(e); return e; }
+function burst(cx, cy, colorIdx, n=MOTION.burstCount){
+  const cols = ['#F2475B','#3D8BFF','#FFC93C','#3CC26B','#9B5CF6','#FF8A3D'];
+  for (let i=0;i<n;i++){ const a = i/n*Math.PI*2, d = 120 + (i%3)*40;
+    const p = el(`<div class="s" style="left:${cx-9}px;top:${cy-9}px;width:18px;height:18px;border-radius:6px;background:${cols[colorIdx]};z-index:21"></div>`); stage.appendChild(p);
+    anim(p, [{transform:'translate(0,0) scale(1)',opacity:1},{transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d}px) scale(.3)`,opacity:0}], .5, 'OutCubic'); }
+  const ring = float(`${U}ftue_ring.png`, cx-85, cy-85, 170, 170);
+  anim(ring, [{transform:'scale(.3)',opacity:1},{transform:'scale(1.4)',opacity:0}], .4, 'OutCubic');
+}
+
+// ── the animations (names = API, docs/design/animation-list.md) ──────────────────────────────────
+function replaceStack(i, cards){ const [x,y] = [parseFloat(S.stacks[i].style.left)-BOARD.x, parseFloat(S.stacks[i].style.top)-BOARD.y]; const n = stack(x, y, cards, false); n.style.zIndex = S.stacks[i].style.zIndex; S.stacks[i].replaceWith(n); S.stacks[i] = n; return n; }
+const A = {
+  async card_fly_to_target(){ build(); const s = S.stacks[0], t = S.targets[1];  // blue run of 2 → blue target
+    const from = pos(s._top); replaceStack(0, [4,0]);
+    for (let i=0;i<2;i++){ const c = float(`${G}card_face_1.png`, from.x, from.y + i*16, 150, 216);
+      fly(c, {x:from.x, y:from.y+i*16}, {x:TARGET_X(1)+75, y:200+120-i*34}, MOTION.fly, i*MOTION.flyStagger);
+      A._bumpLater(t, MOTION.fly + i*MOTION.flyStagger); }
+    t.cnt.textContent = '2/3'; },
+  _bumpLater(t, at){ anim(t.base, [{transform:'scaleY(1)'},{transform:`scaleY(${MOTION.landBumpScale})`},{transform:'scaleY(1)'}], MOTION.landBump, 'OutQuad', at, {fill:'none'}); },
+  async card_fly_to_buffer(){ build({buf:[3,3]}); const s = S.stacks[8]; const from = pos(s._top); replaceStack(8, [0]);
+    for (let i=0;i<2;i++){ const c = CELL(2+i); const e = float(`${G}card_face_4.png`, from.x, from.y+i*16, 150, 216);
+      fly(e, {x:from.x, y:from.y+i*16}, {x:c.x-42, y:c.y-38}, MOTION.toBuffer, i*MOTION.flyStagger, {scaleTo:0.44, tilt:-6});
+      setTimeout(() => { e.src = `${G}card_mini_4.png`; }, D(MOTION.toBuffer/2 + i*MOTION.flyStagger)); }
+    S.bufCount.textContent = '4 / 12'; },
+  async buffer_release(){ build({buf:[3,3,4,5], targets:[[0,2],[3,0],[2,1]]});
+    S.buf.slice(0,2).forEach((b,i) => { const c = CELL(i); fly(b.e, {x:c.x, y:c.y}, {x:TARGET_X(1)+117, y:200+150-i*34}, MOTION.release, i*MOTION.flyStagger, {scaleTo:1, arc:80}); });
+    await wait(MOTION.release + MOTION.flyStagger); A._compact(2); },
+  _compact(n){ S.buf.slice(n).forEach((b,i) => anim(b.e, [{transform:'translateX(0)'},{transform:`translateX(${-80*n}px)`}], MOTION.compact, 'OutQuad')); S.bufCount.textContent = `${S.buf.length-n} / 12`; },
+  async buffer_compact(){ build({buf:[3,3,4,5,5]}); S.buf.slice(0,2).forEach(b => b.e.style.opacity = 0); A._compact(2); },
+  async target_land_bump(){ build(); A._bumpLater(S.targets[0], 0); },
+  async target_complete(){ build(); const t = S.targets[0];
+    anim(t.pile, [{transform:'scale(1)'},{transform:`scale(${MOTION.completeOvershoot})`,offset:.35},{transform:'scale(0)'}], MOTION.complete, 'InOutSine');
+    anim(t.base, [{opacity:1},{opacity:0}], MOTION.complete, 'InQuad'); anim(t.cnt, [{opacity:1},{opacity:0}], MOTION.complete*.5, 'InQuad');
+    t.pile.style.transformOrigin = '150px 260px'; setTimeout(() => burst(TARGET_X(0)+150, 380, 0), D(MOTION.complete*.35)); },
+  async target_enter(){ build({targets:[[3,0],[1,0],[2,1]]}); const t = S.targets[0];
+    anim(t.slot, [{transform:`translateY(${-MOTION.enterOffset}px)`,opacity:0},{transform:'translateY(0)',opacity:1}], MOTION.enter, 'OutBack'); },
+  async stack_reveal(){ build(); const s = S.stacks[1]; const face = s._top.querySelector('img'), h = s._top.querySelector('.hatch');
+    s.querySelectorAll('img').forEach(i => anim(i, [{filter:'brightness(.68)'},{filter:'brightness(1)'}], MOTION.reveal, 'OutQuad'));
+    anim(h, [{opacity:1},{opacity:0}], MOTION.reveal, 'OutQuad'); s.style.zIndex = 5; S.stacks[3].style.opacity = 0; },
+  async stack_press(){ build(); const s = S.stacks[2]; s.style.transformOrigin = '75px 108px';
+    anim(s, [{transform:'scale(1)'},{transform:`scale(${MOTION.pressScale})`,offset:.4},{transform:'scale(1)'}], MOTION.press*2.5, 'OutQuad', 0, {fill:'none'}); },
+  async stack_shake_invalid(){ build(); const s = S.stacks[1]; const a = MOTION.shakeAmp;
+    anim(s, [0,-a,a,-a,a,-a,0].map(x => ({transform:`translateX(${x}px)`})), MOTION.shake, 'Linear', 0, {fill:'none'}); },
+  async buffer_warn_pulse(){ build({buf:[3,3,4,5,5,4,3,4,5,3], warn:false});
+    S.bufCount.style.color = '#D2402A'; S.bufCount.textContent = '10 / 12';
+    if (reduced) { S.railWarn.style.opacity = 1; return; }
+    S.railWarn.animate([{opacity:.35},{opacity:1},{opacity:.35}], {duration:MOTION.warnPeriod*1000*slow, iterations:Infinity, easing:EASE.InOutSine}); },
+  async buffer_overflow_bounce(){ build({buf:[3,3,4,5,5,4,3,1,5,4,0,4], warn:true}); const s = S.stacks[2]; const from = pos(s._top); replaceStack(2, [2,3]);
+    const e = float(`${G}card_face_2.png`, from.x, from.y, 150, 216);
+    e.animate([{transform:'translate(0,0) rotate(0)'},{transform:`translate(${520-from.x}px,${560-from.y}px) rotate(-10deg)`,offset:.55,easing:EASE.InQuad},
+               {transform:`translate(${560-from.x}px,${470-from.y}px) rotate(8deg)`}], {duration:D(MOTION.overflow), fill:'both', easing:'linear'});
+    anim(S.rail, [{transform:'translateY(0)'},{transform:'translateY(10px)',offset:.6},{transform:'translateY(0)'}], MOTION.overflow, 'OutQuad', 0, {fill:'none'}); },
+  async buffer_expand(){ build({buf:[3,3,4,5,5,4,3,1,5,4,0,4], warn:true}); // 12 → 16 cells, cells shrink to fit
+    const cap = 16, cw = 56, step = 960/cap;
+    S.cells.concat(S.buf.map(b=>b.e)).forEach(e => { const i = S.cells.includes(e) ? S.cells.indexOf(e) : S.buf.findIndex(b=>b.e===e);
+      anim(e, [{transform:'translateX(0) scaleX(1)'},{transform:`translateX(${(34+40+i*step)-(74+i*80)}px) scaleX(${cw/66})`}], MOTION.expand, 'OutBack'); });
+    for (let i=12;i<cap;i++){ const e = img(`${G}buffer_cell.png`, 74+i*step-40, 680, cw, 140); stage.appendChild(e);
+      anim(e, [{opacity:0,filter:'brightness(2)'},{opacity:1,filter:'brightness(1)'}], MOTION.expand, 'OutQuad', MOTION.expand*.5); }
+    S.rail.style.backgroundImage = ''; anim(S.rail, [{opacity:1}], .01); S.bufCount.textContent = '12 / 16'; S.bufCount.style.color='';
+    const n = nine(`${G}buffer_rail.png`, [56,56,56,56], 40, 650, 1000, 200, 'z-index:-0'); stage.insertBefore(n, S.rail); anim(S.rail, [{opacity:1},{opacity:0}], MOTION.expand, 'OutQuad'); },
+  async undo_rewind(){ build({targets:[[0,2],[1,2],[2,1]]}); const s = replaceStack(0, [4,0]); setTimeout(() => replaceStack(0, [1,1,4,0]), D(MOTION.rewind + MOTION.flyStagger));
+    const t = S.targets[1]; const from = pos(s._top); t.pile.innerHTML = ''; t.cnt.textContent = '0/3';
+    for (let i=0;i<2;i++){ const c = float(`${G}card_face_1.png`, TARGET_X(1)+75, 200+120-i*34, 150, 216);
+      fly(c, {x:TARGET_X(1)+75, y:320-i*34}, {x:from.x, y:from.y+i*16}, MOTION.rewind, (1-i)*MOTION.flyStagger, {tilt:-MOTION.flyTilt, arc:90}); } },
+  // UI
+  async dialog_show(){ build(); A._dialog('Paused'); },
+  _dialog(title, h=900){ const dim = el('<div class="dim" style="z-index:30"></div>'); stage.appendChild(dim);
+    const top = (1920-h)/2 + 40, p = el(`<div class="s" style="left:90px;top:${top}px;width:900px;height:${h}px;z-index:31;transform-origin:540px ${h/2}px"></div>`);
+    p.appendChild(nine(`${U}panel.png`, [70,70,70,88], 0, 0, 900, h)); p.appendChild(nine(`${U}ribbon_secondary.png`, [50,0,50,0], -30, -70, 960, 184));
+    p.appendChild(el(`<div class="txt" style="left:-30px;top:-34px;width:960px;font-size:76px;color:#fff;text-shadow:0 5px 0 rgba(0,0,0,.2)">${title}</div>`));
+    stage.appendChild(p); anim(dim, [{opacity:0},{opacity:1}], MOTION.dialog, 'Linear');
+    anim(p, [{transform:`scale(${MOTION.dialogFrom})`,opacity:0},{transform:'scale(1)',opacity:1}], MOTION.dialog, 'OutBack'); return p; },
+  async button_press(){ build(); const p = A._dialog('Paused'); await wait(MOTION.dialog);
+    const b = nine(`${U}btn_primary.png`, [64,60,64,74], 160, 180, 580, 164, 'transform-origin:290px 80px'); p.appendChild(b);
+    p.appendChild(el(`<div class="txt" style="left:160px;top:224px;width:580px;font-size:66px;color:#fff;pointer-events:none">Resume</div>`));
+    anim(b, [{transform:'scale(1)'},{transform:`scale(${MOTION.btnScale})`}], MOTION.btnPress, 'OutQuad', .3, {fill:'forwards'})
+      .finished.then(() => anim(b, [{transform:`scale(${MOTION.btnScale})`},{transform:'scale(1)'}], MOTION.btnRelease, 'OutBack')); },
+  async coin_count_up(){ build({coins:'9,969'}); const p = A._dialog('Level Complete!', 1100); await wait(MOTION.dialog);
+    for (let i=0;i<6;i++){ const c = float(`${U}coin.png`, 500, 1040, 80, 80); c.style.zIndex = 40;
+      fly(c, {x:500, y:1040}, {x:54, y:84}, .6, .1 + i*.08, {arc:200, tilt:0, scaleTo:.85}); }
+    const from = 9969, to = 9999, t0 = performance.now(), dur = D(MOTION.countUp);
+    const tick = () => { const t = dur ? Math.min(1, (performance.now()-t0)/dur) : 1; S.coins.textContent = Math.round(from + (to-from)*outQuad(t)).toLocaleString('en-US'); if (t < 1) requestAnimationFrame(tick); }; tick(); },
+  async win_confetti(){ build(); A._dialog('Level Complete!', 1100); const cols = ['#F2475B','#3D8BFF','#FFC93C','#3CC26B','#9B5CF6','#FF8A3D'];
+    if (reduced) return;
+    for (let i=0;i<MOTION.confettiCount;i++){ const x = 540 + (i%2?1:-1)*(80+i*9%300), e = el(`<div class="s" style="left:${x}px;top:420px;width:26px;height:44px;border-radius:8px;background:${cols[i%6]};z-index:30"></div>`);
+      stage.appendChild(e); const dx = (i%2?1:-1)*(150+(i*53)%380), up = 300+(i*37)%260;
+      e.animate([{transform:'translate(0,0) rotate(0)',opacity:1},{transform:`translate(${dx*.6}px,${-up}px) rotate(${180+i*20}deg)`,offset:.35},
+                 {transform:`translate(${dx}px,${700}px) rotate(${540+i*30}deg)`,opacity:.9}], {duration:MOTION.confetti*1000*slow, delay:(i%8)*30*slow, easing:'cubic-bezier(.2,.6,.4,1)', fill:'both'}); } },
+  async tutorial_hand_tap(){ build({targets:[[0,0],[1,0]], stacks:[[120,80,[0,0,0],0],[560,80,[1,1,1],0],[120,360,[1,1,1],0],[560,360,[0,0,0],0]]});
+    const hand = float(`${U}hand_pointer.png`, 250, 1140, 150, 172), ring = float(`${U}ftue_ring.png`, 180, 1030, 170, 170);
+    if (reduced) { ring.style.opacity = .85; return; }
+    const it = {duration:MOTION.handPeriod*1000*slow, iterations:Infinity};
+    hand.animate([{transform:'translate(0,0) scale(1)'},{transform:'translate(-10px,-14px) scale(.92)',offset:.3},{transform:'translate(0,0) scale(1)',offset:.6},{transform:'translate(0,0) scale(1)'}], {...it, easing:EASE.InOutSine});
+    ring.animate([{transform:'scale(.4)',opacity:0},{transform:'scale(.4)',opacity:.9,offset:.3},{transform:'scale(1.2)',opacity:0}], {...it, easing:EASE.OutCubic}); },
+  async unlock_icon_pop(){ build(); const p = A._dialog('New booster: Undo!', 980); await wait(MOTION.dialog);
+    const h = img(`${U}icon_holder.png`, 320, 170, 260, 272, 'transform-origin:130px 136px'); p.appendChild(h);
+    const ic = img(`${U}icon_undo.png`, 370, 216, 160, 160, 'filter:brightness(0) saturate(100%) invert(39%) sepia(80%) saturate(1500%) hue-rotate(345deg);transform-origin:80px 80px'); p.appendChild(ic);
+    const g = nine(`${U}badge.png`, [32,0,32,0], 500, 380, 120, 70, 'transform-origin:60px 35px'); p.appendChild(g);
+    p.appendChild(el(`<div class="txt" style="left:500px;top:384px;width:120px;font-size:50px;color:#fff">x2</div>`));
+    [h, ic].forEach(e => anim(e, [{transform:'scale(0)'},{transform:'scale(1)'}], MOTION.unlockPop, 'OutBack'));
+    anim(g, [{transform:'scale(0)'},{transform:'scale(1.25)',offset:.6},{transform:'scale(1)'}], MOTION.unlockPop*.6, 'OutQuad', MOTION.unlockGiftDelay + MOTION.unlockPop*.5); },
+  async delayed_reveal(){ build(); const p = A._dialog('Out of space!', 1000);
+    const t = el(`<div class="txt" style="left:0;top:860px;width:900px;font-size:44px;color:var(--inkSoft);font-weight:600">No thanks</div>`); p.appendChild(t);
+    anim(t, [{opacity:0},{opacity:1}], MOTION.revealDur, 'Linear', MOTION.revealDelay); },
+};
+
+// ── UI ────────────────────────────────────────────────────────────────────────────────────────────
+const GROUPS = {Gameplay:['card_fly_to_target','card_fly_to_buffer','buffer_release','buffer_compact','target_land_bump','target_complete','target_enter',
+  'stack_reveal','stack_press','stack_shake_invalid','buffer_warn_pulse','buffer_overflow_bounce','buffer_expand','undo_rewind'],
+  UI:['dialog_show','button_press','coin_count_up','win_confetti','tutorial_hand_tap','unlock_icon_pop','delayed_reveal']};
+const list = document.getElementById('list');
+let current = null;
+function play(name){ current = name; document.querySelectorAll('#list button').forEach(b => b.classList.toggle('on', b.textContent === name)); A[name](); }
+for (const [g, names] of Object.entries(GROUPS)) { list.appendChild(el(`<h2>${g}</h2>`)); names.forEach(n => { const b = el(`<button>${n}</button>`); b.onclick = () => play(n); list.appendChild(b); }); }
+document.getElementById('reduced').onchange = e => { reduced = e.target.checked; if (current) play(current); };
+document.getElementById('slow').onchange = e => { slow = e.target.checked ? 4 : 1; if (current) play(current); };
+const CAPTURE = P.get('capture') !== null; // screenshot mode: no side panel, stage fills the window
+if (CAPTURE) { document.getElementById('ui').style.display = 'none'; Object.assign(stage.style, {position:'fixed', left:'0', top:'0', transformOrigin:'0 0'}); }
+function fit(){ if (CAPTURE) { stage.style.transform = `scale(${(+P.get('capture') || innerWidth)/1080})`; return; }
+  const w = document.getElementById('wrap'), k = Math.min(w.clientWidth/1080, w.clientHeight/1920) * .96; stage.style.transform = `scale(${k})`; }
+addEventListener('resize', fit); fit();
+// ?anim=name&t=sec&reduced=1 → freeze at t for screenshots
+if (P.get('reduced')) { reduced = true; document.getElementById('reduced').checked = true; }
+const startAnim = P.get('anim') || 'card_fly_to_target';
+play(startAnim);
+if (P.get('t') !== null) { const t = +P.get('t') * 1000; setTimeout(() => document.getAnimations().forEach(a => { a.pause(); a.currentTime = Math.min(t, (a.effect.getComputedTiming().endTime ?? t)); }), 250); }
+</script>
+</body>
+</html>

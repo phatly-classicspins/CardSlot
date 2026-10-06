@@ -100,3 +100,15 @@ Ghi chú: thay cho `art/source/*.psd` của quy trình, file nguồn là SVG nhi
 
 ### D-020 · 06-10-2026 · Bước 3 · Duyệt art
 Quyết định: art v1 (71 sprite, `art/export/report.md` 0 lỗi chặn) và quy ước đặt tên sprite/layer trong `art/README.md` được duyệt, đóng cổng Bước 3 — người chốt: Phat
+
+### D-021 · 06-10-2026 · Bước 4 · Animation, hiệu ứng, âm thanh
+Câu hỏi và quyết định (người chốt: Phat):
+- Tool: a) tween bằng code (LitMotion, đã có trong framework, MIT) + ParticleSystem qua `EffectService` · b) Spine → **a**. Không thêm runtime, không cần license.
+- Phạm vi MVP: a) P0 + P1 (21 mục trong `animation-list.md`) · b) cả P2 · c) chỉ P0 → **a**. P2 để sau.
+- "Tắt animation": a) code sẵn (mọi animation nhảy tới pose cuối khi bật cờ config `motion.reduced`), chưa có công tắc trong Settings · b) thêm công tắc (CR) → **a**. GDD và mock-up không đổi.
+- Âm thanh: để sau — MVP chưa có âm thanh; vẫn gắn `AudioKey` theo GDD §9, file thêm trước Bước 8 (ghi chép license lúc đó).
+Ảnh hưởng: Bước 4 giao spec + token chuyển động + trang xem thử; gắn vào Unity ở Bước 6 (cổng "chạy đúng trong runtime" kiểm ở đó).
+
+### D-022 · 06-10-2026 · Bước 4 · Duyệt animation
+Quyết định: `animation-list.md` v1.0 (21 animation P0+P1, 2 prefab hạt, token chuyển động) và cảm giác trong `art/motion/preview.html` được duyệt — người chốt: Phat
+Ghi chú: cổng "chạy đúng trong runtime" của Bước 4 chuyển sang kiểm ở Bước 6 (animation là code trong `Game.Views`).
