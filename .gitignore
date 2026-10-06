@@ -1,0 +1,77 @@
+# =============== #
+# Unity generated #
+# =============== #
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+/ProfilerCaptures/
+/UserSettings/
+
+# ===================================== #
+# Visual Studio / Rider generated       #
+# ===================================== #
+.vs/
+.idea/
+ExportedObj/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.unityproj
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# ============ #
+# OS generated #
+# ============ #
+.DS_Store
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ================================== #
+# PrototypeFramework (SKU)           #
+# ================================== #
+ServerData/
+.utmp/
+Assets/AddressableAssetsData/ProfileDataSourceSettings.asset
+Assets/AddressableAssetsData/ProfileDataSourceSettings.asset.meta
+ProjectSettings/ScriptableBuildPipeline.json
+SkuHeadlessTests/bin/
+SkuHeadlessTests/obj/
+!SkuHeadlessTests/*.csproj
+
+# ================================== #
+# BMAD                               #
+# ================================== #
+.bmad-loop/runs/
+.bmad-loop/cache/
+.bmad-loop/policy.toml
+_bmad/render/
+.claude/.story-automator-active
+.claude/settings.local.json
+__pycache__/
+*.pyc
+
+# >>> PrototypeFramework agent-doc sync (PrototypeFramework 0.4.2) — edits inside this block are overwritten by Framework/Agent Docs/Sync (editor) or Tools/Build/pf-build.sh agentdocs.
+# Output the framework's Tools/pf/ gates write inside the repo — regenerated on every run, never source.
+# UiGate captures differ by GPU and are rewritten by the capture harness; Tools/UiGate/probes/ IS source.
+Tools/UiGate/captures/
+# `dotnet test` TRX and --blame-hang sequence XML: one machine's run of the engine-free suite.
+SkuHeadlessTests/TestResults/
+# CPython bytecode from importing a Tools/pf/ or Tools/bmad/ script to unit-test it.
+__pycache__/
+*.pyc
+# <<< PrototypeFramework agent-doc sync
