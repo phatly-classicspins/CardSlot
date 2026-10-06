@@ -1,0 +1,105 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2392568571341344333
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4931564876361259932}
+  - component: {fileID: 7176517039845872865}
+  m_Layer: 0
+  m_Name: BoardView
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &4931564876361259932
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2392568571341344333}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &7176517039845872865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2392568571341344333}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75e6ac724fc17d240807c625c3d97110, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Views::Game.Views.BoardView
+  _cardFace:
+  - {fileID: 21300000, guid: 06fcd4730a29fe44a973ccc852226fc7, type: 3}
+  - {fileID: 21300000, guid: b8a3f32a1880fd044a984c7358bfebcf, type: 3}
+  - {fileID: 21300000, guid: bb2f485635089584fb6dc199dab38113, type: 3}
+  - {fileID: 21300000, guid: 19154161000247a4e810a140bf285ccf, type: 3}
+  - {fileID: 21300000, guid: c58f022a4d2fda04ca544faa88d10fec, type: 3}
+  - {fileID: 21300000, guid: 4085bb68b91dcc24c9c4915615c7821a, type: 3}
+  _cardUnder:
+  - {fileID: 21300000, guid: 4294c71a67c29bc429a38c9a62b4f80e, type: 3}
+  - {fileID: 21300000, guid: 2ca830cb4ecb0cb41974c1d9a8eedeaf, type: 3}
+  - {fileID: 21300000, guid: 803d99c23fde16f4eb78d0f31187dc2b, type: 3}
+  - {fileID: 21300000, guid: a66fe721576addc4291595f535d2cdc6, type: 3}
+  - {fileID: 21300000, guid: 9914adccbd757404692a40df43b25475, type: 3}
+  - {fileID: 21300000, guid: 6f4c0573f5622d6458f163e4ad4e2fc5, type: 3}
+  _cardMini:
+  - {fileID: 21300000, guid: f37d9e5958f81aa4a8c2d18f853cc1c0, type: 3}
+  - {fileID: 21300000, guid: e99e21cfc5110cc4fbec8082d861cba0, type: 3}
+  - {fileID: 21300000, guid: 3db59c5119e04bc4b9425fff99671791, type: 3}
+  - {fileID: 21300000, guid: 1bf1b91cd0ba25e46b6f574a3b590cb6, type: 3}
+  - {fileID: 21300000, guid: d2959e9bb36b9704d84f23b78de5f33e, type: 3}
+  - {fileID: 21300000, guid: d4e2fcffedaa1eb428e7f2d5f7886fcf, type: 3}
+  _chip:
+  - {fileID: 21300000, guid: 41419ea10e520f74ea3b7e7297230dad, type: 3}
+  - {fileID: 21300000, guid: 203f1ab963c49f545a5147ee478c3d20, type: 3}
+  - {fileID: 21300000, guid: e1902247e9602914f9a58e75c108c0fa, type: 3}
+  - {fileID: 21300000, guid: 83a36d9f1bd14b247943d89513b3e162, type: 3}
+  - {fileID: 21300000, guid: a1af7cc901c69b6419a79ab801512360, type: 3}
+  - {fileID: 21300000, guid: b0615db34ccc21840ad50430a09e490c, type: 3}
+  _targetBase:
+  - {fileID: 21300000, guid: 130c98c878bcf25499870b9e244e0a71, type: 3}
+  - {fileID: 21300000, guid: 36a646ac691fea54fb6fe618b5e93652, type: 3}
+  - {fileID: 21300000, guid: 58a2e4ebc1fb4e24a9025dc2e100c80e, type: 3}
+  - {fileID: 21300000, guid: bb7a5a4908e5e194bb601bbf29698fd8, type: 3}
+  - {fileID: 21300000, guid: effd393d327cce34e87936e85b54857e, type: 3}
+  - {fileID: 21300000, guid: ed81ccbcc8a376442ae958ce661d9e52, type: 3}
+  _hatch: {fileID: 21300000, guid: f055a2ffcbf01054ca4958d829464616, type: 3}
+  _targetSlot: {fileID: 21300000, guid: d4720268e1ed5574e947a67ffead56fe, type: 3}
+  _trayRim: {fileID: 21300000, guid: 4dcffe6eae820b342a284f23b9bf647c, type: 3}
+  _trayInner: {fileID: 21300000, guid: 8c4454333dbbe114da74cb304d5a0306, type: 3}
+  _bufferRail: {fileID: 21300000, guid: 603f53eeec5f64b4fb72175eb30029f9, type: 3}
+  _bufferRailWarn: {fileID: 21300000, guid: 679c3dcef5d326c46ae1c23c5b8bd4ee, type: 3}
+  _bufferCell: {fileID: 21300000, guid: 3a73f9791cb295249b2292c248ff0f87, type: 3}
+  _bufferCellWarn: {fileID: 21300000, guid: 9b28a0a339ed208468e8af39aa67c148, type: 3}
+  _ground: {fileID: 21300000, guid: 7daf6d21ddc4bfe41afc08f48f3a2b02, type: 3}
+  _pill: {fileID: 21300000, guid: 89248605d5aaabb4b9fcd279a36b9e49, type: 3}
+  _roundButton: {fileID: 21300000, guid: fd0f129d418b9de459ac9f95f27a4464, type: 3}
+  _iconPause: {fileID: 21300000, guid: 95ad5b0d56320414a9e4f5d23f9bb01d, type: 3}
+  _coin: {fileID: 21300000, guid: 1573b3c2b977d904da27d39b6ab43606, type: 3}
+  _iconRestart: {fileID: 21300000, guid: 606e3b01f5de1a249b13ff50e28f6185, type: 3}
+  _panel: {fileID: 21300000, guid: a3ca6b52183c40b4aa9d0de8751f3b41, type: 3}
+  _ribbon: {fileID: 21300000, guid: 59fca8db0be128d469eba55f3afa4c4a, type: 3}
+  _ribbonDanger: {fileID: 21300000, guid: 9815f16050f3d3e43afb12aeb0b6cdea, type: 3}
+  _buttonPrimary: {fileID: 21300000, guid: 33684b627971d3e4eb6519afd883a092, type: 3}
+  _badge: {fileID: 21300000, guid: 3c0f0ac6a69ae0740b7da74d4812b3f4, type: 3}
+  _font: {fileID: 11400000, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}

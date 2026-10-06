@@ -1,0 +1,22 @@
+{
+  "gameplay.buffer_count": "{0} / {1}",
+  "gameplay.count": "{0}/{1}",
+  "gameplay.hard": "HARD",
+  "gameplay.holding_area": "Holding area",
+  "gameplay.level": "Level {0}",
+  "gameplay.next": "next",
+  "home.more_soon": "More levels coming soon",
+  "home.play": "Level {0}",
+  "home.tagline": "Tap. Match. Clear!",
+  "home.title": "CardSlot",
+  "lose.home": "Home",
+  "lose.retry": "Retry",
+  "lose.subtitle": "Level {0}",
+  "lose.title": "Out of space!",
+  "win.home": "Home",
+  "win.next": "Next",
+  "win.play_again": "Play again",
+  "win.subtitle": "Level {0}",
+  "win.title": "Level Complete!",
+  "win.title_hard": "Hard Level Cleared!"
+}

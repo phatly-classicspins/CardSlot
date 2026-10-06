@@ -10,7 +10,7 @@ Người duyệt: Thiết kế Phat · Hình ảnh Phat · Art Phat · Kỹ thu�
 | 3 Art | xong | art v1: 71 sprite (`art/export/`), báo cáo xuất 0 lỗi chặn | Phat, 06-10-2026 | |
 | 4 Animation | xong (gắn Unity ở Bước 6) | animation-list v1.0 (21 animation), `art/motion/preview.html` | Phat, 06-10-2026 | |
 | 5 Logic | xong | GDD v1.2, code Board/Meta, 30 level, level-report, architecture-notes, 135 test | Phat, 06-10-2026 | |
-| 6 Ráp | đang làm (mốc 6a) | | |
+| 6 Ráp | đang làm — CR-003: bàn chơi chuyển sang 3D (mock-up 3D trước) | | |
 | 7 AI test | chưa bắt đầu | | |
 | 8 Máy thật/Chơi thử/Phát hành | chưa bắt đầu | | |
 
@@ -27,6 +27,7 @@ Người duyệt: Thiết kế Phat · Hình ảnh Phat · Art Phat · Kỹ thu�
 - [x] Animation v1.0 đã duyệt — D-022
 - [x] Application Control: Phat đã cho phép (06-10-2026), `dotnet test` chạy lại được
 - [x] Bước 5 đã duyệt — D-024
+- [ ] Duyệt mock-up 3D (góc camera, cảm giác) — CR-003
 
 ## Việc tiếp theo (theo thứ tự)
 1. ~~Đóng Unity → sửa `Packages/manifest.json` (scoped registry OpenUPM + framework + Unity-MCP IvanMurzak).~~ xong 06-10-2026
@@ -41,15 +42,17 @@ Người duyệt: Thiết kế Phat · Hình ảnh Phat · Art Phat · Kỹ thu�
 10. ~~Bước 3 Art~~ xong 06-10-2026 (D-019, D-020)
 11. ~~Bước 4 Animation~~ xong 06-10-2026 (D-021, D-022); gắn vào Unity ở Bước 6.
 12. ~~Bước 5 Logic~~ xong 06-10-2026 (CR-002, D-023, D-024)
-13. Bước 6 Ráp, chia mốc: **6a** chơi được trong Editor → 6b đủ tính năng (dialog, kinh tế, save, FTUE) → 6c hoàn thiện (animation, hạt, LocKey, token) → 6d APK Android (tuỳ chọn, cần Android Build Support).
+13. Bước 6 Ráp: 6a (2D tạm) đã commit → **CR-003 3D**: mock-up 3D (2–3 góc camera) → duyệt → View bàn chơi 3D thay BoardView 2D → 6b đủ tính năng → 6c hoàn thiện → 6d APK (tuỳ chọn).
 
 ## Ghi chú kỹ thuật đang mở
 - Boot báo `[Localization] no bundled JSON for locale 'en'` và `no bundled products.json` — đúng với SKU mới chưa có nội dung; xử lý khi thêm LocKey / catalog đầu tiên.
 
 ## Phiên gần nhất
+06-10-2026 (10) · Bước 5 đóng (D-024, commit 5caed5c). Mốc 6a: thêm screen Gameplay (manifest + Scaffold.Sync ×2), `DesignTokens.cs`, View `BoardView`/`HomeView`/`UiKit` (uGUI dựng lúc chạy, chạm qua EventSystem), `LevelCatalog` + `AddressableLevelSource`, port `ILevelSource`, `InMemoryProgressStore`, controller `GameplayScreen`/`MainScreen`, đăng ký ở root; tool editor `CardSlot/Content/Build` (71 sprite → Content/Sprites, viền 9-slice, 3 prefab → Addressables + AssetKeys); `loc.csv` 20 key → LocKeys + en.json · bằng chứng: Unity compile 0 `error CS`; `dotnet test` 135 pass; play mode 3 lần (lần 1 nhầm scene Gameplay đang mở; lần 2 boot → Home → Gameplay L1, phát hiện NullReference ở thẻ kết quả (hai Graphic trên một GameObject) → sửa; lần 3 L1 thắng → thẻ thắng → Next → L2); ảnh chụp 1080×1920 ở `docs/captures/6a/`; Doctor 10/10 xanh · chưa kiểm tra: thẻ thua (không tái hiện được ở L1–L2), máy 9:20, chạm bằng chuột thật (chạm giả lập qua TapRelay) · đã biết: xu được framework lưu đĩa còn tiến trình 6a chỉ trong bộ nhớ → mỗi lần play cộng lại 100 xu khởi đầu (6b sửa); chưa có hiệu ứng, chưa có Undo/Extra Space/Continue, nút Pause tạm về Home, font tạm LiberationSans · đã commit làm nền (CR-003).
+
 06-10-2026 (9) · Phat gỡ chặn Application Control. `dotnet test SkuHeadlessTests`: 135 pass, 1 skip (LevelGenSweep, [Slow]); chạy sweep lần 3 (`PF_RUN_SLOW=1`, ~10 s): 30 level, không level nào lệch đường cong > 0.12; chạy lại test → 135 pass trên bộ level mới; Unity refresh: code mới vào đúng Game.Domain/Application/Infrastructure, không có trong Assembly-CSharp, Editor.log 0 `error CS`; viết `docs/design/architecture-notes.md` · chưa kiểm tra: Doctor sau thay đổi (không đổi spine); EditMode tests (không có thay đổi Editor-side); chơi thử level (Bước 6) · đã duyệt (D-024), đã commit.
 
-06-10-2026 (8) · Bước 4 đóng (D-022, commit ab6457e). Bước 5: CR-002 (4 chỗ trống của GDD → v1.2) + D-023 (save qua IUserData, xu/booster qua IWalletService, level do AI sinh + chọn, test đủ); code `Features/Board/Domain` (LevelData, LevelValidator, BoardModel R-1…R-18, LevelSolver, LevelGenerator), `Features/Board/Infrastructure/LevelJson.cs`, `Features/Meta/Application` (ProgressModel/SettingsModel, IProgressStore, EconomyTuning, LevelProgressService, BoosterService, AdPacing); test `SkuHeadlessTests/{Board,Meta,Levels}`; sinh level bằng test [Slow] `LevelGenSweep` (DLL tool riêng bị Windows chặn → Phat chọn chạy như test Slow) · bằng chứng: `dotnet test SkuHeadlessTests` 73/73 pass (trước khi thêm Levels/); sweep lần 2 sinh 30 level, cả 30 được solver chứng minh thắng được, ~9 s · chưa kiểm tra: `ShippedLevelTests` chưa chạy lần nào; sweep với tham số chỉnh lần 3 chưa chạy (L3, L6 D=0; L5 level khó D=0.12, muốn 0.45; L9 0.55, muốn 0.35); Unity chưa compile code mới (chưa refresh Editor); IProgressStore chưa có adapter IUserData (Bước 6) · **chặn:** từ lần build thứ 3, Windows Application Control chặn DLL test → không chạy được `dotnet test` · chưa commit.
+06-10-2026 (8) · Bước 4 đóng (D-022, commit ab6457e). Bước 5: CR-002 (4 chỗ trống của GDD → v1.2) + D-023 (save qua IUserData, xu/booster qua IWalletService, level do AI sinh + chọn, test đủ); code `Features/Board/Domain` (LevelData, LevelValidator, BoardModel R-1…R-18, LevelSolver, LevelGenerator), `Features/Board/Infrastructure/LevelJson.cs`, `Features/Meta/Application` (ProgressModel/SettingsModel, IProgressStore, EconomyTuning, LevelProgressService, BoosterService, AdPacing); test `SkuHeadlessTests/{Board,Meta,Levels}`; sinh level bằng test [Slow] `LevelGenSweep` (DLL tool riêng bị Windows chặn → Phat chọn chạy như test Slow) · bằng chứng: `dotnet test SkuHeadlessTests` 73/73 pass (trước khi thêm Levels/); sweep lần 2 sinh 30 level, cả 30 được solver chứng minh thắng được, ~9 s · chưa kiểm tra: `ShippedLevelTests` chưa chạy lần nào; sweep với tham số chỉnh lần 3 chưa chạy (L3, L6 D=0; L5 level khó D=0.12, muốn 0.45; L9 0.55, muốn 0.35); Unity chưa compile code mới (chưa refresh Editor); IProgressStore chưa có adapter IUserData (Bước 6) · **chặn:** từ lần build thứ 3, Windows Application Control chặn DLL test → không chạy được `dotnet test` · đã commit làm nền (CR-003).
 
 06-10-2026 (7) · Bước 3 đóng (D-020, commit 79bb255). Bước 4: D-021 (tween LitMotion + particle, P0+P1, cờ `motion.reduced` chưa có công tắc, âm thanh để sau); `docs/design/animation-list.md` v0.2 (21 animation + 2 prefab hạt + token chuyển động); `art/motion/preview.html` · bằng chứng: chụp 42 khung (0.15 s và pose cuối) bằng Edge headless, đã xem cả hai contact sheet; sửa 2 lỗi của trang (khung chụp lệch; chồng không lộ lá còn lại sau khi run bay đi) · chưa kiểm tra: chưa chạy trong Unity/LitMotion (Bước 6), chưa xem trên máy thật, chưa có âm thanh · đã duyệt (D-022), đã commit.
 

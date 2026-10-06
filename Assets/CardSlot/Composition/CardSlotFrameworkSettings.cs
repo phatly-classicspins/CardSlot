@@ -36,6 +36,22 @@ namespace Game.Composition
             builder.RegisterInstance(ConfigDefaults.Empty);
 
             InstallBoot(builder);
+            InstallGame(builder);
+        }
+
+        /// <summary>
+        /// Session-long game services shared by Home and Gameplay (D-023). 6a keeps progress in memory
+        /// (<see cref="InMemoryProgressStore"/>); 6b swaps in the adapter over <c>IUserData</c> and moves
+        /// <see cref="EconomyTuning"/> onto config keys.
+        /// </summary>
+        private static void InstallGame(IContainerBuilder builder)
+        {
+            builder.RegisterInstance(new EconomyTuning());
+            builder.Register<InMemoryProgressStore>(Lifetime.Singleton).As<IProgressStore>();
+            builder.Register<LevelProgressService>(Lifetime.Singleton);
+            builder.Register<BoosterService>(Lifetime.Singleton);
+            builder.Register<AdPacing>(Lifetime.Singleton);
+            builder.Register<AddressableLevelSource>(Lifetime.Singleton).As<Game.Presentation.ILevelSource>();
         }
 
         /// <summary>

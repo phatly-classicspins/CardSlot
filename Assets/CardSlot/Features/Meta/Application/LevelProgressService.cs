@@ -42,6 +42,7 @@ namespace Game.Application
         }
 
         public int CurrentLevel => _store.Progress.CurrentLevel;
+        public int HighestCleared => _store.Progress.HighestCleared;
         public bool IsUnlocked(BoosterId id) => _store.Progress.UnlockedBoosters.Contains(id.ToString());
 
         /// <summary>Grant the starting coins once per install. Returns false if saving failed (rolled back).</summary>

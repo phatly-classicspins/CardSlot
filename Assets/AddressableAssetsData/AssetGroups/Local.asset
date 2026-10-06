@@ -15,8 +15,28 @@ MonoBehaviour:
   m_GroupName: Local
   m_GUID: 79ed3d86cbd731344a35813f5fb6493a
   m_SerializeEntries:
+  - m_GUID: 3d2c6df56612a46458071536c18280e1
+    m_Address: Content/LevelCatalog
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6c25accb319c64b5a97b19668f16b0b9
     m_Address: PF/DialogDim
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7af468260e18ef64d8a83ba66a3c0aac
+    m_Address: Gameplay/BoardView
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 87bbe36ea12063d49a8626ef6cd728a7
+    m_Address: Home/HomeView
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 97928457d60d3194a8bbe415b2dae9cb
+    m_Address: Scenes/Gameplay
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

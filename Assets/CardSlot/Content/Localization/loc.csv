@@ -1,0 +1,21 @@
+key,en
+home.title,CardSlot
+home.tagline,Tap. Match. Clear!
+home.play,Level {0}
+home.more_soon,More levels coming soon
+gameplay.level,Level {0}
+gameplay.hard,HARD
+gameplay.count,{0}/{1}
+gameplay.holding_area,Holding area
+gameplay.buffer_count,{0} / {1}
+gameplay.next,next
+win.title,Level Complete!
+win.title_hard,Hard Level Cleared!
+win.subtitle,Level {0}
+win.next,Next
+win.home,Home
+win.play_again,Play again
+lose.title,Out of space!
+lose.subtitle,Level {0}
+lose.retry,Retry
+lose.home,Home

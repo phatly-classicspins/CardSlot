@@ -131,3 +131,12 @@ Quyết định (người chốt: Phat):
 ### D-024 · 06-10-2026 · Bước 5 · Duyệt logic và level
 Quyết định: code luật/meta, 30 level (`level-report.md`, không level nào lệch đường cong > 0.12) và `architecture-notes.md` được duyệt, đóng cổng Bước 5 — người chốt: Phat
 Ghi chú: Bước 6 chia mốc 6a (chơi được trong Editor) → 6b (đủ tính năng) → 6c (hoàn thiện) → 6d (APK, tuỳ chọn).
+
+### CR-003 · phát sinh ở Bước 6 (mốc 6a) · ảnh hưởng D-011, mock-up gameplay v01 (Bước 2), art v1 (Bước 3), animation (Bước 4)
+Vấn đề: Phat cho biết game là **3D**, trong khi D-011 chốt "đồ chơi 3D-look" (art 2D) và mọi đầu ra đã duyệt làm theo hướng đó.
+Quyết định (người chốt: Phat):
+- Mức 3D: a) **bàn chơi 3D thật** (lá, chồng, đích, khay, ô tạm là vật thể 3D, camera nhìn nghiêng từ trên, ánh sáng + bóng), **HUD / Home / dialog giữ 2D uGUI** · b) toàn bộ 3D · c) 2.5D → **a**.
+- Nguồn model: a) **AI dựng mesh bằng code trong Unity** (khối đơn giản, màu từ design token) · b) Blender + pf-model-gen · c) artist FBX → **a**.
+- Làm mock-up 3D trước: render thử 1 level với 2–3 góc camera ở 1080×1920 để duyệt → mock-up gameplay lên v02.
+- Mốc 6a commit làm nền: luồng màn hình, nạp level, controller, HUD, thẻ kết quả dùng lại; chỉ `BoardView` 2D sẽ được thay bằng View 3D.
+Ảnh hưởng: D-011 đổi thành "đồ chơi 3D sáng — bàn chơi 3D thật, UI 2D"; mock-up gameplay*, win/lose nền bàn chơi → v02; art: sprite UI giữ, thêm mesh 3D cho bàn chơi (sprite bàn chơi 2D chỉ còn là tham chiếu màu); animation: danh sách và token giữ nguyên, đường bay/hạt tính trong không gian 3D. Luật, level, kinh tế, save (Bước 5) không đổi.
