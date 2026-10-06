@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CardSlot art source</title>
+<!--
+  Art source for CardSlot (D-019). Every exported sprite is defined below as an SVG built from the
+  design tokens (docs/design/design-tokens.md). Each <g id="..."> is one layer. Do not hand-edit the
+  generated SVGs in art/source/svg/ — edit this file and run art/tools/build-art.ps1 (G12).
+  Text is never baked into a sprite (Bước 3 rule): labels are live TMP text in the game.
+-->
+<style>
+  html,body{margin:0;background:transparent}
+  #sheet{position:relative;width:2048px}
+  /* overflow visible: anything drawn outside an asset's box lands in the gap, where the
+     "clipped at canvas edge" check (build-art.ps1) finds it */
+  #sheet svg{position:absolute;display:block;overflow:visible}
+</style>
+</head>
+<body>
+<div id="sheet"></div>
+<script id="manifest" type="application/json"></script>
+<script>
+// ── Tokens (mirror of docs/design/design-tokens.md v1.0) ──────────────────────────────────────────
+const T = {
+  surface:'#FFF8EC', sunken:'#F2C68C', trayRim:'#B9733A', trayInner:'#F6CF98', rail:'#C98B52',
+  ink:'#5A3415', primary:'#21B8A6', primaryEdge:'#138A7B', secondary:'#E8613C', secondaryEdge:'#B7411F',
+  danger:'#E2604A', dangerEdge:'#B7411F', dangerCell:'#F6B3A4', disabled:'#CDBFAE', disabledEdge:'#A8977F',
+  groundTop:'#FFF6E6', groundBottom:'#FFD9A8', toggleOff:'#BBA993',
+  cards:[['#F2475B','#B92639'],['#3D8BFF','#1F5FCC'],['#FFC93C','#D99A0B'],['#3CC26B','#22924A'],['#9B5CF6','#6C35C4'],['#FF8A3D','#D35F14']],
+};
+const EMBLEM = [ // 100×100 paths: heart, drop, star, leaf, moon, circle (glossary color_0..5)
+  'M50 88 12 50C-2 34 8 10 28 10c10 0 17 6 22 14 5-8 12-14 22-14 20 0 30 24 16 40z',
+  'M50 6C50 6 16 46 16 64a34 34 0 0 0 68 0C84 46 50 6 50 6z',
+  'm50 5 13 29 31 3-23 21 7 31-28-16-28 16 7-31L6 37l31-3z',
+  'M86 10C40 8 10 30 12 70l-6 20 8 2 6-16c40 6 66-24 66-66zM30 70c10-20 26-34 44-44-16 14-30 28-40 48z',
+  'M62 6a44 44 0 1 0 32 66A36 36 0 0 1 62 6z',
+  'M50 10a40 40 0 1 0 0.001 0z'];
+const COLOR_NAMES = ['red','blue','yellow','green','purple','orange'];
+
+// ── helpers ───────────────────────────────────────────────────────────────────────────────────────
+const hex = h => [1,3,5].map(i => parseInt(h.slice(i,i+2),16));
+const mix = (a, b, t) => '#' + hex(a).map((v,i) => Math.round(v + (hex(b)[i]-v)*t).toString(16).padStart(2,'0')).join('');
+let uid = 0;
+// A chunky 3D-look block: a darker "edge" slab under a face; face has a vertical gradient + gloss strip.
+function block({id, w, h, r, face, edge, edgeH, gloss=true, glossInset=null, faceTop=null, stroke=null}){
+  const g = `g${uid++}`, bodyH = h - edgeH, top = faceTop ?? mix(face, '#ffffff', .3);
+  const gi = glossInset ?? Math.min(24, w*.15);
+  return `<defs><linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${top}"/><stop offset=".38" stop-color="${face}"/><stop offset="1" stop-color="${face}"/></linearGradient></defs>
+  <g id="edge"><rect x="0" y="${edgeH}" width="${w}" height="${bodyH}" rx="${r}" fill="${edge}"/></g>
+  <g id="face"><rect x="0" y="0" width="${w}" height="${bodyH}" rx="${r}" fill="url(#${g})"/></g>
+  ${gloss ? `<g id="gloss"><rect x="${gi}" y="${Math.round(bodyH*.07)}" width="${w-2*gi}" height="${Math.round(bodyH*.3)}" rx="${Math.min(r, bodyH*.15)}" fill="#fff" fill-opacity=".28"/></g>` : ''}
+  ${stroke ?? ''}`;
+}
+const emblem = (k, cx, cy, size, fill='#fff') => {
+  const s = size/100, x = cx - size/2, y = cy - size/2;
+  return `<g id="emblem-shadow"><path d="${EMBLEM[k]}" transform="translate(${x} ${y+size*.05}) scale(${s})" fill="#000" fill-opacity=".15"/></g>
+  <g id="emblem"><path d="${EMBLEM[k]}" transform="translate(${x} ${y}) scale(${s})" fill="${fill}" fill-opacity=".95"/></g>`;
+};
+const innerFrame = (w, bodyH, inset, r, sw) => `<g id="frame"><rect x="${inset}" y="${inset}" width="${w-2*inset}" height="${bodyH-2*inset}" rx="${r}" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="${sw}"/></g>`;
+// inner top shadow for sunken surfaces (drawn inside an opaque shape)
+const sunken = (w, h, r, fill, depth) => {
+  const c = `c${uid++}`;
+  return `<defs><clipPath id="${c}"><rect width="${w}" height="${h}" rx="${r}"/></clipPath></defs>
+  <g id="base"><rect width="${w}" height="${h}" rx="${r}" fill="${fill}"/></g>
+  <g id="inner-shadow" clip-path="url(#${c})"><rect x="-4" y="-${h}" width="${w+8}" height="${h+depth}" rx="${r}" fill="#000" fill-opacity=".12"/></g>`;
+};
+
+// ── Asset definitions ─────────────────────────────────────────────────────────────────────────────
+// kind: opaque (default) | overlay (intentionally translucent) | shadow | icon (white, tinted in game)
+// slice: [left, top, right, bottom] 9-slice borders in px, or null. sym: horizontal mirror symmetry expected.
+const A = [];
+const add = (id, atlas, w, h, svg, o={}) => A.push({id, atlas, w, h, svg, kind:o.kind||'opaque', slice:o.slice||null, sym:o.sym ?? false, use:o.use||''});
+
+T.cards.forEach(([face, edge], k) => {
+  const n = COLOR_NAMES[k];
+  add(`card_face_${k}`, 'gameplay', 150, 216,
+      block({w:150, h:216, r:24, face, edge, edgeH:10, gloss:false}) + innerFrame(150, 206, 12, 16, 5) + emblem(k, 75, 103, 84),
+      {sym: k !== 3 && k !== 4, use:`top card of a stack, ${n} (color_${k})`});
+  add(`card_under_${k}`, 'gameplay', 150, 214, block({w:150, h:214, r:24, face, edge, edgeH:8, gloss:false, faceTop:face}),
+      {sym:true, use:`card edge peeking under a stack, ${n}`});
+  add(`card_mini_${k}`, 'gameplay', 66, 146,
+      block({w:66, h:146, r:16, face, edge, edgeH:6, gloss:false}) + innerFrame(66, 140, 7, 10, 3) + emblem(k, 33, 70, 46),
+      {sym: k !== 3 && k !== 4, use:`card in the holding area, ${n}`});
+  add(`chip_${k}`, 'gameplay', 34, 50, block({w:34, h:50, r:9, face, edge, edgeH:4, gloss:false}), {sym:true, use:`next-target preview chip, ${n}`});
+  add(`target_base_${k}`, 'gameplay', 230, 80, block({w:230, h:80, r:35, face, edge, edgeH:10, glossInset:18}),
+      {sym:true, slice:[40,0,40,0], use:`target pedestal, ${n} (count is live text)`});
+});
+add('card_covered_hatch', 'gameplay', 150, 206,
+    `<defs><clipPath id="hc"><rect width="150" height="206" rx="24"/></clipPath><pattern id="hp" width="28" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(135)"><rect width="14" height="28" fill="#000" fill-opacity=".10"/></pattern></defs>
+     <g id="hatch" clip-path="url(#hc)"><rect width="150" height="206" fill="url(#hp)"/></g>`,
+    {kind:'overlay', use:'overlay on a covered card (with 68% brightness tint)'});
+add('target_slot_bg', 'gameplay', 120, 128,
+    `<g id="edge"><rect y="8" width="120" height="120" rx="40" fill="#000" fill-opacity=".06"/></g><g id="face"><rect width="120" height="120" rx="40" fill="#fff" fill-opacity=".55"/></g>
+     <g id="rim"><rect x="3" y="3" width="114" height="40" rx="37" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="6" clip-path="inset(0 0 50% 0)"/></g>`,
+    {kind:'overlay', sym:true, slice:[44,50,44,48], use:'target slot background (9-slice)'});
+add('tray_rim', 'gameplay', 160, 174, block({w:160, h:174, r:48, face:T.trayRim, edge:mix(T.trayRim,'#000000',.25), edgeH:14, gloss:false, faceTop:T.trayRim}),
+    {sym:true, slice:[56,56,56,70], use:'board tray outer rim (9-slice)'});
+add('tray_inner', 'gameplay', 120, 120, sunken(120, 120, 34, T.trayInner, 12), {sym:true, slice:[40,40,40,40], use:'board tray inner felt (9-slice)'});
+add('buffer_rail', 'gameplay', 160, 160, sunken(160, 160, 48, T.rail, 10), {sym:true, slice:[56,56,56,56], use:'holding-area rail (9-slice)'});
+add('buffer_rail_warn', 'gameplay', 160, 160, sunken(160, 160, 48, T.danger, 10), {sym:true, slice:[56,56,56,56], use:'holding-area rail, almost full (9-slice)'});
+add('buffer_cell', 'gameplay', 66, 140, sunken(66, 140, 16, T.sunken, 6), {sym:true, use:'empty holding cell'});
+add('buffer_cell_warn', 'gameplay', 66, 140, sunken(66, 140, 16, T.dangerCell, 6), {sym:true, use:'empty holding cell, almost full'});
+add('shadow_soft', 'gameplay', 128, 128,
+    `<defs><filter id="sb" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="12"/></filter></defs>
+     <g id="shadow"><rect x="28" y="28" width="72" height="72" rx="24" fill="#000" fill-opacity=".22" filter="url(#sb)"/></g>`,
+    {kind:'shadow', sym:true, slice:[52,52,52,52], use:'soft drop shadow under cards, tray, panels (9-slice, offset in game)'});
+
+// ── UI chrome ──
+const btn = (id, face, edge, use) => add(id, 'ui', 200, 164, block({w:200, h:164, r:56, face, edge, edgeH:14, glossInset:24}), {sym:true, slice:[64,60,64,74], use});
+btn('btn_primary', T.primary, T.primaryEdge, 'primary button (9-slice; label is live text)');
+btn('btn_secondary', T.secondary, T.secondaryEdge, 'secondary button (9-slice)');
+btn('btn_disabled', T.disabled, T.disabledEdge, 'locked/disabled button (9-slice)');
+add('pill_surface', 'ui', 140, 104, block({w:140, h:104, r:48, face:T.surface, edge:mix(T.surface,'#000000',.12), edgeH:8, gloss:false, faceTop:T.surface}),
+    {sym:true, slice:[50,0,50,0], use:'HUD pill: coins, level (9-slice)'});
+add('pill_sunken', 'ui', 140, 128, block({w:140, h:128, r:60, face:T.sunken, edge:mix(T.sunken,'#000000',.12), edgeH:8, gloss:false, faceTop:T.sunken}),
+    {sym:true, slice:[62,0,62,0], use:'reward pill in Win dialog (9-slice)'});
+add('pill_ink', 'ui', 80, 56, `<g id="face"><rect width="80" height="56" rx="28" fill="${T.ink}"/></g>`, {sym:true, slice:[28,0,28,0], use:'booster price tag (9-slice)'});
+add('rbtn_secondary', 'ui', 104, 114, block({w:104, h:114, r:32, face:T.secondary, edge:T.secondaryEdge, edgeH:10, glossInset:16}), {sym:true, use:'round HUD button: pause, restart, settings'});
+add('panel', 'ui', 200, 218, block({w:200, h:218, r:64, face:T.surface, edge:mix(T.surface,'#000000',.18), edgeH:18, gloss:false, faceTop:T.surface}),
+    {sym:true, slice:[70,70,70,88], use:'dialog panel (9-slice)'});
+const ribbon = (id, face, edge, use) => add(id, 'ui', 200, 184, block({w:200, h:184, r:44, face, edge, edgeH:14, gloss:false, faceTop:face}), {sym:true, slice:[50,0,50,0], use});
+ribbon('ribbon_secondary', T.secondary, T.secondaryEdge, 'dialog title ribbon (9-slice; title is live text)');
+ribbon('ribbon_danger', T.danger, T.dangerEdge, 'lose-dialog title ribbon (9-slice)');
+add('boost_tile', 'ui', 170, 182, block({w:170, h:182, r:48, face:T.surface, edge:mix(T.surface,'#000000',.14), edgeH:12, gloss:false, faceTop:T.surface}), {sym:true, use:'booster button tile'});
+add('badge', 'ui', 64, 70, block({w:64, h:70, r:32, face:T.secondary, edge:T.secondaryEdge, edgeH:6, gloss:false, faceTop:T.secondary}), {sym:true, slice:[32,0,32,0], use:'count badge (9-slice; number is live text)'});
+add('badge_primary', 'ui', 64, 70, block({w:64, h:70, r:32, face:T.primary, edge:T.primaryEdge, edgeH:6, gloss:false, faceTop:T.primary}), {sym:true, slice:[32,0,32,0], use:'count badge, primary colour'});
+add('close_btn', 'ui', 110, 120, block({w:110, h:120, r:55, face:T.secondary, edge:T.secondaryEdge, edgeH:10, glossInset:20}), {sym:true, use:'dialog close button'});
+add('row_sunken', 'ui', 120, 130, sunken(120, 130, 40, T.sunken, 6), {sym:true, slice:[44,44,44,44], use:'settings row background (9-slice)'});
+add('toggle_on', 'ui', 170, 88, sunken(170, 88, 44, T.primary, 6), {sym:true, use:'toggle track, on'});
+add('toggle_off', 'ui', 170, 88, sunken(170, 88, 44, T.toggleOff, 6), {sym:true, use:'toggle track, off'});
+add('toggle_knob', 'ui', 72, 77, `<g id="edge"><circle cx="36" cy="41" r="36" fill="#D8CCBE"/></g><g id="face"><circle cx="36" cy="36" r="36" fill="#fff"/></g>`,
+    {sym:true, use:'toggle knob'});
+add('icon_holder', 'ui', 260, 272, block({w:260, h:272, r:70, face:T.sunken, edge:mix(T.sunken,'#000000',.08), edgeH:12, gloss:false, faceTop:T.sunken}), {sym:true, use:'big booster icon holder in dialogs'});
+add('coin', 'ui', 96, 96,
+    `<defs><radialGradient id="cg" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#FFF3B0"/><stop offset=".55" stop-color="#FFC93C"/><stop offset="1" stop-color="#E39A00"/></radialGradient>
+     <clipPath id="cc"><circle cx="48" cy="48" r="48"/></clipPath></defs>
+     <g id="face"><circle cx="48" cy="48" r="48" fill="url(#cg)"/></g>
+     <g id="rim-shade" clip-path="url(#cc)"><rect x="0" y="88" width="96" height="10" fill="#000" fill-opacity=".15"/></g>
+     <g id="mark"><path d="M52 22v6c6 1 11 4 13 9l-7 3c-2-3-5-5-9-5-5 0-8 2-8 5 0 3 3 4 10 6 9 2 15 5 15 13 0 7-5 11-14 12v6h-6v-6c-7-1-12-5-14-11l7-3c2 5 6 7 11 7 6 0 9-2 9-6 0-3-3-5-10-6-9-2-15-5-15-12 0-6 5-11 12-12v-6z" fill="#B57400"/></g>`,
+    {sym:false, use:'coin icon (HUD, prices, rewards)'});
+const ICON = {
+  pause:'<rect x="15" y="10" width="24" height="80" rx="10"/><rect x="61" y="10" width="24" height="80" rx="10"/>',
+  restart:'<g fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"><path d="M83 50a33 33 0 1 1-9.6-23.3"/><path d="M83 12.5v20.8H62.2"/></g>',
+  gear:'<path transform="scale(4.1667)" d="M19.4 13a7.7 7.7 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a7.6 7.6 0 0 0-1.7-1L14.9 3h-4l-.4 2.7a7.6 7.6 0 0 0-1.7 1l-2.5-1-2 3.4L6.4 11a7.7 7.7 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1a7.6 7.6 0 0 0 1.7 1l.4 2.7h4l.4-2.7a7.6 7.6 0 0 0 1.7-1l2.5 1 2-3.4zM12.9 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/>',
+  play:'<path d="M28 15v70l57-35z"/>',
+  close:'<g stroke="#fff" stroke-width="16" stroke-linecap="round"><path d="M25 25l50 50M75 25 25 75"/></g>',
+  lock:'<path transform="scale(4.1667)" d="M6 10V8a6 6 0 0 1 12 0v2h1v11H5V10zm3 0h6V8a3 3 0 0 0-6 0z"/>',
+  undo:'<path transform="scale(4.1667)" d="M9 5 3 10.5 9 16v-4c5 0 8 1.5 10 5-1-5-4-9-10-9.5z"/>',
+  space:'<g transform="scale(4.1667)"><rect x="2" y="7" width="5" height="10" rx="1.5"/><rect x="9.5" y="7" width="5" height="10" rx="1.5" fill-opacity=".55"/><path d="M19 8v3h-3v2h3v3h2v-3h3v-2h-3V8z"/></g>',
+};
+const ICON_SYM = {pause:true, close:true};
+Object.entries(ICON).forEach(([n, body]) => add(`icon_${n}`, 'ui', 100, 100, `<g id="glyph" fill="#fff">${body}</g>`, {kind:'icon', sym:!!ICON_SYM[n], use:`${n} glyph, white — tint from tokens`}));
+add('hand_pointer', 'ui', 150, 172,
+    `<g id="hand" transform="translate(4 4) scale(1.4)"><path fill="#fff" stroke="${T.ink}" stroke-width="5" stroke-linejoin="round" d="M36 8c6 0 9 4 9 10v34l4-1V40c0-6 9-6 9 0v11l4-1v-6c0-6 9-6 9 0v8l4-1v-3c0-6 9-6 9 0v22c0 22-12 38-34 38H52c-14 0-22-8-30-20L8 64c-4-6 4-12 9-7l10 10V18c0-6 3-10 9-10z"/></g>`,
+    {use:'FTUE pointing hand'});
+add('ftue_ring', 'ui', 170, 170, `<g id="ring"><circle cx="85" cy="85" r="81" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="8"/></g>`, {kind:'overlay', sym:true, use:'FTUE tap ring (scaled/faded in game)'});
+add('confetti', 'ui', 26, 44, `<g id="piece"><rect width="26" height="44" rx="8" fill="#fff"/></g>`, {kind:'icon', sym:true, use:'confetti piece, white — tinted per colour'});
+add('bg_ground', 'bg', 270, 480,
+    `<defs><radialGradient id="bgg" cx=".5" cy=".1" r="1.05" gradientTransform="translate(.5 .1) scale(1 .5625) translate(-.5 -.1)"><stop offset="0" stop-color="${T.groundTop}"/><stop offset="1" stop-color="${T.groundBottom}"/></radialGradient></defs>
+     <g id="ground"><rect width="270" height="480" fill="url(#bgg)"/></g>`,
+    {sym:true, use:'screen background, stretched to the screen (Ground token)'});
+
+// ── Layout: shelf-pack onto a 2048-wide sheet with 8 px gaps, integer positions ──────────────────
+const GAP = 8; let x = GAP, y = GAP, shelf = 0;
+const sheet = document.getElementById('sheet');
+for (const a of A) {
+  if (x + a.w + GAP > 2048) { x = GAP; y += shelf + GAP; shelf = 0; }
+  a.x = x; a.y = y; x += a.w + GAP; shelf = Math.max(shelf, a.h);
+  a.svgText = `<svg xmlns="http://www.w3.org/2000/svg" width="${a.w}" height="${a.h}" viewBox="0 0 ${a.w} ${a.h}" data-id="${a.id}">${a.svg}</svg>`;
+  sheet.insertAdjacentHTML('beforeend', a.svgText.replace('<svg ', `<svg style="left:${a.x}px;top:${a.y}px" `));
+}
+const H = y + shelf + GAP;
+sheet.style.height = H + 'px';
+document.getElementById('manifest').textContent = JSON.stringify({sheet:{w:2048, h:H}, tokensVersion:'design-tokens v1.0',
+  assets:A.map(({svg, ...rest}) => rest)});
+</script>
+</body>
+</html>

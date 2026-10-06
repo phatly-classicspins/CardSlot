@@ -89,3 +89,14 @@ Quyết định: a) — người chốt: Phat · GDD lên v1.1.
 
 ### D-018 · 06-10-2026 · Bước 2 · Duyệt mock-up
 Quyết định: 20 mock-up v01 (`docs/mockups/README.md`) và design token nháp (`docs/design/design-tokens.md`) được duyệt, đóng cổng Bước 2 — người chốt: Phat
+
+### D-019 · 06-10-2026 · Bước 3 · Tool art và quy tắc xuất
+Câu hỏi và quyết định (người chốt: Phat):
+- Tool nguồn: a) SVG do AI dựng, group đặt tên chuẩn, màu lấy từ design token, xuất PNG bằng Edge headless · b) artist vẽ PSD · c) SVG + sinh ảnh minh hoạ → **a**. File gốc `art/source/` nằm trong repo.
+- Xuất: 1x (1 px = 1 đơn vị, đúng kích thước mock-up), kích thước chẵn, atlas tối đa 2048×2048, nén ASTC 6×6 (Android + iOS), tổng texture game ≤ 16 MB trong RAM.
+- AI tự sửa: lỗi kỹ thuật không đổi hình (kích thước lẻ, quầng alpha, cắt mép, pixel lạc, thiếu padding). Mọi thay đổi màu/hình/tỉ lệ so với mock-up phải báo lại.
+- Chấp nhận cho MVP: chỉ lỗi thẩm mỹ nhỏ (lệch màu/bóng ≤ một bước token, bóng đơn giản hơn mock-up). Không chấp nhận: sai kích thước, quầng alpha, cắt mép, sai màu lá, thiếu hoạ tiết.
+Ghi chú: thay cho `art/source/*.psd` của quy trình, file nguồn là SVG nhiều group (mỗi group = một layer).
+
+### D-020 · 06-10-2026 · Bước 3 · Duyệt art
+Quyết định: art v1 (71 sprite, `art/export/report.md` 0 lỗi chặn) và quy ước đặt tên sprite/layer trong `art/README.md` được duyệt, đóng cổng Bước 3 — người chốt: Phat

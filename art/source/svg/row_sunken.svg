@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="130" viewBox="0 0 120 130" data-id="row_sunken"><defs><clipPath id="c49"><rect width="120" height="130" rx="40"/></clipPath></defs>
+  <g id="base"><rect width="120" height="130" rx="40" fill="#F2C68C"/></g>
+  <g id="inner-shadow" clip-path="url(#c49)"><rect x="-4" y="-130" width="128" height="136" rx="40" fill="#000" fill-opacity=".12"/></g></svg>

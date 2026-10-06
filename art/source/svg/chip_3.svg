@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="34" height="50" viewBox="0 0 34 50" data-id="chip_3"><defs><linearGradient id="g18" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#77d497"/><stop offset=".38" stop-color="#3CC26B"/><stop offset="1" stop-color="#3CC26B"/></linearGradient></defs>
+  <g id="edge"><rect x="0" y="4" width="34" height="46" rx="9" fill="#22924A"/></g>
+  <g id="face"><rect x="0" y="0" width="34" height="46" rx="9" fill="url(#g18)"/></g>
+  
+  </svg>

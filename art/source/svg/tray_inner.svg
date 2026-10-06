@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" data-id="tray_inner"><defs><clipPath id="c31"><rect width="120" height="120" rx="34"/></clipPath></defs>
+  <g id="base"><rect width="120" height="120" rx="34" fill="#F6CF98"/></g>
+  <g id="inner-shadow" clip-path="url(#c31)"><rect x="-4" y="-120" width="128" height="132" rx="34" fill="#000" fill-opacity=".12"/></g></svg>

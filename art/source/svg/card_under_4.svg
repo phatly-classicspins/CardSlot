@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="214" viewBox="0 0 150 214" data-id="card_under_4"><defs><linearGradient id="g21" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9B5CF6"/><stop offset=".38" stop-color="#9B5CF6"/><stop offset="1" stop-color="#9B5CF6"/></linearGradient></defs>
+  <g id="edge"><rect x="0" y="8" width="150" height="206" rx="24" fill="#6C35C4"/></g>
+  <g id="face"><rect x="0" y="0" width="150" height="206" rx="24" fill="url(#g21)"/></g>
+  
+  </svg>

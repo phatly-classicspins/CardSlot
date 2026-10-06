@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="206" viewBox="0 0 150 206" data-id="card_covered_hatch"><defs><clipPath id="hc"><rect width="150" height="206" rx="24"/></clipPath><pattern id="hp" width="28" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(135)"><rect width="14" height="28" fill="#000" fill-opacity=".10"/></pattern></defs>
+     <g id="hatch" clip-path="url(#hc)"><rect width="150" height="206" fill="url(#hp)"/></g></svg>

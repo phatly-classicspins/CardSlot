@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="104" viewBox="0 0 140 104" data-id="pill_surface"><defs><linearGradient id="g39" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF8EC"/><stop offset=".38" stop-color="#FFF8EC"/><stop offset="1" stop-color="#FFF8EC"/></linearGradient></defs>
+  <g id="edge"><rect x="0" y="8" width="140" height="96" rx="48" fill="#e0dad0"/></g>
+  <g id="face"><rect x="0" y="0" width="140" height="96" rx="48" fill="url(#g39)"/></g>
+  
+  </svg>

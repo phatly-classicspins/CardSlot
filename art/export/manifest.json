@@ -1,0 +1,1620 @@
+{
+    "generatedBy":  "art/tools/build-art.ps1",
+    "source":  "art/source/art.html",
+    "tokens":  "design-tokens v1.0",
+    "rules":  "D-019: 1x (1 px = 1 world unit, PPU 1), even sizes, atlas \u003c= 2048, ASTC 6x6, texture budget \u003c= 16 MB",
+    "sprites":  [
+                    {
+                        "id":  "card_face_0",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_face_0.png",
+                        "w":  150,
+                        "h":  216,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "top card of a stack, red (color_0)",
+                        "kb":  6.9,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_under_0",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_under_0.png",
+                        "w":  150,
+                        "h":  214,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "card edge peeking under a stack, red",
+                        "kb":  2.5,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_mini_0",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_mini_0.png",
+                        "w":  66,
+                        "h":  146,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "card in the holding area, red",
+                        "kb":  3.9,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "chip_0",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/chip_0.png",
+                        "w":  34,
+                        "h":  50,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "next-target preview chip, red",
+                        "kb":  0.9,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "target_base_0",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/target_base_0.png",
+                        "w":  230,
+                        "h":  80,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      40,
+                                      0,
+                                      40,
+                                      0
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "target pedestal, red (count is live text)",
+                        "kb":  3.9,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_face_1",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_face_1.png",
+                        "w":  150,
+                        "h":  216,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "top card of a stack, blue (color_1)",
+                        "kb":  6.5,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_under_1",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_under_1.png",
+                        "w":  150,
+                        "h":  214,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "card edge peeking under a stack, blue",
+                        "kb":  2.4,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_mini_1",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_mini_1.png",
+                        "w":  66,
+                        "h":  146,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "card in the holding area, blue",
+                        "kb":  3.9,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "chip_1",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/chip_1.png",
+                        "w":  34,
+                        "h":  50,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "next-target preview chip, blue",
+                        "kb":  0.8,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "target_base_1",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/target_base_1.png",
+                        "w":  230,
+                        "h":  80,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      40,
+                                      0,
+                                      40,
+                                      0
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "target pedestal, blue (count is live text)",
+                        "kb":  3.6,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_face_2",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_face_2.png",
+                        "w":  150,
+                        "h":  216,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "top card of a stack, yellow (color_2)",
+                        "kb":  6.8,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_under_2",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_under_2.png",
+                        "w":  150,
+                        "h":  214,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "card edge peeking under a stack, yellow",
+                        "kb":  2.4,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_mini_2",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_mini_2.png",
+                        "w":  66,
+                        "h":  146,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "card in the holding area, yellow",
+                        "kb":  3.9,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "chip_2",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/chip_2.png",
+                        "w":  34,
+                        "h":  50,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "next-target preview chip, yellow",
+                        "kb":  0.8,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "target_base_2",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/target_base_2.png",
+                        "w":  230,
+                        "h":  80,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      40,
+                                      0,
+                                      40,
+                                      0
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "target pedestal, yellow (count is live text)",
+                        "kb":  3.5,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_face_3",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_face_3.png",
+                        "w":  150,
+                        "h":  216,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "top card of a stack, green (color_3)",
+                        "kb":  7.8,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_under_3",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_under_3.png",
+                        "w":  150,
+                        "h":  214,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "card edge peeking under a stack, green",
+                        "kb":  2.5,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_mini_3",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_mini_3.png",
+                        "w":  66,
+                        "h":  146,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "card in the holding area, green",
+                        "kb":  4.5,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "chip_3",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/chip_3.png",
+                        "w":  34,
+                        "h":  50,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "next-target preview chip, green",
+                        "kb":  0.9,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "target_base_3",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/target_base_3.png",
+                        "w":  230,
+                        "h":  80,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      40,
+                                      0,
+                                      40,
+                                      0
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "target pedestal, green (count is live text)",
+                        "kb":  3.9,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_face_4",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_face_4.png",
+                        "w":  150,
+                        "h":  216,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "top card of a stack, purple (color_4)",
+                        "kb":  7.2,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_under_4",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_under_4.png",
+                        "w":  150,
+                        "h":  214,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "card edge peeking under a stack, purple",
+                        "kb":  2.5,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_mini_4",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_mini_4.png",
+                        "w":  66,
+                        "h":  146,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "card in the holding area, purple",
+                        "kb":  4.3,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "chip_4",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/chip_4.png",
+                        "w":  34,
+                        "h":  50,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "next-target preview chip, purple",
+                        "kb":  0.9,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "target_base_4",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/target_base_4.png",
+                        "w":  230,
+                        "h":  80,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      40,
+                                      0,
+                                      40,
+                                      0
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "target pedestal, purple (count is live text)",
+                        "kb":  3.8,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_face_5",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_face_5.png",
+                        "w":  150,
+                        "h":  216,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "top card of a stack, orange (color_5)",
+                        "kb":  6.6,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_under_5",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_under_5.png",
+                        "w":  150,
+                        "h":  214,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "card edge peeking under a stack, orange",
+                        "kb":  2.4,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_mini_5",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_mini_5.png",
+                        "w":  66,
+                        "h":  146,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "card in the holding area, orange",
+                        "kb":  3.7,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "chip_5",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/chip_5.png",
+                        "w":  34,
+                        "h":  50,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "next-target preview chip, orange",
+                        "kb":  0.8,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "target_base_5",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/target_base_5.png",
+                        "w":  230,
+                        "h":  80,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      40,
+                                      0,
+                                      40,
+                                      0
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "target pedestal, orange (count is live text)",
+                        "kb":  3.6,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_covered_hatch",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_covered_hatch.png",
+                        "w":  150,
+                        "h":  206,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "overlay",
+                        "use":  "overlay on a covered card (with 68% brightness tint)",
+                        "kb":  1.6,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "target_slot_bg",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/target_slot_bg.png",
+                        "w":  120,
+                        "h":  128,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      44,
+                                      50,
+                                      44,
+                                      48
+                                  ],
+                        "kind":  "overlay",
+                        "use":  "target slot background (9-slice)",
+                        "kb":  2.5,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "tray_rim",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/tray_rim.png",
+                        "w":  160,
+                        "h":  174,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      56,
+                                      56,
+                                      56,
+                                      70
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "board tray outer rim (9-slice)",
+                        "kb":  4.3,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "tray_inner",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/tray_inner.png",
+                        "w":  120,
+                        "h":  120,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      40,
+                                      40,
+                                      40,
+                                      40
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "board tray inner felt (9-slice)",
+                        "kb":  2.6,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "buffer_rail",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/buffer_rail.png",
+                        "w":  160,
+                        "h":  160,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      56,
+                                      56,
+                                      56,
+                                      56
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "holding-area rail (9-slice)",
+                        "kb":  3.7,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "buffer_rail_warn",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/buffer_rail_warn.png",
+                        "w":  160,
+                        "h":  160,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      56,
+                                      56,
+                                      56,
+                                      56
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "holding-area rail, almost full (9-slice)",
+                        "kb":  3.8,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "buffer_cell",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/buffer_cell.png",
+                        "w":  66,
+                        "h":  140,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "empty holding cell",
+                        "kb":  1.3,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "buffer_cell_warn",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/buffer_cell_warn.png",
+                        "w":  66,
+                        "h":  140,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "empty holding cell, almost full",
+                        "kb":  1.3,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "shadow_soft",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/shadow_soft.png",
+                        "w":  128,
+                        "h":  128,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      52,
+                                      52,
+                                      52,
+                                      52
+                                  ],
+                        "kind":  "shadow",
+                        "use":  "soft drop shadow under cards, tray, panels (9-slice, offset in game)",
+                        "kb":  4,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "btn_primary",
+                        "atlas":  "ui",
+                        "file":  "ui/btn_primary.png",
+                        "w":  200,
+                        "h":  164,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      64,
+                                      60,
+                                      64,
+                                      74
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "primary button (9-slice; label is live text)",
+                        "kb":  7,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "btn_secondary",
+                        "atlas":  "ui",
+                        "file":  "ui/btn_secondary.png",
+                        "w":  200,
+                        "h":  164,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      64,
+                                      60,
+                                      64,
+                                      74
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "secondary button (9-slice)",
+                        "kb":  6.9,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "btn_disabled",
+                        "atlas":  "ui",
+                        "file":  "ui/btn_disabled.png",
+                        "w":  200,
+                        "h":  164,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      64,
+                                      60,
+                                      64,
+                                      74
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "locked/disabled button (9-slice)",
+                        "kb":  6.5,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "pill_surface",
+                        "atlas":  "ui",
+                        "file":  "ui/pill_surface.png",
+                        "w":  140,
+                        "h":  104,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      50,
+                                      0,
+                                      50,
+                                      0
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "HUD pill: coins, level (9-slice)",
+                        "kb":  3.6,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "pill_sunken",
+                        "atlas":  "ui",
+                        "file":  "ui/pill_sunken.png",
+                        "w":  140,
+                        "h":  128,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      62,
+                                      0,
+                                      62,
+                                      0
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "reward pill in Win dialog (9-slice)",
+                        "kb":  5,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "pill_ink",
+                        "atlas":  "ui",
+                        "file":  "ui/pill_ink.png",
+                        "w":  80,
+                        "h":  56,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      28,
+                                      0,
+                                      28,
+                                      0
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "booster price tag (9-slice)",
+                        "kb":  1.7,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "rbtn_secondary",
+                        "atlas":  "ui",
+                        "file":  "ui/rbtn_secondary.png",
+                        "w":  104,
+                        "h":  114,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "round HUD button: pause, restart, settings",
+                        "kb":  4,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "panel",
+                        "atlas":  "ui",
+                        "file":  "ui/panel.png",
+                        "w":  200,
+                        "h":  218,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      70,
+                                      70,
+                                      70,
+                                      88
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "dialog panel (9-slice)",
+                        "kb":  5.5,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "ribbon_secondary",
+                        "atlas":  "ui",
+                        "file":  "ui/ribbon_secondary.png",
+                        "w":  200,
+                        "h":  184,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      50,
+                                      0,
+                                      50,
+                                      0
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "dialog title ribbon (9-slice; title is live text)",
+                        "kb":  4.2,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "ribbon_danger",
+                        "atlas":  "ui",
+                        "file":  "ui/ribbon_danger.png",
+                        "w":  200,
+                        "h":  184,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      50,
+                                      0,
+                                      50,
+                                      0
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "lose-dialog title ribbon (9-slice)",
+                        "kb":  4.1,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "boost_tile",
+                        "atlas":  "ui",
+                        "file":  "ui/boost_tile.png",
+                        "w":  170,
+                        "h":  182,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "booster button tile",
+                        "kb":  4,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "badge",
+                        "atlas":  "ui",
+                        "file":  "ui/badge.png",
+                        "w":  64,
+                        "h":  70,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      32,
+                                      0,
+                                      32,
+                                      0
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "count badge (9-slice; number is live text)",
+                        "kb":  2.5,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "badge_primary",
+                        "atlas":  "ui",
+                        "file":  "ui/badge_primary.png",
+                        "w":  64,
+                        "h":  70,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      32,
+                                      0,
+                                      32,
+                                      0
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "count badge, primary colour",
+                        "kb":  2.5,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "close_btn",
+                        "atlas":  "ui",
+                        "file":  "ui/close_btn.png",
+                        "w":  110,
+                        "h":  120,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "dialog close button",
+                        "kb":  5.9,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "row_sunken",
+                        "atlas":  "ui",
+                        "file":  "ui/row_sunken.png",
+                        "w":  120,
+                        "h":  130,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      44,
+                                      44,
+                                      44,
+                                      44
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "settings row background (9-slice)",
+                        "kb":  2.9,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "toggle_on",
+                        "atlas":  "ui",
+                        "file":  "ui/toggle_on.png",
+                        "w":  170,
+                        "h":  88,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "toggle track, on",
+                        "kb":  3,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "toggle_off",
+                        "atlas":  "ui",
+                        "file":  "ui/toggle_off.png",
+                        "w":  170,
+                        "h":  88,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "toggle track, off",
+                        "kb":  3.1,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "toggle_knob",
+                        "atlas":  "ui",
+                        "file":  "ui/toggle_knob.png",
+                        "w":  72,
+                        "h":  78,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "toggle knob",
+                        "kb":  2.2,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "padded 72x77 -\u003e 72x78 (even size)",
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "icon_holder",
+                        "atlas":  "ui",
+                        "file":  "ui/icon_holder.png",
+                        "w":  260,
+                        "h":  272,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "big booster icon holder in dialogs",
+                        "kb":  6.8,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "coin",
+                        "atlas":  "ui",
+                        "file":  "ui/coin.png",
+                        "w":  96,
+                        "h":  96,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "coin icon (HUD, prices, rewards)",
+                        "kb":  11.6,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "icon_pause",
+                        "atlas":  "ui",
+                        "file":  "ui/icon_pause.png",
+                        "w":  100,
+                        "h":  100,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "icon",
+                        "use":  "pause glyph, white — tint from tokens",
+                        "kb":  1.4,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "icon_restart",
+                        "atlas":  "ui",
+                        "file":  "ui/icon_restart.png",
+                        "w":  100,
+                        "h":  100,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "icon",
+                        "use":  "restart glyph, white — tint from tokens",
+                        "kb":  2.3,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "icon_gear",
+                        "atlas":  "ui",
+                        "file":  "ui/icon_gear.png",
+                        "w":  100,
+                        "h":  100,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "icon",
+                        "use":  "gear glyph, white — tint from tokens",
+                        "kb":  1.8,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "icon_play",
+                        "atlas":  "ui",
+                        "file":  "ui/icon_play.png",
+                        "w":  100,
+                        "h":  100,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "icon",
+                        "use":  "play glyph, white — tint from tokens",
+                        "kb":  0.9,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "icon_close",
+                        "atlas":  "ui",
+                        "file":  "ui/icon_close.png",
+                        "w":  100,
+                        "h":  100,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "icon",
+                        "use":  "close glyph, white — tint from tokens",
+                        "kb":  1.2,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "icon_lock",
+                        "atlas":  "ui",
+                        "file":  "ui/icon_lock.png",
+                        "w":  100,
+                        "h":  100,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "icon",
+                        "use":  "lock glyph, white — tint from tokens",
+                        "kb":  1.1,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "icon_undo",
+                        "atlas":  "ui",
+                        "file":  "ui/icon_undo.png",
+                        "w":  100,
+                        "h":  100,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "icon",
+                        "use":  "undo glyph, white — tint from tokens",
+                        "kb":  1.2,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "icon_space",
+                        "atlas":  "ui",
+                        "file":  "ui/icon_space.png",
+                        "w":  100,
+                        "h":  100,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "icon",
+                        "use":  "space glyph, white — tint from tokens",
+                        "kb":  0.8,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "hand_pointer",
+                        "atlas":  "ui",
+                        "file":  "ui/hand_pointer.png",
+                        "w":  150,
+                        "h":  172,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "FTUE pointing hand",
+                        "kb":  7.3,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "ftue_ring",
+                        "atlas":  "ui",
+                        "file":  "ui/ftue_ring.png",
+                        "w":  170,
+                        "h":  170,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "overlay",
+                        "use":  "FTUE tap ring (scaled/faded in game)",
+                        "kb":  5.1,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "confetti",
+                        "atlas":  "ui",
+                        "file":  "ui/confetti.png",
+                        "w":  26,
+                        "h":  44,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "icon",
+                        "use":  "confetti piece, white — tinted per colour",
+                        "kb":  0.3,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "bg_ground",
+                        "atlas":  "bg",
+                        "file":  "bg/bg_ground.png",
+                        "w":  270,
+                        "h":  480,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "screen background, stretched to the screen (Ground token)",
+                        "kb":  34.2,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    }
+                ]
+}

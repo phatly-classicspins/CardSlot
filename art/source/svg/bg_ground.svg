@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="270" height="480" viewBox="0 0 270 480" data-id="bg_ground"><defs><radialGradient id="bgg" cx=".5" cy=".1" r="1.05" gradientTransform="translate(.5 .1) scale(1 .5625) translate(-.5 -.1)"><stop offset="0" stop-color="#FFF6E6"/><stop offset="1" stop-color="#FFD9A8"/></radialGradient></defs>
+     <g id="ground"><rect width="270" height="480" fill="url(#bgg)"/></g></svg>

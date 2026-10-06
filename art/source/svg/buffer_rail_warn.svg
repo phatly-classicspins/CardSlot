@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" data-id="buffer_rail_warn"><defs><clipPath id="c33"><rect width="160" height="160" rx="48"/></clipPath></defs>
+  <g id="base"><rect width="160" height="160" rx="48" fill="#E2604A"/></g>
+  <g id="inner-shadow" clip-path="url(#c33)"><rect x="-4" y="-160" width="168" height="170" rx="48" fill="#000" fill-opacity=".12"/></g></svg>
