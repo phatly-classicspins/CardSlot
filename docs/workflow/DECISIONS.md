@@ -70,3 +70,22 @@ Lý do: giống nhịp game tham khảo; xác định hoàn toàn nên solver ki
 
 ### D-015 · 06-10-2026 · Bước 1 · Duyệt GDD
 Quyết định: GDD v1.0 và các tài liệu đi kèm (glossary, level-design, economy-sheet, screen-inventory, 7 spec trong `features/`) được duyệt nguyên trạng, gồm 6 mục [XÁC NHẬN]: chạm được khi đang hoạt ảnh (R-8); Undo lùi được tới đầu level, giữ chỗ buffer đã cộng (R-16); Extra Space +4, 1 lần/lượt (R-17); chỉ tài khoản khách, không cloud save; hết Level 30 → "More levels coming soon" + chơi lại L30; Back ở Home không làm gì. Con số kinh tế và đường cong độ khó dùng như bản nháp, chỉnh sau chơi thử Bước 8 — người chốt: Phat
+
+### D-016 · 06-10-2026 · Bước 2 · Cách làm mock-up
+Phương án công cụ: a) HTML/CSS → PNG (Edge headless) · b) cài Python + Codex, sinh ảnh image_gen · c) kết hợp
+Quyết định: a) — tỉ lệ 9:16 (1080×1920) + 9:20 (1080×2400); không chừa vùng banner — người chốt: Phat
+Lý do: không tốn quota, không cần cài thêm; bố cục và token chính xác. Hình minh hoạ 3D-look thật làm ở Bước 3.
+Ảnh hưởng: mock-up là bố cục + design token, không phải art cuối; `pf-ux-asset-handoff` (tách sprite từ mock-up) không áp dụng — sprite đến từ Bước 3.
+
+### D-017 · 06-10-2026 · Bước 2 · Hướng phong cách
+Phương án: A Lavender Candy · B Warm Toybox · C Sky Mint (ảnh so sánh: `_bmad-output/planning-artifacts/ux-designs/ux-cardslot/.working/directions-sheet.png`)
+Quyết định: B Warm Toybox — nền kem/đào ấm, khay gỗ, nút chính xanh ngọc, nút phụ đỏ cam; làm Gameplay + các trạng thái trước — người chốt: Phat
+Lý do: khay gỗ tách bạch rõ nhất với lá bài màu; khác hẳn tông tím của game tham khảo (G8).
+
+### CR-001 · phát sinh ở Bước 2 · ảnh hưởng GDD v1.0 §10 và `features/core-gameplay.md` (đã duyệt)
+Vấn đề: "Hard Level Cleared!" (19) và "New booster: Extra Space!" (25) vượt giới hạn tiêu đề 18 ký tự; dialog Restart cần nói rõ booster đã dùng không hoàn lại (GDD §5).
+Phương án: a) nâng giới hạn lên 26 + ribbon tự thu nhỏ chữ; thêm key `gameplay.restart.note` · b) rút ngắn text
+Quyết định: a) — người chốt: Phat · GDD lên v1.1.
+
+### D-018 · 06-10-2026 · Bước 2 · Duyệt mock-up
+Quyết định: 20 mock-up v01 (`docs/mockups/README.md`) và design token nháp (`docs/design/design-tokens.md`) được duyệt, đóng cổng Bước 2 — người chốt: Phat

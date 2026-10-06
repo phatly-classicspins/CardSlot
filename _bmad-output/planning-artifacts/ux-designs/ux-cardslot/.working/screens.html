@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CardSlot mock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=block" rel="stylesheet">
+<style>
+/* ── Card colours: shared by every direction (glossary color_0..5) ── */
+:root{
+  --c0:#F2475B; --c0d:#B92639; --c1:#3D8BFF; --c1d:#1F5FCC; --c2:#FFC93C; --c2d:#D99A0B;
+  --c3:#3CC26B; --c3d:#22924A; --c4:#9B5CF6; --c4d:#6C35C4; --c5:#FF8A3D; --c5d:#D35F14;
+  --font:'Fredoka','Segoe UI Rounded','Segoe UI',system-ui,sans-serif;
+}
+/* ── Direction A: Lavender Candy ── */
+.th-a{ --g1:#F1ECFF; --g2:#D8CFFA; --tray:#FFFFFF; --trayRim:#B7A6F2; --trayIn:#EEE9FF;
+  --ink:#3A2E6E; --inkSoft:#7C70B0; --acc:#FF7A59; --accD:#D9502F; --acc2:#5B4BD6; --acc2D:#3D2FA8;
+  --pill:#FFFFFF; --rail:#CFC4F6; --cell:#E6E0FD; --dim:rgba(40,25,90,.55); }
+/* ── Direction B: Warm Toybox ── */
+.th-b{ --g1:#FFF6E6; --g2:#FFD9A8; --tray:#E9A866; --trayRim:#B9733A; --trayIn:#F6CF98;
+  --ink:#5A3415; --inkSoft:#9A6A3F; --acc:#21B8A6; --accD:#138A7B; --acc2:#E8613C; --acc2D:#B7411F;
+  --pill:#FFF8EC; --rail:#C98B52; --cell:#F2C68C; --dim:rgba(70,35,10,.55); }
+/* ── Direction C: Sky Mint ── */
+.th-c{ --g1:#D9FAF3; --g2:#9FE2EF; --tray:#FFFFFF; --trayRim:#68C3D6; --trayIn:#E3F7F9;
+  --ink:#12455A; --inkSoft:#4E8796; --acc:#FFB703; --accD:#D18B00; --acc2:#1F9BB8; --acc2D:#127389;
+  --pill:#FFFFFF; --rail:#8FD5E2; --cell:#D3F1F5; --dim:rgba(10,50,65,.55); }
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;overflow:hidden;background:#222}
+.stage{position:relative;width:1080px;height:var(--h,1920px);overflow:hidden;font-family:var(--font);color:var(--ink);
+  background:radial-gradient(1200px 900px at 50% 10%,var(--g1),var(--g2));}
+/* soft background confetti dots */
+.stage::before{content:"";position:absolute;inset:0;opacity:.35;
+  background-image:radial-gradient(circle at 20% 30%,#fff 0 10px,transparent 11px),radial-gradient(circle at 80% 20%,#fff 0 6px,transparent 7px),
+  radial-gradient(circle at 70% 75%,#fff 0 12px,transparent 13px),radial-gradient(circle at 12% 82%,#fff 0 7px,transparent 8px);}
+
+/* ── chunky 3D-look primitives ── */
+.pill{position:absolute;height:96px;border-radius:48px;background:var(--pill);display:flex;align-items:center;gap:14px;padding:0 30px 0 14px;
+  font-size:44px;font-weight:700;box-shadow:0 8px 0 rgba(0,0,0,.12),0 14px 24px rgba(0,0,0,.08)}
+.coin{width:68px;height:68px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF3B0,#FFC93C 55%,#E39A00);
+  box-shadow:inset 0 -6px 0 rgba(0,0,0,.15);display:grid;place-items:center;font-size:36px;color:#B57400;font-weight:700}
+.rbtn{position:absolute;width:104px;height:104px;border-radius:32px;background:var(--acc2);box-shadow:0 10px 0 var(--acc2D),0 18px 24px rgba(0,0,0,.15);
+  display:grid;place-items:center;color:#fff}
+.btn{position:absolute;left:50%;transform:translateX(-50%);border-radius:56px;color:#fff;font-weight:700;display:grid;place-items:center;
+  text-shadow:0 4px 0 rgba(0,0,0,.18)}
+.btn.primary{background:linear-gradient(var(--acc),var(--acc));box-shadow:0 14px 0 var(--accD),0 26px 40px rgba(0,0,0,.18)}
+.btn.secondary{background:var(--acc2);box-shadow:0 12px 0 var(--acc2D),0 22px 30px rgba(0,0,0,.15)}
+.btn::after{content:"";position:absolute;left:24px;right:24px;top:10px;height:34%;border-radius:40px;background:rgba(255,255,255,.28)}
+
+/* ── cards ── */
+.card{position:absolute;width:var(--cw,150px);height:var(--ch,206px);border-radius:24px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--k) 70%,#fff) 0%,var(--k) 38%,var(--k) 100%);
+  box-shadow:0 10px 0 var(--kd),0 16px 18px rgba(0,0,0,.18);display:grid;place-items:center}
+.card::before{content:"";position:absolute;inset:12px;border-radius:16px;border:5px solid rgba(255,255,255,.55)}
+.card svg{width:56%;height:auto;fill:#fff;opacity:.95;filter:drop-shadow(0 4px 0 rgba(0,0,0,.15))}
+.edge{position:absolute;width:var(--cw,150px);height:var(--ch,206px);border-radius:24px;background:var(--k);box-shadow:0 8px 0 var(--kd)}
+.covered{filter:brightness(.68)}
+.covered.card::after{content:"";position:absolute;inset:0;border-radius:24px;background:repeating-linear-gradient(135deg,rgba(0,0,0,.10) 0 14px,transparent 14px 28px)}
+.k0{--k:var(--c0);--kd:var(--c0d)} .k1{--k:var(--c1);--kd:var(--c1d)} .k2{--k:var(--c2);--kd:var(--c2d)}
+.k3{--k:var(--c3);--kd:var(--c3d)} .k4{--k:var(--c4);--kd:var(--c4d)} .k5{--k:var(--c5);--kd:var(--c5d)}
+
+/* ── gameplay zones ── */
+.zone{position:absolute;left:40px;right:40px;border-radius:48px}
+.targets{top:200px;height:400px}
+.tslot{position:absolute;top:0;width:300px;height:400px;border-radius:40px;background:rgba(255,255,255,.55);
+  box-shadow:inset 0 6px 0 rgba(255,255,255,.7),0 8px 0 rgba(0,0,0,.06)}
+.tbase{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);width:230px;height:70px;border-radius:35px;background:var(--k);box-shadow:0 10px 0 var(--kd)}
+.tbase::after{content:"";position:absolute;left:18px;right:18px;top:8px;height:22px;border-radius:12px;background:rgba(255,255,255,.35)}
+.tcount{position:absolute;left:50%;bottom:44px;transform:translateX(-50%);font-size:40px;font-weight:700;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.25);z-index:3}
+.next{position:absolute;top:-6px;right:12px;display:flex;gap:10px;align-items:center;font-size:28px;color:var(--inkSoft);font-weight:600}
+.chip{width:34px;height:46px;border-radius:9px;background:var(--k);box-shadow:0 4px 0 var(--kd)}
+.buffer{top:650px;height:200px;background:var(--rail);box-shadow:inset 0 10px 0 rgba(0,0,0,.12),0 10px 0 rgba(255,255,255,.5)}
+.cell{position:absolute;top:30px;width:66px;height:140px;border-radius:16px;background:var(--cell);box-shadow:inset 0 6px 0 rgba(0,0,0,.08)}
+.cell.card{--cw:66px;--ch:140px;border-radius:16px;box-shadow:0 6px 0 var(--kd);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--k) 70%,#fff) 0%,var(--k) 38%,var(--k) 100%)}
+.cell.card::before{inset:7px;border-width:3px;border-radius:10px}
+.cell.card svg{width:70%}
+.bufLabel{position:absolute;top:610px;left:70px;font-size:30px;font-weight:600;color:var(--inkSoft)}
+.bufCount{position:absolute;top:610px;right:70px;font-size:30px;font-weight:700;color:var(--ink)}
+.board{top:900px;height:var(--boardH,760px);background:var(--trayRim);box-shadow:0 14px 0 rgba(0,0,0,.14),0 30px 50px rgba(0,0,0,.12)}
+.boardIn{position:absolute;inset:22px;border-radius:34px;background:var(--trayIn);box-shadow:inset 0 12px 0 rgba(0,0,0,.08)}
+.boosters{position:absolute;left:0;right:0;bottom:60px;height:170px}
+.boost{position:absolute;bottom:0;width:170px;height:170px;border-radius:48px;background:var(--pill);box-shadow:0 12px 0 rgba(0,0,0,.14),0 20px 30px rgba(0,0,0,.1);
+  display:grid;place-items:center}
+.boost svg{width:84px;height:84px;fill:var(--acc2)}
+.badge{position:absolute;top:-16px;right:-16px;min-width:64px;height:64px;border-radius:32px;background:var(--acc);color:#fff;font-size:36px;font-weight:700;
+  display:grid;place-items:center;padding:0 12px;box-shadow:0 6px 0 var(--accD)}
+.price{position:absolute;bottom:-30px;left:50%;transform:translateX(-50%);height:56px;border-radius:28px;background:var(--ink);color:#fff;font-size:30px;font-weight:700;
+  display:flex;align-items:center;gap:8px;padding:0 18px 0 8px;white-space:nowrap}
+.price .coin{width:42px;height:42px;font-size:22px}
+.bname{position:absolute;bottom:-78px;left:50%;transform:translateX(-50%);font-size:28px;font-weight:600;color:var(--inkSoft);white-space:nowrap}
+
+/* ── home ── */
+.logo{position:absolute;top:330px;left:0;right:0;text-align:center;font-size:150px;font-weight:700;letter-spacing:2px;color:#fff;
+  text-shadow:0 10px 0 var(--acc2D),0 20px 30px rgba(0,0,0,.18);-webkit-text-stroke:6px var(--acc2D);paint-order:stroke fill}
+.tag{position:absolute;top:530px;left:0;right:0;text-align:center;font-size:42px;font-weight:600;color:var(--inkSoft)}
+.fan{position:absolute;top:720px;left:50%;width:0;height:0}
+
+/* ── dialog ── */
+.dim{position:absolute;inset:0;background:var(--dim);z-index:10}
+.panel{z-index:11;position:absolute;left:90px;right:90px;top:420px;height:1000px;border-radius:64px;background:var(--pill);
+  box-shadow:0 18px 0 rgba(0,0,0,.18),0 40px 80px rgba(0,0,0,.3)}
+.ribbon{position:absolute;left:-30px;right:-30px;top:-70px;height:170px;border-radius:44px;background:var(--acc2);box-shadow:0 14px 0 var(--acc2D);
+  color:#fff;font-size:76px;font-weight:700;display:grid;place-items:center;text-shadow:0 5px 0 rgba(0,0,0,.2)}
+.conf{z-index:10;position:absolute;width:26px;height:44px;border-radius:8px}
+/* ── full-set additions (direction B, D-017) ── */
+.buffer.warn{background:#E2604A;box-shadow:inset 0 10px 0 rgba(0,0,0,.15),0 0 0 10px rgba(226,96,74,.35)}
+.buffer.warn .cell:not(.card){background:#F6B3A4}
+.bufCount.warn{color:#D2402A}
+.boost.off{opacity:.45;filter:grayscale(.8)}
+.hand{position:absolute;z-index:14;width:150px;height:170px}
+.spot{position:absolute;z-index:12;border-radius:36px;box-shadow:0 0 0 2400px rgba(70,35,10,.45)}
+.ring{position:absolute;z-index:13;border-radius:50%;border:8px solid rgba(255,255,255,.85)}
+.bubble{position:absolute;z-index:14;left:120px;right:120px;padding:30px 36px;border-radius:40px;background:var(--pill);font-size:48px;font-weight:600;
+  text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.12),0 18px 30px rgba(0,0,0,.15)}
+.ptitle{position:absolute;left:0;right:0;text-align:center;font-weight:600;color:var(--inkSoft)}
+.lbtn{position:absolute;left:0;right:0;text-align:center;font-size:44px;font-weight:600;color:var(--inkSoft)}
+.btn .row{display:flex;align-items:center;gap:18px;position:relative;z-index:1}
+.btn.grey{background:#CDBFAE;box-shadow:0 12px 0 #A8977F;color:#fff}
+.close{position:absolute;z-index:12;top:-30px;right:-30px;width:110px;height:110px;border-radius:55px;background:var(--acc2);box-shadow:0 10px 0 var(--acc2D);
+  display:grid;place-items:center}
+.trow{position:absolute;left:70px;right:70px;height:130px;border-radius:40px;background:var(--cell);display:flex;align-items:center;justify-content:space-between;
+  padding:0 30px 0 44px;font-size:50px;font-weight:600}
+.tog{width:170px;height:88px;border-radius:44px;position:relative;box-shadow:inset 0 6px 0 rgba(0,0,0,.12)}
+.tog.on{background:var(--acc)} .tog.off{background:#BBA993}
+.tog i{position:absolute;top:8px;width:72px;height:72px;border-radius:36px;background:#fff;box-shadow:0 5px 0 rgba(0,0,0,.15)}
+.tog.on i{right:8px} .tog.off i{left:8px}
+.tog b{position:absolute;top:22px;font-size:34px;color:#fff} .tog.on b{left:22px} .tog.off b{right:20px}
+.bigicon{position:absolute;left:50%;transform:translateX(-50%);width:260px;height:260px;border-radius:70px;background:var(--cell);display:grid;place-items:center;
+  box-shadow:inset 0 -12px 0 rgba(0,0,0,.08)}
+.bigicon svg{width:160px;height:160px;fill:var(--acc2)}
+.gift{position:absolute;right:-30px;bottom:-24px;height:84px;border-radius:42px;padding:0 26px;background:var(--acc);color:#fff;font-size:50px;font-weight:700;
+  display:grid;place-items:center;box-shadow:0 8px 0 var(--accD)}
+.desc{position:absolute;left:70px;right:70px;text-align:center;font-size:46px;font-weight:500;color:var(--ink);line-height:1.25}
+.hardtag{background:var(--c0);color:#fff;border-radius:22px;padding:2px 16px;font-size:30px;margin-left:6px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const P = new URLSearchParams(location.search);
+const screen = P.get('screen') || 'gameplay', H = +(P.get('h') || 1920);
+const tall = H - 1920; // extra height on long phones goes to the board
+const EMB = [ // heart, drop, star, leaf, moon, circle — one emblem per colour (glossary)
+ '<svg viewBox="0 0 100 100"><path d="M50 88 12 50C-2 34 8 10 28 10c10 0 17 6 22 14 5-8 12-14 22-14 20 0 30 24 16 40z"/></svg>',
+ '<svg viewBox="0 0 100 100"><path d="M50 6C50 6 16 46 16 64a34 34 0 0 0 68 0C84 46 50 6 50 6z"/></svg>',
+ '<svg viewBox="0 0 100 100"><path d="m50 5 13 29 31 3-23 21 7 31-28-16-28 16 7-31L6 37l31-3z"/></svg>',
+ '<svg viewBox="0 0 100 100"><path d="M86 10C40 8 10 30 12 70l-6 20 8 2 6-16c40 6 66-24 66-66zM30 70c10-20 26-34 44-44-16 14-30 28-40 48z"/></svg>',
+ '<svg viewBox="0 0 100 100"><path d="M62 6a44 44 0 1 0 32 66A36 36 0 0 1 62 6z"/></svg>',
+ '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40"/></svg>'];
+const card = (k, x, y, cls='', w=150, h=206) => `<div class="card k${k} ${cls}" style="left:${x}px;top:${y}px;--cw:${w}px;--ch:${h}px">${EMB[k]}</div>`;
+function stack(x, y, cards, covered){
+  let s = '';
+  for (let i = cards.length - 1; i >= 1; i--) s += `<div class="edge k${cards[i]} ${covered?'covered':''}" style="left:${x}px;top:${y + i*16}px"></div>`;
+  return s + card(cards[0], x, y, covered ? 'covered' : '');
+}
+const I = {
+ pause:'<svg width="48" height="48" viewBox="0 0 10 10" fill="#fff"><rect x="1.5" y="1" width="2.4" height="8" rx="1"/><rect x="6.1" y="1" width="2.4" height="8" rx="1"/></svg>',
+ restart:'<svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 3v5h-5"/></svg>',
+ gear:'<svg width="56" height="56" viewBox="0 0 24 24" fill="#fff"><path d="M19.4 13a7.7 7.7 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a7.6 7.6 0 0 0-1.7-1L14.9 3h-4l-.4 2.7a7.6 7.6 0 0 0-1.7 1l-2.5-1-2 3.4L6.4 11a7.7 7.7 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1a7.6 7.6 0 0 0 1.7 1l.4 2.7h4l.4-2.7a7.6 7.6 0 0 0 1.7-1l2.5 1 2-3.4zM12.9 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>',
+ undo:'<svg viewBox="0 0 24 24"><path d="M9 5 3 10.5 9 16v-4c5 0 8 1.5 10 5-1-5-4-9-10-9.5z"/></svg>',
+ space:'<svg viewBox="0 0 24 24"><rect x="2" y="7" width="5" height="10" rx="1.5"/><rect x="9.5" y="7" width="5" height="10" rx="1.5" opacity=".55"/><path d="M19 8v3h-3v2h3v3h2v-3h3v-2h-3V8z"/></svg>',
+ play:'<svg width="56" height="56" viewBox="0 0 24 24" fill="#fff"><path d="M7 4.5v15l12.5-7.5z"/></svg>',
+ x:'<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+ lock:'<svg width="44" height="44" viewBox="0 0 24 24" fill="#fff"><path d="M6 10V8a6 6 0 0 1 12 0v2h1v11H5V10zm3 0h6V8a3 3 0 0 0-6 0z"/></svg>',
+ hand:'<svg viewBox="0 0 100 115"><path fill="#fff" stroke="#5A3415" stroke-width="5" stroke-linejoin="round" d="M36 8c6 0 9 4 9 10v34l4-1V40c0-6 9-6 9 0v11l4-1v-6c0-6 9-6 9 0v8l4-1v-3c0-6 9-6 9 0v22c0 22-12 38-34 38H52c-14 0-22-8-30-20L8 64c-4-6 4-12 9-7l10 10V18c0-6 3-10 9-10z"/></svg>'
+};
+const coin = (sz=68) => `<div class="coin" style="width:${sz}px;height:${sz}px;font-size:${sz*.53}px">$</div>`;
+
+function topBar(level, coins, hard){
+  return `<div class="pill" style="left:40px;top:70px">${coin()}${coins}</div>
+  <div class="pill" style="left:50%;transform:translateX(-50%);top:70px;padding:0 40px">Level ${level}${hard?`<span class="hardtag">HARD</span>`:''}</div>
+  <div class="rbtn" style="right:176px;top:66px">${I.restart}</div>
+  <div class="rbtn" style="right:40px;top:66px">${I.pause}</div>`;
+}
+const STACKS = [[60,60,[1,1,4,0],0],[250,30,[5,5,2],1],[480,60,[2,2,2,3],0],[310,110,[0,0,1],0],[630,30,[4,3],1],[720,90,[3,0,0,5],0],
+                [120,330,[5,1,1],0],[380,360,[1,2],0],[620,330,[4,4,0],0]];
+// o: level, hard, coins, targets [[k,filled,cap]], next [k], buf [k], cap, stacks, undo, add, warn
+function gameplay(o = {}){
+  o = Object.assign({level:23, hard:false, coins:'9,999', targets:[[0,2,3],[1,0,3],[2,1,3]], next:[3,0], buf:[3,3,4,5,5], cap:12,
+                     stacks:STACKS, undo:{n:2}, add:{price:100}, warn:false}, o);
+  let s = topBar(o.level, o.coins, o.hard);
+  const n = o.targets.length, w = n === 2 ? 470 : 300, gap = n === 2 ? 60 : 40;
+  s += `<div class="zone targets">`;
+  o.targets.forEach(([k,f,c],i)=>{
+    s += `<div class="tslot" style="left:${i*(w+gap)}px;width:${w}px">`;
+    for (let j=0;j<f;j++) s += card(k, w/2-75, 120 - j*34);
+    s += `<div class="tbase k${k}"></div><div class="tcount">${f}/${c}</div></div>`;
+  });
+  if (o.next.length) s += `<div class="next">next ${o.next.map(k=>`<div class="chip k${k}"></div>`).join('')}</div>`;
+  s += `</div>`;
+  const cw = Math.min(66, Math.floor((960 - 8*(o.cap-1)) / o.cap)), step = cw + Math.floor((960 - cw*o.cap)/(o.cap-1));
+  s += `<div class="bufLabel">Holding area</div><div class="bufCount ${o.warn?'warn':''}">${o.buf.length} / ${o.cap}</div><div class="zone buffer ${o.warn?'warn':''}">`;
+  for (let i=0;i<o.cap;i++){ const x = 34 + i*step; s += i < o.buf.length ? `<div class="cell card k${o.buf[i]}" style="left:${x}px;--cw:${cw}px;width:${cw}px">${EMB[o.buf[i]]}</div>` : `<div class="cell" style="left:${x}px;width:${cw}px"></div>`; }
+  s += `</div>`;
+  const oy = Math.round(tall/2);
+  s += `<div class="zone board" style="--boardH:${650+tall}px"><div class="boardIn">`;
+  o.stacks.forEach(([x,y,c,cov]) => s += stack(x, y+oy, c, cov));
+  s += `</div></div>`;
+  const b = (st, icon, name, left) => {
+    if (!st) return '';
+    const inner = st.n != null ? `<div class="badge">${st.n}</div>` : `<div class="price">${coin(42)}${st.price}</div>`;
+    return `<div class="boost ${st.off?'off':''}" style="left:${left}px">${icon}${inner}<div class="bname" style="bottom:${st.n!=null?-78:-92}px">${name}</div></div>`;
+  };
+  s += `<div class="boosters" style="bottom:110px">${b(o.undo, I.undo, 'Undo', 250)}${b(o.add, I.space, 'Extra Space', 660)}</div>`;
+  return s;
+}
+// generic dialog over a dimmed gameplay
+function dialog({title, ribbonColor, h=1000, body, bg}){
+  const top = Math.round((H - h)/2) + 40;
+  const fs = Math.min(76, Math.floor(1500 / title.length));
+  return (bg ?? gameplay()) + `<div class="dim"></div><div class="panel" style="top:${top}px;height:${h}px">
+    <div class="ribbon" style="font-size:${fs}px;${ribbonColor?`background:${ribbonColor[0]};box-shadow:0 14px 0 ${ribbonColor[1]}`:''}">${title}</div>${body}</div>`;
+}
+const BTN = (label, top, kind='primary', w=600, h=150, fs=64) => `<div class="btn ${kind}" style="top:${top}px;width:${w}px;height:${h}px;font-size:${fs}px"><div class="row">${label}</div></div>`;
+const LINK = (label, top) => `<div class="lbtn" style="top:${top}px">${label}</div>`;
+const confetti = () => { const C=['--c0','--c1','--c2','--c3','--c4','--c5']; let s=''; for (let i=0;i<26;i++){ const x=(i*137)%1040, y=120+((i*251)%560)+tall/2, r=(i*47)%180; s += `<div class="conf" style="left:${x}px;top:${y}px;background:var(${C[i%6]});transform:rotate(${r}deg)"></div>`; } return s; };
+const fan3 = (top, ks=[2,0,1]) => `<div style="position:absolute;top:${top}px;left:50%;width:0">${ks.map((k,i)=>`<div style="position:absolute;left:-75px;transform-origin:75px 300px;transform:rotate(${(i-1)*16}deg)">${card(k,0,0)}</div>`).join('')}</div>`;
+
+function winBody(level, reward, final){
+  return `<div class="ptitle" style="top:150px;font-size:54px">Level ${level}</div>${fan3(260)}
+    <div class="pill" style="left:50%;transform:translateX(-50%);top:560px;height:120px;font-size:64px;padding:0 44px 0 18px;background:var(--cell)">${coin(88)}+${reward}</div>
+    ${final ? `<div class="ptitle" style="top:720px;font-size:42px">More levels coming soon</div>` : ''}
+    ${BTN(final ? 'Play again' : 'Next', final ? 800 : 760, 'primary', 560, 160, 72)}${LINK('Home', final ? 1010 : 970)}`;
+}
+const LOSE_BG = () => gameplay({buf:[3,3,4,5,5,4,3,1,5,4,0,4], warn:true, add:{price:100, off:true}, targets:[[0,2,3],[1,1,3],[2,1,3]]});
+
+const SCREENS = {
+  'gameplay': () => gameplay(),
+  'gameplay-warning': () => gameplay({level:17, buf:[3,3,4,5,5,4,3,4,5,3], warn:true, undo:{n:0, price:60}, add:{price:100, off:true}}),
+  'gameplay-ftue-l1': () => gameplay({level:1, coins:'100', targets:[[0,0,3],[1,0,3]], next:[], buf:[], cap:16,
+      stacks:[[120,80,[0,0,0],0],[560,80,[1,1,1],0],[120,360,[1,1,1],0],[560,360,[0,0,0],0]], undo:null, add:null})
+    + `<div class="spot" style="left:166px;top:${986+tall/2}px;width:194px;height:290px"></div>
+       <div class="ring" style="left:180px;top:${1030+tall/2}px;width:170px;height:170px"></div>
+       <div class="hand" style="left:250px;top:${1140+tall/2}px">${I.hand}</div>
+       <div class="bubble" style="top:${700+tall/4}px">Tap a stack to send its cards!</div>`,
+  'win': () => dialog({title:'Level Complete!', h:1100, body:winBody(12, 20, false), bg:gameplay({level:12})}) + confetti(),
+  'win-hard': () => dialog({title:'Hard Level Cleared!', h:1100, body:winBody(25, 30, false), bg:gameplay({level:25, hard:true})}) + confetti(),
+  'win-final': () => dialog({title:'Hard Level Cleared!', h:1140, body:winBody(30, 30, true), bg:gameplay({level:30, hard:true})}) + confetti(),
+  'lose-offer': () => dialog({title:'Out of space!', ribbonColor:['#E2604A','#B7411F'], h:1000, bg:LOSE_BG(),
+      body:`${fan3(150,[4,3,5])}${BTN(`${I.play} Continue free`, 470, 'primary', 680, 160, 62)}
+            ${BTN(`Continue ${coin(60)} 120`, 670, 'secondary', 680, 150, 56)}${LINK('No thanks', 860)}`}),
+  'lose-offer-poor': () => dialog({title:'Out of space!', ribbonColor:['#E2604A','#B7411F'], h:1000, bg:LOSE_BG(),
+      body:`${fan3(150,[4,3,5])}${BTN(`${I.play} Continue free`, 470, 'primary', 680, 160, 62)}
+            ${BTN(`${I.lock} Not enough coins`, 670, 'grey', 680, 150, 50)}${LINK('No thanks', 860)}`}),
+  'lose-failed': () => dialog({title:'Level failed', ribbonColor:['#E2604A','#B7411F'], h:1000, bg:LOSE_BG(),
+      body:`<div class="ptitle" style="top:150px;font-size:54px">Level 23</div>${fan3(260,[4,3,5]).replace(/class="card/g,'class="card covered')}
+            ${BTN('Retry', 600, 'primary', 560, 160, 72)}${LINK('Home', 810)}`}),
+  'pause': () => dialog({title:'Paused', h:1020, body:`
+      ${BTN('Resume', 180, 'primary', 620, 160, 68)}${BTN('Restart', 400, 'secondary', 620, 150, 60)}${BTN('Home', 600, 'secondary', 620, 150, 60)}
+      <div class="rbtn" style="left:50%;transform:translateX(-50%);top:800px;width:120px;height:120px;border-radius:36px">${I.gear}</div>`}),
+  'settings': () => dialog({title:'Settings', h:820, body:`<div class="close">${I.x}</div>
+      <div class="trow" style="top:190px">Sound<div class="tog on"><b>ON</b><i></i></div></div>
+      <div class="trow" style="top:360px">Music<div class="tog off"><i></i><b>OFF</b></div></div>
+      <div class="trow" style="top:530px">Haptics<div class="tog on"><b>ON</b><i></i></div></div>`}),
+  'booster-buy': () => dialog({title:'Need a boost?', h:1130, bg:gameplay({add:{price:100}}), body:`<div class="close">${I.x}</div>
+      <div class="bigicon" style="top:150px">${I.space}</div><div class="ptitle" style="top:440px;font-size:60px;color:var(--ink)">Extra Space</div>
+      <div class="desc" style="top:530px">Get more room to hold cards.</div>
+      ${BTN(`${coin(64)} 100`, 680, 'secondary', 620, 150, 60)}${BTN(`${I.play} Free`, 860, 'primary', 620, 150, 60)}`}),
+  'booster-buy-poor': () => dialog({title:'Need a boost?', h:1130, bg:gameplay({coins:'40', undo:{n:0, price:60}}), body:`<div class="close">${I.x}</div>
+      <div class="bigicon" style="top:150px">${I.undo}</div><div class="ptitle" style="top:440px;font-size:60px;color:var(--ink)">Undo</div>
+      <div class="desc" style="top:530px">Take back your last tap.</div>
+      ${BTN(`${I.lock} Not enough coins`, 680, 'grey', 620, 150, 48)}${BTN(`${I.play} Ad not available`, 860, 'grey', 620, 150, 48)}`}),
+  'unlock-undo': () => dialog({title:'New booster: Undo!', h:980, bg:gameplay({level:4, undo:{n:2}, add:null}), body:`
+      <div class="bigicon" style="top:170px">${I.undo}<div class="gift">x2</div></div>
+      <div class="desc" style="top:500px">Take back your last tap.</div>${BTN('Got it', 680, 'primary', 520, 160, 68)}`}),
+  'unlock-space': () => dialog({title:'New booster: Extra Space!', h:980, bg:gameplay({level:7, undo:{n:1}, add:{n:2}}), body:`
+      <div class="bigicon" style="top:170px">${I.space}<div class="gift">x2</div></div>
+      <div class="desc" style="top:500px">Get more room to hold cards.</div>${BTN('Got it', 680, 'primary', 520, 160, 68)}`}),
+  'restart-confirm': () => dialog({title:'Restart level?', h:560, body:`
+      <div class="desc" style="top:150px;color:var(--inkSoft)">Boosters used won't come back.</div>
+      <div class="btn secondary" style="top:320px;left:28%;width:330px;height:150px;font-size:60px"><div class="row">Yes</div></div><div class="btn primary" style="top:320px;left:72%;width:330px;height:150px;font-size:60px"><div class="row">No</div></div>`}),
+  'home': () => homeScreen(12, false),
+  'home-final': () => homeScreen(30, true),
+};
+function homeScreen(level, final){
+  let s = `<div class="pill" style="left:40px;top:70px">${coin()}9,999</div>
+    <div class="rbtn" style="right:40px;top:66px">${I.gear}</div>
+    <div class="logo" style="top:${330+tall/6}px">CardSlot</div><div class="tag" style="top:${530+tall/6}px">Tap. Match. Clear!</div>`;
+  s += `<div class="fan" style="top:${760+tall/3}px">`;
+  [0,1,2,3,4,5].forEach((k,i)=>{ const a = (i-2.5)*12; s += `<div style="position:absolute;left:-90px;top:0;transform-origin:90px 520px;transform:rotate(${a}deg)">${card(k,0,0,'',180,250)}</div>`; });
+  s += `</div><div class="btn primary" style="top:${1360+tall*.6}px;width:640px;height:190px;font-size:84px">Level ${level}</div>`;
+  if (final) s += `<div style="position:absolute;top:${1590+tall*.6}px;left:0;right:0;text-align:center;font-size:34px;color:var(--inkSoft);font-weight:600">More levels coming soon</div>`;
+  return s;
+}
+document.getElementById('root').innerHTML = `<div class="stage th-b" style="--h:${H}px">${SCREENS[screen]()}</div>`;
+</script>
+</body>
+</html>

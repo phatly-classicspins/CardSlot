@@ -6,8 +6,8 @@ Người duyệt: Thiết kế Phat · Hình ảnh Phat · Art Phat · Kỹ thu�
 |---|---|---|---|
 | 0 Khởi động | xong | concept.md v0.2, reference-card-slots.md | Phat, 06-10-2026 |
 | 1 GDD | xong | GDD.md v1.0 + glossary, level-design, economy-sheet, screen-inventory, features/ (v1.0) | Phat, 06-10-2026 |
-| 2 Mock-up | đang làm | | |
-| 3 Art | chưa bắt đầu | | |
+| 2 Mock-up | xong | 20 mock-up v01 (`docs/mockups/`), design-tokens v1.0 · GDD v1.1 (CR-001) | Phat, 06-10-2026 | |
+| 3 Art | đang làm | | |
 | 4 Animation | chưa bắt đầu | | |
 | 5 Logic | chưa bắt đầu | | |
 | 6 Ráp | chưa bắt đầu | | |
@@ -21,6 +21,8 @@ Người duyệt: Thiết kế Phat · Hình ảnh Phat · Art Phat · Kỹ thu�
 - [x] concept.md v0.2 đã duyệt (Phat, 06-10-2026)
 - [x] GDD v1.0 đã duyệt kèm 6 mục [XÁC NHẬN] — D-015
 - [x] Kinh tế + đường cong độ khó đã duyệt — D-015
+- [x] 20 mock-up v01 + design token đã duyệt — D-018
+- [x] CR-001 chọn a: giới hạn tiêu đề 26 ký tự + key `gameplay.restart.note` — GDD v1.1
 
 ## Việc tiếp theo (theo thứ tự)
 1. ~~Đóng Unity → sửa `Packages/manifest.json` (scoped registry OpenUPM + framework + Unity-MCP IvanMurzak).~~ xong 06-10-2026
@@ -31,12 +33,15 @@ Người duyệt: Thiết kế Phat · Hình ảnh Phat · Art Phat · Kỹ thu�
 6. ~~Bước 0 nội dung: concept, game tham khảo, phạm vi MVP.~~ nháp xong 06-10-2026 (D-006…D-012)
 7. ~~Chốt người duyệt + duyệt concept → đóng cổng Bước 0.~~ xong 06-10-2026
 8. ~~Bước 1 GDD~~ xong 06-10-2026 (D-014, D-015)
-9. Bước 2 Mock-up.
+9. ~~Bước 2 Mock-up~~ xong 06-10-2026 (D-016…D-018, CR-001)
+10. Bước 3 Art.
 
 ## Ghi chú kỹ thuật đang mở
 - Boot báo `[Localization] no bundled JSON for locale 'en'` và `no bundled products.json` — đúng với SKU mới chưa có nội dung; xử lý khi thêm LocKey / catalog đầu tiên.
 
 ## Phiên gần nhất
+06-10-2026 (5) · Bước 1 đóng (D-015, commit 5c2e869). Bước 2: công cụ HTML→PNG (D-016); 3 hướng phong cách, chọn B Warm Toybox (D-017); dựng `screens.html`, render 20 mock-up (9:16 + 9:20) vào `docs/mockups/*-v01.png`; nháp `docs/design/design-tokens.md` · bằng chứng: đã xem từng ảnh qua 2 contact sheet, sửa 6 lỗi bố cục (màu lá ô tạm, chồng bị che, R-3 chồng vàng, nhãn booster bị cắt, z-index dialog, nút Yes bị đè) · chưa kiểm tra: chưa xem trên máy thật; chuyển động chưa có mock-up (Bước 4) · đã duyệt (D-018), đã commit.
+
 06-10-2026 (4) · Bước 0 đóng (D-013, commit 4f70d1e); Bước 1: chốt luật lõi D-014; viết `docs/design/GDD.md`, `glossary.md`, `level-design.md`, `economy-sheet.md`, `screen-inventory.md`, `features/` (7 spec) · bằng chứng: chỉ tài liệu · chưa kiểm tra: luật chưa được thử bằng code/solver (làm ở Bước 5); con số kinh tế chưa qua chơi thử · đã duyệt (D-015), đã commit.
 
 06-10-2026 (3) · Bước 0 nội dung: đọc trang App Store của Card Slots (mô tả + 4 ảnh), viết `docs/design/reference-card-slots.md` và `docs/design/concept.md`; chốt D-006…D-012 (nền tảng, kiếm tiền giả lập, tiếng Anh, ý tưởng, MVP 30 level, art 3D-look, tên nội bộ) · bằng chứng: chỉ tài liệu, không có thay đổi code · chưa kiểm tra: chưa chơi thử hay xem video gameplay game tham khảo (các điểm "suy ra" trong bản phân tích cần xác minh) · đã duyệt, đã commit.

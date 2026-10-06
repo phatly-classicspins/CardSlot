@@ -1,6 +1,6 @@
 # CardSlot — Game Design Document
 
-> v1.0 · Bước 1 · đã duyệt (Phat, 06-10-2026), chưa duyệt. Đầu vào: `concept.md` v0.2 (đã duyệt), D-006…D-014.
+> v1.1 · Bước 1 · đã duyệt (Phat, 06-10-2026) · v1.1: CR-001 (Bước 2). Đầu vào: `concept.md` v0.2 (đã duyệt), D-006…D-014.
 > ID chuẩn: `glossary.md`. Đi kèm: `level-design.md`, `economy-sheet.md`, `screen-inventory.md`, `features/*.md`.
 > Các mục **[XÁC NHẬN]** do AI đề xuất đã được duyệt cùng GDD (D-015).
 
@@ -149,7 +149,7 @@ Rung (`haptics`): nhẹ khi `target` hoàn thành, vừa khi thua.
 
 - **Giọng văn:** ngắn, vui, động từ trước ("Tap to send cards!"). Không dùng tiếng lóng.
 - **Key:** `<màn>.<phần tử>[.<biến thể>]`, chữ thường, ví dụ `home.play`, `win.title`, `ftue.l1.step1`. Mọi text đi qua `LocKey` (D-008, rule #4).
-- **Độ dài tối đa:** tiêu đề 18 ký tự, nút 12 ký tự, dòng hướng dẫn 40 ký tự.
+- **Độ dài tối đa:** tiêu đề 26 ký tự (ribbon tự thu nhỏ chữ: `min(76, 1500 / số ký tự)` px), nút 12 ký tự, dòng hướng dẫn 40 ký tự. (v1.1, CR-001)
 - Danh sách key nằm trong từng spec ở `features/`.
 
 ## 11. Kiếm tiền và quảng cáo (giả lập, D-007)
@@ -185,3 +185,10 @@ Các sự kiện đều ở thì quá khứ, là sự thật đã xảy ra (rule
 | Chạm nhiều ngón cùng lúc | Chỉ nhận một `tap` mỗi khung hình (con trỏ đầu tiên). |
 | Hết 30 level | Màn Win của Level 30 hiện "More levels coming soon"; Play ở Home mở lại Level 30. [XÁC NHẬN] |
 | Không đủ xu cho booster/Continue | Nút giá xu bị khoá; vẫn còn lựa chọn xem quảng cáo. |
+
+## Lịch sử thay đổi
+
+| Phiên bản | Ngày | Thay đổi |
+|---|---|---|
+| v1.0 | 06-10-2026 | Duyệt lần đầu (D-015). |
+| v1.1 | 06-10-2026 | CR-001 (phát sinh ở Bước 2): giới hạn tiêu đề 18 → 26 ký tự, ribbon tự thu nhỏ chữ; thêm key `gameplay.restart.note`. Ảnh hưởng: `features/core-gameplay.md`, mock-up `win-hard`, `win-final`, `unlock-space`, `restart-confirm`. |

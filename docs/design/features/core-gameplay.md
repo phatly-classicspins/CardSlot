@@ -1,6 +1,6 @@
 # Spec: Gameplay lõi + HUD
 
-> v1.0 · Bước 1 · đã duyệt (Phat, 06-10-2026). Luật: `GDD.md` §2 (R-1…R-15).
+> v1.1 · Bước 1 · đã duyệt (Phat, 06-10-2026) · v1.1: CR-001 (Bước 2). Luật: `GDD.md` §2 (R-1…R-15).
 
 **Mục đích.** Người chơi chạm các chồng bài để gửi lá lên đích cùng màu, quản lý ô tạm, dọn sạch bàn.
 
@@ -28,7 +28,7 @@ Không lưu gì giữa level (GDD §5). Kết quả level được lưu ở `lev
 
 ## Key text
 
-`gameplay.level` ("Level {0}") · `gameplay.restart.confirm` ("Restart level?") · `gameplay.restart.yes` · `gameplay.restart.no`
+`gameplay.level` ("Level {0}") · `gameplay.restart.confirm` ("Restart level?") · `gameplay.restart.note` ("Boosters used won't come back.", v1.1 CR-001) · `gameplay.restart.yes` · `gameplay.restart.no`
 
 ## Visual Contract
 
