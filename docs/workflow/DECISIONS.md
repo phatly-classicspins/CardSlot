@@ -58,3 +58,15 @@ Lý do: gần trùng "Card Slots" đã có trên App Store.
 
 ### D-013 · 06-10-2026 · Bước 0 · Người duyệt và cổng Bước 0
 Quyết định: Phat duyệt tất cả các bước (Thiết kế, Hình ảnh, Art, Kỹ thuật, Phát hành); `concept.md` v0.2 được duyệt, đóng cổng Bước 0 — người chốt: Phat
+
+### D-014 · 06-10-2026 · Bước 1 · Luật lõi
+Câu hỏi và quyết định (người chốt: Phat):
+- Đơn vị chạm: a) cả nhóm lá cùng màu liền nhau trên cùng của chồng · b) một lá → **a**
+- Hàng đích: a) hàng đợi cố định theo level, 3 đích hiện cùng lúc, có hiện trước màu kế tiếp · b) cố định, không hiện trước · c) đích không thay → **a**
+- Ô tạm: a) lá cùng màu tự bay lên khi có đích phù hợp · b) người chơi chạm để gửi → **a**
+- Thua và chấm điểm: a) ô tạm tràn = thua; không sao, không giới hạn thời gian/nước · b) thêm 3 sao · c) thêm giới hạn thời gian → **a**
+Lý do: giống nhịp game tham khảo; xác định hoàn toàn nên solver kiểm chứng được.
+Ảnh hưởng: `docs/design/GDD.md` §2.
+
+### D-015 · 06-10-2026 · Bước 1 · Duyệt GDD
+Quyết định: GDD v1.0 và các tài liệu đi kèm (glossary, level-design, economy-sheet, screen-inventory, 7 spec trong `features/`) được duyệt nguyên trạng, gồm 6 mục [XÁC NHẬN]: chạm được khi đang hoạt ảnh (R-8); Undo lùi được tới đầu level, giữ chỗ buffer đã cộng (R-16); Extra Space +4, 1 lần/lượt (R-17); chỉ tài khoản khách, không cloud save; hết Level 30 → "More levels coming soon" + chơi lại L30; Back ở Home không làm gì. Con số kinh tế và đường cong độ khó dùng như bản nháp, chỉnh sau chơi thử Bước 8 — người chốt: Phat
