@@ -1,0 +1,42 @@
+# Claude Code launched through the CCS profile switcher on the `classicspins`
+# account (`ccs classicspins --dangerously-skip-permissions`).
+#
+# A copy of the shipped `claude` profile with the launch changed: `ccs` is the
+# binary, the CCS profile name rides in launch_args (argv is
+# [binary, *launch_args, prompt, *bypass_args] — see adapters/generic.py
+# interactive_argv), and the permission bypass uses the flag CCS forwards to
+# Claude Code. Everything downstream is unchanged because the process really is
+# Claude Code: same transcript format, same hook dialect, same skill tree.
+name = "ccs-classicspins"
+binary = "ccs"
+launch_args = ["classicspins"]
+prompt_template = "{prompt}"
+bypass_args = ["--dangerously-skip-permissions"]
+model_flag = "--model"
+usage_parser = "claude-jsonl"
+first_run_note = "run `ccs classicspins` once in the project to accept workspace trust and hooks approval"
+skill_tree = ".claude/skills"
+seed_files = [
+  ".mcp.json",
+  ".claude/settings.json",
+  ".claude/settings.local.json",
+]
+
+# Verbatim from the shipped claude profile. The single-character classes
+# (`t[o]`, `respons[e]`, `5[2]9`, `5[0]0`) are load-bearing, not typos: each
+# makes its pattern fail to match its OWN line here, so a session that prints or
+# diffs this file is not read as a provider outage.
+env_fault_patterns = [
+  "API Error: Unable to connect t[o] API",
+  "API Error: Connection closed mid-respons[e]",
+  "API Error: (5[2]9 Overloaded|5[0]0 Internal server error)",
+]
+
+[env]
+CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN = "1"
+CLAUDE_CODE_DISABLE_BACKGROUND_TASKS = "1"
+
+[hooks]
+dialect = "claude-settings-json"
+config_path = ".claude/settings.json"
+events = { SessionStart = "SessionStart", Stop = "Stop", SessionEnd = "SessionEnd", PreCompact = "PreCompact" }
