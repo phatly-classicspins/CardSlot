@@ -25,3 +25,36 @@ Quyết định: cài Unity-MCP của IvanMurzak (`com.ivanmurzak.unity.mcp`) ch
 ### D-005 · 06-10-2026 · Bước 0 · BMAD
 Quyết định: copy `_bmad/`, `.bmad-loop/` (hook + profile) và `.claude/skills/bmad-*` từ repo framework — người chốt: Phat
 Ghi chú: loop tự động (`bmad-loop`) cần Python + uv + `bmad-loop init`; máy hiện chưa có Python nên chưa bật hook bmad-loop trong `.claude/settings.json`.
+
+### D-006 · 06-10-2026 · Bước 0 · Nền tảng
+Phương án: a) Android + iOS, dọc · b) chỉ Android, dọc · c) mobile ngang
+Quyết định: a) Android + iOS, màn dọc, độ phân giải chuẩn 1080×1920 — người chốt: Phat
+Lý do: khớp sẵn rig của framework (safe rect x ±540 · y ±960), không phải chỉnh cấu hình.
+
+### D-007 · 06-10-2026 · Bước 0 · Kiếm tiền MVP
+Phương án: a) có nhưng giả lập · b) không · c) quảng cáo + IAP thật
+Quyết định: a) luồng quảng cáo/IAP chạy trên Fake Ads/IAP của framework, chưa nối SDK thật — người chốt: Phat
+Ảnh hưởng: chưa cần tài khoản AdMob/Store; nối SDK sau qua service module (`pf-add-service-module`).
+
+### D-008 · 06-10-2026 · Bước 0 · Ngôn ngữ ra mắt
+Quyết định: chỉ tiếng Anh; mọi text vẫn đi qua `LocKey` để thêm ngôn ngữ sau không phải sửa code — người chốt: Phat
+
+### D-009 · 06-10-2026 · Bước 0 · Ý tưởng và game tham khảo
+Quyết định: puzzle "chạm để xếp" màu với lá bài, đích và ô tạm có giới hạn; tham khảo Card Slots (https://apps.apple.com/us/app/card-slots/id6757999544) — người chốt: Phat
+Ảnh hưởng: `docs/design/concept.md`, `docs/design/reference-card-slots.md`. Chỉ học vòng chơi và nhịp độ, không lấy art/level (G8).
+
+### D-010 · 06-10-2026 · Bước 0 · Phạm vi MVP
+Phương án số level: a) 30 · b) 15 · c) 50+ — tính năng: a) giữ đề xuất · b) bỏ booster · c) thêm Xáo bài
+Quyết định: 30 level đã qua solver; 6 màn hình (Home, Gameplay, Thắng, Thua/Tiếp tục, Tạm dừng, Cài đặt); booster Thêm ô + Hoàn tác; xu lưu trên máy; Tiếp tục khi thua bằng rewarded/xu; interstitial; tutorial bàn tay level 1–2 — người chốt: Phat
+Để sau MVP: bản đồ level, daily reward, IAP/SDK thật, sự kiện, leaderboard, cloud save, thêm ngôn ngữ, layout tablet.
+
+### D-011 · 06-10-2026 · Bước 0 · Hướng art
+Phương án: a) đồ chơi 3D-look sáng · b) bàn bài cổ điển · c) phẳng tối giản
+Quyết định: a) khối bo tròn, bóng mềm, màu bão hoà trên nền pastel; mỗi màu có thêm hoạ tiết cho người mù màu — người chốt: Phat
+
+### D-012 · 06-10-2026 · Bước 0 · Tên game
+Quyết định: "CardSlot" chỉ là tên nội bộ (repo, SKU); đặt tên thương mại trước khi lên store ở Bước 8 — người chốt: Phat
+Lý do: gần trùng "Card Slots" đã có trên App Store.
+
+### D-013 · 06-10-2026 · Bước 0 · Người duyệt và cổng Bước 0
+Quyết định: Phat duyệt tất cả các bước (Thiết kế, Hình ảnh, Art, Kỹ thuật, Phát hành); `concept.md` v0.2 được duyệt, đóng cổng Bước 0 — người chốt: Phat
