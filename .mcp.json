@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "ai-game-developer": {
+      "type": "http",
+      "url": "http://localhost:28410",
+      "timeout": 900000
+    }
+  }
+}
