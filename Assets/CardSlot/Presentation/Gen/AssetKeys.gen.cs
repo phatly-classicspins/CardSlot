@@ -16,7 +16,8 @@ namespace Game.Presentation
         }
         public static class Gameplay
         {
-            public static readonly AssetKey<GameObject> BoardView = new("Gameplay/BoardView");
+            public static readonly AssetKey<GameObject> Board3DView = new("Gameplay/Board3DView");
+            public static readonly AssetKey<GameObject> BoardView   = new("Gameplay/BoardView");
         }
         public static class Home
         {

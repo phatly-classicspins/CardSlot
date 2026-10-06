@@ -113,7 +113,16 @@ namespace Game.Editor
                 Set(so, "_buttonPrimary", S("ui", "btn_primary"));
                 Set(so, "_badge", S("ui", "badge"));
                 Set(so, "_font", font);
+                SetBool(so, "_draw2DBoard", false);   // CR-003: the board is 3D; this view keeps HUD, labels, result card
             });
+
+            Save("Gameplay/Board3DView", "Game.Views.Board3DView, Game.Views", so =>
+            {
+                Set(so, "_cardFace", Six("gameplay", "card_face_"));
+                Set(so, "_cardMini", Six("gameplay", "card_mini_"));
+                Set(so, "_ground", S("bg", "bg_ground"));
+                SetFloat(so, "_tilt", 35f);   // D-025
+            }, rectTransform: false);
 
             Save("Home/HomeView", "Game.Views.HomeView, Game.Views", so =>
             {
@@ -130,17 +139,16 @@ namespace Game.Editor
             Save("Content/LevelCatalog", "Game.Infrastructure.LevelCatalog, Game.Infrastructure", so => Set(so, "_levels", levels));
         }
 
-        private static void Save(string address, string componentType, Action<SerializedObject> wire)
+        private static void Save(string address, string componentType, Action<SerializedObject> wire, bool rectTransform = true)
         {
             var type = Type.GetType(componentType);
             if (type == null) { Debug.LogError($"{Tag} type {componentType} not found — compile first."); return; }
             string path = $"{PrefabsRoot}/{address}.prefab";
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            var go = new GameObject(Path.GetFileName(address), typeof(RectTransform));
+            var go = rectTransform ? new GameObject(Path.GetFileName(address), typeof(RectTransform)) : new GameObject(Path.GetFileName(address));
             try
             {
-                var rt = (RectTransform)go.transform;
-                rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero;
+                if (go.transform is RectTransform rt) { rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero; }
                 var component = go.AddComponent(type);
                 var so = new SerializedObject(component);
                 wire(so);
@@ -148,6 +156,20 @@ namespace Game.Editor
                 PrefabUtility.SaveAsPrefabAsset(go, path);
             }
             finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        private static void SetFloat(SerializedObject so, string field, float value)
+        {
+            var p = so.FindProperty(field);
+            if (p == null) { Debug.LogError($"{Tag} field {field} not found on {so.targetObject.GetType().Name}"); return; }
+            p.floatValue = value;
+        }
+
+        private static void SetBool(SerializedObject so, string field, bool value)
+        {
+            var p = so.FindProperty(field);
+            if (p == null) { Debug.LogError($"{Tag} field {field} not found on {so.targetObject.GetType().Name}"); return; }
+            p.boolValue = value;
         }
 
         private static void Set(SerializedObject so, string field, UnityEngine.Object value)

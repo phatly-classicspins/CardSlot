@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3496054891380661747
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1622766400748997109}
+  - component: {fileID: 385426216460416775}
+  m_Layer: 0
+  m_Name: Board3DView
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1622766400748997109
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3496054891380661747}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &385426216460416775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3496054891380661747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e17d0216fdd672478df3f193e2ba040, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Views::Game.Views.Board3DView
+  _cardFace:
+  - {fileID: 21300000, guid: 06fcd4730a29fe44a973ccc852226fc7, type: 3}
+  - {fileID: 21300000, guid: b8a3f32a1880fd044a984c7358bfebcf, type: 3}
+  - {fileID: 21300000, guid: bb2f485635089584fb6dc199dab38113, type: 3}
+  - {fileID: 21300000, guid: 19154161000247a4e810a140bf285ccf, type: 3}
+  - {fileID: 21300000, guid: c58f022a4d2fda04ca544faa88d10fec, type: 3}
+  - {fileID: 21300000, guid: 4085bb68b91dcc24c9c4915615c7821a, type: 3}
+  _cardMini:
+  - {fileID: 21300000, guid: f37d9e5958f81aa4a8c2d18f853cc1c0, type: 3}
+  - {fileID: 21300000, guid: e99e21cfc5110cc4fbec8082d861cba0, type: 3}
+  - {fileID: 21300000, guid: 3db59c5119e04bc4b9425fff99671791, type: 3}
+  - {fileID: 21300000, guid: 1bf1b91cd0ba25e46b6f574a3b590cb6, type: 3}
+  - {fileID: 21300000, guid: d2959e9bb36b9704d84f23b78de5f33e, type: 3}
+  - {fileID: 21300000, guid: d4e2fcffedaa1eb428e7f2d5f7886fcf, type: 3}
+  _ground: {fileID: 21300000, guid: 7daf6d21ddc4bfe41afc08f48f3a2b02, type: 3}
+  _tilt: 35

@@ -32,8 +32,9 @@ namespace Game.Presentation
         private readonly EconomyTuning _tuning;
         private readonly ILog _log;
 
-        private GameObject _viewPrefab, _viewInstance;
+        private GameObject _viewPrefab, _viewInstance, _board3DPrefab, _board3DInstance;
         private BoardView _view;
+        private Board3DView _board3D;
         private int _level, _levelCount;
         private LevelData _data;
         private BoardModel _board;
@@ -51,9 +52,15 @@ namespace Game.Presentation
         public override async UniTask OnLoadAsync(CancellationToken ct)
         {
             _levelCount = await _levels.CountAsync(ct);
+            // CR-003: the board is 3D under WorldRoot (Renderer content anchored in game space, rule #16) …
+            _board3DPrefab = await _assets.LoadAsync(AssetKeys.Gameplay.Board3DView, ct);
+            _board3DInstance = Object.Instantiate(_board3DPrefab, WorldRoot(), false);
+            _layers.Stamp(_board3DInstance, RenderLayers.GamePlay);   // stamped while empty: Stamp zeroes every node's z
+            _board3D = _board3DInstance.GetComponent<Board3DView>();
+            // … and the HUD, labels and result card are screen furniture on the Ui layer
             _viewPrefab = await _assets.LoadAsync(AssetKeys.Gameplay.BoardView, ct);
-            _viewInstance = Object.Instantiate(_viewPrefab, _layers.GetHost(RenderLayers.GamePlay), false);
-            _layers.Stamp(_viewInstance, RenderLayers.GamePlay);
+            _viewInstance = Object.Instantiate(_viewPrefab, _layers.GetHost(RenderLayers.Ui), false);
+            _layers.Stamp(_viewInstance, RenderLayers.Ui);
             _view = _viewInstance.GetComponent<BoardView>();
             _view.StackTapped += OnStackTapped;
             _view.RestartPressed += () => StartLevel(_level).Forget();
@@ -72,7 +79,9 @@ namespace Game.Presentation
             _cts.Cancel();
             if (_viewInstance != null) Object.Destroy(_viewInstance);
             if (_viewPrefab != null) _assets.Release(_viewPrefab);
-            _viewInstance = null; _viewPrefab = null; _view = null;
+            if (_board3DInstance != null) Object.Destroy(_board3DInstance);
+            if (_board3DPrefab != null) _assets.Release(_board3DPrefab);
+            _viewInstance = null; _viewPrefab = null; _view = null; _board3DInstance = null; _board3DPrefab = null; _board3D = null;
             return UniTask.CompletedTask;
         }
 
@@ -85,7 +94,25 @@ namespace Game.Presentation
             _log.Info($"[GameplayScreen] level {level} attempt {start.AttemptNo} (seed {_data.Seed}).");
             _view.HideResult();
             _view.SetHud(_loc.Get(LocKeys.GameplayLevel, level), _data.Hard ? _loc.Get(LocKeys.GameplayHard) : null, Coins());
-            _view.Render(Visual());
+            Draw();
+        }
+
+        private void Draw()
+        {
+            var v = Visual();
+            _board3D.Render(v);
+            _view.Render(v);
+            var layers = new int[v.Stacks.Length];
+            for (int i = 0; i < layers.Length; i++) layers[i] = v.Stacks[i].Layer;
+            _view.SetHitAreas(_board3D.StackWorldRects(v.Stacks.Length), layers);
+        }
+
+        private static Transform WorldRoot()
+        {
+            // no framework API for WorldRoot yet; the scene-name lookup is the documented answer (pf-world-space)
+            var scene = UnityEngine.SceneManagement.SceneManager.GetSceneByName(SceneKeys.Gameplay.Value);
+            foreach (var go in scene.GetRootGameObjects()) if (go.name == "WorldRoot") return go.transform;
+            throw new System.InvalidOperationException("Gameplay scene has no WorldRoot");
         }
 
         private void OnStackTapped(int stack)
@@ -93,7 +120,7 @@ namespace Game.Presentation
             if (_board == null) return;
             var steps = _board.Tap(stack);
             if (steps.Count == 0) return;           // R-4: covered or finished — 6c adds the shake
-            _view.Render(Visual());
+            Draw();
             if (_board.Result == BoardResult.Won) OnWon();
             else if (_board.Result == BoardResult.Lost) OnLost();
         }

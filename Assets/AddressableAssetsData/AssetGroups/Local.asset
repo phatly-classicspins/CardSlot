@@ -20,6 +20,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 624e82e3d489db248b5162f518cec2ff
+    m_Address: Gameplay/Board3DView
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6c25accb319c64b5a97b19668f16b0b9
     m_Address: PF/DialogDim
     m_ReadOnly: 0

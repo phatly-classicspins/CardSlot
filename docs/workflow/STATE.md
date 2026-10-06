@@ -10,7 +10,7 @@ Người duyệt: Thiết kế Phat · Hình ảnh Phat · Art Phat · Kỹ thu�
 | 3 Art | xong | art v1: 71 sprite (`art/export/`), báo cáo xuất 0 lỗi chặn | Phat, 06-10-2026 | |
 | 4 Animation | xong (gắn Unity ở Bước 6) | animation-list v1.0 (21 animation), `art/motion/preview.html` | Phat, 06-10-2026 | |
 | 5 Logic | xong | GDD v1.2, code Board/Meta, 30 level, level-report, architecture-notes, 135 test | Phat, 06-10-2026 | |
-| 6 Ráp | đang làm — CR-003: bàn chơi chuyển sang 3D (mock-up 3D trước) | | |
+| 6 Ráp | đang làm mốc 6b (bàn 3D đã commit) | | |
 | 7 AI test | chưa bắt đầu | | |
 | 8 Máy thật/Chơi thử/Phát hành | chưa bắt đầu | | |
 
@@ -27,7 +27,8 @@ Người duyệt: Thiết kế Phat · Hình ảnh Phat · Art Phat · Kỹ thu�
 - [x] Animation v1.0 đã duyệt — D-022
 - [x] Application Control: Phat đã cho phép (06-10-2026), `dotnet test` chạy lại được
 - [x] Bước 5 đã duyệt — D-024
-- [ ] Duyệt mock-up 3D (góc camera, cảm giác) — CR-003
+- [x] Góc 3D: 35° — D-025
+- [x] Phat đã chơi thử bàn 3D, ok
 
 ## Việc tiếp theo (theo thứ tự)
 1. ~~Đóng Unity → sửa `Packages/manifest.json` (scoped registry OpenUPM + framework + Unity-MCP IvanMurzak).~~ xong 06-10-2026
@@ -48,6 +49,10 @@ Người duyệt: Thiết kế Phat · Hình ảnh Phat · Art Phat · Kỹ thu�
 - Boot báo `[Localization] no bundled JSON for locale 'en'` và `no bundled products.json` — đúng với SKU mới chưa có nội dung; xử lý khi thêm LocKey / catalog đầu tiên.
 
 ## Phiên gần nhất
+06-10-2026 (12) · D-025 góc 35°. Nối chạm cho bàn 3D: `Board3DView.StackWorldRects` (hình bao XY trong toạ độ thế giới) → controller → `BoardView.SetHitAreas` (vùng chạm trong suốt trên layer Ui, xếp theo layer); builder đặt `_tilt` 35 · bằng chứng: compile 0 lỗi; `dotnet test` 135 pass; play mode: Level 1 chạm 4 chồng bằng raycast thật của EventSystem (trúng Hit0..Hit3) → thắng → thẻ kết quả; ảnh `docs/captures/3d/` · chưa kiểm tra: click chuột thật của người, máy 9:20, thua · đã commit.
+
+06-10-2026 (11) · Mốc 6a commit làm nền (0fc9ae7). CR-003 (bàn chơi 3D, UI 2D, mesh bằng code, mock-up 3D trước): thêm `MeshKit` (khối bo góc, trụ), `Board3DView` (dưới WorldRoot, Stamp khi gốc còn rỗng, đèn có bóng, nền gradient phía sau), `BoardView` chế độ 3D (chỉ HUD/nhãn/thẻ kết quả, chuyển sang layer Ui), prefab `Gameplay/Board3DView`; đổi shadowDistance của 2 URP asset 50 → 2500 (thước 1 px = 1 đơn vị) · bằng chứng: compile 0 lỗi; play mode 4 lần trong lượt (1 lần Gameplay.unity mở kèm làm boot lệch, 1 lần bị dừng do gián đoạn); chụp level 12 ở 30°/35°/40° (và 50° — lá bị dẹt, loại) → `docs/mockups/3d/`; sửa: khay bị viền che (đổi thành đế + tấm nổi), số đích bị bệ che, bỏ mặt bàn · chưa làm: chạm trên bàn 3D (vùng chạm uGUI theo vị trí chiếu), animation 3D, thẻ kết quả trên layer Popup · chưa commit (chờ chọn góc).
+
 06-10-2026 (10) · Bước 5 đóng (D-024, commit 5caed5c). Mốc 6a: thêm screen Gameplay (manifest + Scaffold.Sync ×2), `DesignTokens.cs`, View `BoardView`/`HomeView`/`UiKit` (uGUI dựng lúc chạy, chạm qua EventSystem), `LevelCatalog` + `AddressableLevelSource`, port `ILevelSource`, `InMemoryProgressStore`, controller `GameplayScreen`/`MainScreen`, đăng ký ở root; tool editor `CardSlot/Content/Build` (71 sprite → Content/Sprites, viền 9-slice, 3 prefab → Addressables + AssetKeys); `loc.csv` 20 key → LocKeys + en.json · bằng chứng: Unity compile 0 `error CS`; `dotnet test` 135 pass; play mode 3 lần (lần 1 nhầm scene Gameplay đang mở; lần 2 boot → Home → Gameplay L1, phát hiện NullReference ở thẻ kết quả (hai Graphic trên một GameObject) → sửa; lần 3 L1 thắng → thẻ thắng → Next → L2); ảnh chụp 1080×1920 ở `docs/captures/6a/`; Doctor 10/10 xanh · chưa kiểm tra: thẻ thua (không tái hiện được ở L1–L2), máy 9:20, chạm bằng chuột thật (chạm giả lập qua TapRelay) · đã biết: xu được framework lưu đĩa còn tiến trình 6a chỉ trong bộ nhớ → mỗi lần play cộng lại 100 xu khởi đầu (6b sửa); chưa có hiệu ứng, chưa có Undo/Extra Space/Continue, nút Pause tạm về Home, font tạm LiberationSans · đã commit làm nền (CR-003).
 
 06-10-2026 (9) · Phat gỡ chặn Application Control. `dotnet test SkuHeadlessTests`: 135 pass, 1 skip (LevelGenSweep, [Slow]); chạy sweep lần 3 (`PF_RUN_SLOW=1`, ~10 s): 30 level, không level nào lệch đường cong > 0.12; chạy lại test → 135 pass trên bộ level mới; Unity refresh: code mới vào đúng Game.Domain/Application/Infrastructure, không có trong Assembly-CSharp, Editor.log 0 `error CS`; viết `docs/design/architecture-notes.md` · chưa kiểm tra: Doctor sau thay đổi (không đổi spine); EditMode tests (không có thay đổi Editor-side); chơi thử level (Bước 6) · đã duyệt (D-024), đã commit.

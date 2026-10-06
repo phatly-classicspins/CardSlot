@@ -140,3 +140,8 @@ Quyết định (người chốt: Phat):
 - Làm mock-up 3D trước: render thử 1 level với 2–3 góc camera ở 1080×1920 để duyệt → mock-up gameplay lên v02.
 - Mốc 6a commit làm nền: luồng màn hình, nạp level, controller, HUD, thẻ kết quả dùng lại; chỉ `BoardView` 2D sẽ được thay bằng View 3D.
 Ảnh hưởng: D-011 đổi thành "đồ chơi 3D sáng — bàn chơi 3D thật, UI 2D"; mock-up gameplay*, win/lose nền bàn chơi → v02; art: sprite UI giữ, thêm mesh 3D cho bàn chơi (sprite bàn chơi 2D chỉ còn là tham chiếu màu); animation: danh sách và token giữ nguyên, đường bay/hạt tính trong không gian 3D. Luật, level, kinh tế, save (Bước 5) không đổi.
+
+### D-025 · 06-10-2026 · Bước 6 · Góc nhìn bàn chơi 3D (CR-003)
+Phương án: nghiêng 30° · 35° · 40° (50° loại: mặt lá bị dẹt) — ảnh `docs/mockups/3d/tilt-compare.png`
+Quyết định: **35°**, camera GamePlay giữ orthographic của rig (phối cảnh cần sửa rig framework = thay đổi spine) — người chốt: Phat
+Ghi chú: mock-up gameplay 3D v02 = `docs/mockups/3d/gameplay-3d-tilt35-v02.png`; shadowDistance của URP asset 50 → 2500 cho thước 1 px = 1 đơn vị.

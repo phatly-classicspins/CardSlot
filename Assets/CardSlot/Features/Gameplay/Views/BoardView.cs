@@ -76,6 +76,8 @@ namespace Game.Views
         [SerializeField] private Sprite _buttonPrimary;
         [SerializeField] private Sprite _badge;
         [SerializeField] private TMP_FontAsset _font;
+        [Tooltip("False when the board is drawn in 3D (CR-003): this view then draws only the HUD, labels and result card.")]
+        [SerializeField] private bool _draw2DBoard = true;
 
         public event Action<int> StackTapped;
         public event Action PausePressed, RestartPressed, ResultPrimaryPressed, ResultSecondaryPressed;
@@ -91,8 +93,11 @@ namespace Game.Views
         {
             if (_root != null) return;
             _root = UiKit.Stretch("Root", transform);
-            var ground = UiKit.Fill("Ground", _root, Color.white, false);
-            ground.sprite = _ground;
+            if (_draw2DBoard)
+            {
+                var ground = UiKit.Fill("Ground", _root, Color.white, false);
+                ground.sprite = _ground;
+            }
             _boardLayer = UiKit.Stretch("Board", _root);
             BuildHud();
             _resultLayer = UiKit.Stretch("Result", _root);
@@ -131,9 +136,60 @@ namespace Game.Views
         {
             EnsureBuilt();
             for (int i = _boardLayer.childCount - 1; i >= 0; i--) Destroy(_boardLayer.GetChild(i).gameObject);
+            if (!_draw2DBoard) { DrawLabels(v); return; }
             DrawTargets(v);
             DrawBuffer(v);
             DrawTray(v);
+        }
+
+        /// <summary>
+        /// 3D mode (CR-003): invisible tap areas over the stacks the 3D view draws. <paramref name="worldRects"/>
+        /// are world-space rectangles (game units); <paramref name="layers"/> orders them so a higher stack sits
+        /// on top. Taps relay the stack index; whether the tap counts is the controller's call (R-4).
+        /// </summary>
+        public void SetHitAreas(Rect[] worldRects, int[] layers)
+        {
+            EnsureBuilt();
+            var order = new List<int>();
+            for (int i = 0; i < worldRects.Length; i++) if (worldRects[i].width > 0f) order.Add(i);
+            order.Sort((a, b) => layers[a] != layers[b] ? layers[a].CompareTo(layers[b]) : a.CompareTo(b));
+            var rect = _root.rect;
+            foreach (int i in order)
+            {
+                var r = worldRects[i];
+                // world → this view's local space (the Ui host may be inset by the safe area), then top-left coordinates
+                var min = _root.InverseTransformPoint(new Vector3(r.xMin, r.yMin, _root.position.z));
+                var max = _root.InverseTransformPoint(new Vector3(r.xMax, r.yMax, _root.position.z));
+                float x = min.x - rect.xMin, y = rect.yMax - max.y;
+                var hit = UiKit.Image($"Hit{i}", _boardLayer, null, x, y, max.x - min.x, max.y - min.y, raycast: true);
+                hit.color = Color.clear;
+                var relay = hit.gameObject.AddComponent<TapRelay>();
+                relay.Index = i;
+                relay.Tapped = index => StackTapped?.Invoke(index);
+            }
+        }
+
+        // 3D mode: the text that sits over the 3D board (counts, holding area, next) — positions from the mock-up
+        private void DrawLabels(BoardVisual v)
+        {
+            float m = DesignTokens.ScreenMargin;
+            int n = v.Targets.Length;
+            float w = n == 2 ? DesignTokens.TargetSlotWidthTwo : DesignTokens.TargetSlotWidth;
+            float gap = n == 2 ? DesignTokens.TargetSlotGapTwo : DesignTokens.TargetSlotGap;
+            float x0 = 540f - (n * w + (n - 1) * gap) / 2f;
+            for (int i = 0; i < n; i++)
+                if (v.Targets[i].Has)
+                    UiKit.Text($"Count{i}", _boardLayer, _font, v.Targets[i].CountLabel, DesignTokens.TypeCount, DesignTokens.OnColor, x0 + i * (w + gap), 395f, w, 60f);
+            UiKit.Text("HoldingLabel", _boardLayer, _font, v.HoldingLabel, DesignTokens.TypeLabel, DesignTokens.InkSoft, m + 30f, DesignTokens.BufferLabelTop, 400f, 40f, TextAlignmentOptions.Left);
+            UiKit.Text("BufferCount", _boardLayer, _font, v.BufferCountLabel, DesignTokens.TypeLabel, v.BufferWarn ? DesignTokens.DangerText : DesignTokens.Ink,
+                1080f - m - 30f - 300f, DesignTokens.BufferLabelTop, 300f, 40f, TextAlignmentOptions.Right);
+            if (v.Upcoming.Length > 0)
+            {
+                float x = 1080f - m - 12f - v.Upcoming.Length * 44f;
+                UiKit.Text("NextLabel", _boardLayer, _font, v.NextLabel, 28f, DesignTokens.InkSoft, x - 90f, 194f, 84f, 46f, TextAlignmentOptions.Right);
+                for (int i = 0; i < v.Upcoming.Length; i++)
+                    UiKit.Image($"Next{i}", _boardLayer, _chip[v.Upcoming[i]], x + i * 44f, 194f, 34f, 50f);
+            }
         }
 
         private void DrawTargets(BoardVisual v)
