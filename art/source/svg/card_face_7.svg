@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="216" viewBox="0 0 150 216" data-id="card_face_7"><defs><linearGradient id="g35" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6ddde9"/><stop offset=".38" stop-color="#2FCFE0"/><stop offset="1" stop-color="#2FCFE0"/></linearGradient></defs>
+  <g id="edge"><rect x="0" y="10" width="150" height="206" rx="24" fill="#1597A8"/></g>
+  <g id="face"><rect x="0" y="0" width="150" height="206" rx="24" fill="url(#g35)"/></g>
+  
+  <g id="frame"><rect x="12" y="12" width="126" height="182" rx="16" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="5"/></g><g id="emblem-shadow"><path d="M45 6h10v88h-10zM9.4 32.3 14.4 23.7 90.6 67.7 85.6 76.3zM14.4 76.3 9.4 67.7 85.6 23.7 90.6 32.3z" transform="translate(33 65.2) scale(0.84)" fill="#000" fill-opacity=".15"/></g>
+  <g id="emblem"><path d="M45 6h10v88h-10zM9.4 32.3 14.4 23.7 90.6 67.7 85.6 76.3zM14.4 76.3 9.4 67.7 85.6 23.7 90.6 32.3z" transform="translate(33 61) scale(0.84)" fill="#fff" fill-opacity=".95"/></g></svg>

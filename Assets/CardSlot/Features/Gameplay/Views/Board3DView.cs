@@ -129,8 +129,9 @@ namespace Game.Views
             _cell = Mat(DesignTokens.SurfaceSunken, 0.1f);
             _pole = Mat(DesignTokens.PegPole, 0.55f);
             _pegEmpty = Mat(DesignTokens.SurfaceSunken, 0.2f);
-            _cardSide = new Material[6]; _cardTop = new Material[6]; _pedestal = new Material[6];
-            for (int k = 0; k < 6; k++)
+            int colours = DesignTokens.CardFace.Length;
+            _cardSide = new Material[colours]; _cardTop = new Material[colours]; _pedestal = new Material[colours];
+            for (int k = 0; k < colours; k++)
             {
                 var c = DesignTokens.CardFace[k];
                 _cardSide[k] = Mat(Color.Lerp(c, Color.black, 0.18f), 0.45f);

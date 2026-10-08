@@ -19,7 +19,7 @@ namespace Game.Views
         [SerializeField] protected Sprite _panel, _ribbon, _ribbonDanger, _buttonPrimary, _buttonSecondary, _buttonDisabled;
         [SerializeField] protected Sprite _iconPlay, _iconLock, _iconClose, _iconGear;
         [SerializeField] protected Sprite _closeButton, _rowSunken, _toggleOn, _toggleOff, _toggleKnob, _roundButton;
-        [SerializeField] protected Sprite[] _cardFace = new Sprite[6];
+        [SerializeField] protected Sprite[] _cardFace = new Sprite[8];
         [SerializeField] protected TMP_FontAsset _font;
 
         private RectTransform _root;

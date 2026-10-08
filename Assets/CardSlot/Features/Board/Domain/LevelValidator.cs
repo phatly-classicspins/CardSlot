@@ -4,8 +4,9 @@ namespace Game.Domain
 {
     /// <summary>
     /// Rejects malformed level data before a board is built from it: R-1 (cards per colour equal target
-    /// capacity per colour), R-1b (no two stacks on the same layer overlap) and the valid ranges in
-    /// <c>level-design.md</c> §2. Returns the problems as data; an empty list means valid.
+    /// capacity per colour), R-1b (no two stacks on the same layer overlap), R-1c (a stack is one colour — the
+    /// data shape guarantees it) and the valid ranges in <c>level-design.md</c> §2. Returns the problems as data;
+    /// an empty list means valid.
     /// </summary>
     public static class LevelValidator
     {
@@ -15,12 +16,11 @@ namespace Game.Domain
             if (level == null) { errors.Add("level is null"); return errors; }
             if (string.IsNullOrEmpty(level.Id)) errors.Add("id is empty");
             Range(errors, "slots", level.Slots, 2, 4);
-            Range(errors, "max_run", level.MaxRun, 0, 48);
             Range(errors, "buffer_capacity", level.BufferCapacity, 1, 60);   // CR-006: groups (generation) or cards (shipped)
             if (level.Targets == null || level.Targets.Count == 0) errors.Add("no targets");
             if (level.Stacks == null || level.Stacks.Count == 0) errors.Add("no stacks");
             if (errors.Count > 0 && (level.Targets == null || level.Stacks == null)) return errors;
-            Range(errors, "stack count", level.Stacks.Count, 2, 24);
+            Range(errors, "stack count", level.Stacks.Count, 2, 30);
 
             var cardsPerColor = new int[LevelData.ColorCount];
             var targetPerColor = new int[LevelData.ColorCount];
@@ -34,15 +34,11 @@ namespace Game.Domain
             foreach (var s in level.Stacks)
             {
                 if (string.IsNullOrEmpty(s.Id) || !ids.Add(s.Id)) errors.Add($"stack id '{s.Id}' empty or duplicated");
-                if (s.Cards == null || s.Cards.Length == 0) { errors.Add($"stack {s.Id} has no cards"); continue; }
-                Range(errors, $"stack {s.Id} cards", s.Cards.Length, 1, 48);
+                Range(errors, $"stack {s.Id} count", s.Count, 1, 48);
                 Range(errors, $"stack {s.Id} layer", s.Layer, 0, 4);
                 if (s.W <= 0 || s.H <= 0) errors.Add($"stack {s.Id} has an empty rectangle");
-                foreach (var c in s.Cards)
-                {
-                    if (c < 0 || c >= LevelData.ColorCount) errors.Add($"stack {s.Id} card colour {c} out of range");
-                    else cardsPerColor[c]++;
-                }
+                if (s.Color < 0 || s.Color >= LevelData.ColorCount) errors.Add($"stack {s.Id} colour {s.Color} out of range");
+                else if (s.Count > 0) cardsPerColor[s.Color] += s.Count;
             }
             int colours = 0;
             for (int c = 0; c < LevelData.ColorCount; c++)
@@ -51,7 +47,7 @@ namespace Game.Domain
                     errors.Add($"R-1: colour {c} has {cardsPerColor[c]} cards but targets take {targetPerColor[c]}");
                 if (targetPerColor[c] > 0) colours++;
             }
-            Range(errors, "colour count", colours, 2, 6);
+            Range(errors, "colour count", colours, 2, LevelData.ColorCount);
             for (int i = 0; i < level.Stacks.Count; i++)
                 for (int j = i + 1; j < level.Stacks.Count; j++)
                 {

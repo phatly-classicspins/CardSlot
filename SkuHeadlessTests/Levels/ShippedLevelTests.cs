@@ -46,7 +46,8 @@ namespace CardSlot.SkuHeadlessTests.Levels
                 Assert.That(l.Targets.Count > l.Slots, Is.EqualTo(n == 5), $"level {n}: waiting pegs only from level 5");
             }
             LevelJson.TryRead(File.ReadAllText(Path.Combine(Dir, "level_001.json")), out var l1, out _);
-            Assert.That((l1.Slots, l1.Stacks.All(s => s.Layer == 0)), Is.EqualTo((2, true)), "level 1: two pegs, nothing covered");
+            Assert.That((l1.Slots, l1.Stacks.Count, l1.Stacks.All(s => s.Layer == 0)), Is.EqualTo((3, 3, true)),
+                "level 1: three pegs, three whole stacks, nothing covered (CR-012: the FTUE taps three stacks)");
         }
     }
 }

@@ -23,7 +23,7 @@
 | `Scrim` | `rgba(70,35,10,.55)` | lớp mờ sau dialog |
 | `TutorialScrim` | `rgba(70,35,10,.45)` | lớp mờ FTUE |
 
-## 2. Màu lá bài (`color_0…5`, dùng chung cho mọi màn)
+## 2. Màu lá bài (`color_0…7`, dùng chung cho lá và cọc)
 
 | ID | Mặt | Cạnh (đáy 3D) | Hoạ tiết |
 |---|---|---|---|
@@ -33,6 +33,8 @@
 | `color_3` | `#3CC26B` | `#22924A` | lá cây |
 | `color_4` | `#9B5CF6` | `#6C35C4` | mặt trăng |
 | `color_5` | `#FF8A3D` | `#D35F14` | hình tròn |
+| `color_6` | `#FF6FB5` | `#D23F88` | bông hoa — CR-012, chờ duyệt |
+| `color_7` | `#2FCFE0` | `#1597A8` | bông tuyết — CR-012, chờ duyệt |
 
 - **Lá bị che:** độ sáng 68% + sọc chéo 135° (đen 10%) — đúng Visual Contract "≤ 70%", và vẫn nhận ra được màu.
 - Mặt lá: gradient dọc, sáng hơn 30% ở đỉnh → màu gốc ở 38%. Viền trong trắng 55%.

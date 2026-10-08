@@ -1,25 +1,27 @@
 # Thuật ngữ và ID chuẩn — CardSlot
 
-> v1.0 · Bước 1 · đã duyệt (Phat, 06-10-2026). Tài liệu, code, level data và key text đều dùng **ID** ở cột đầu, không dùng tên hiển thị.
+> v1.0 · Bước 1 · đã duyệt (Phat, 06-10-2026). **v2.0 nháp (CR-012 giai đoạn A, chờ duyệt):** chồng một màu, che theo màu, 8 màu, `pending`, `stuck`. Tài liệu, code, level data và key text đều dùng **ID** ở cột đầu, không dùng tên hiển thị.
 
 ## Vật thể trong level
 
 | ID | Tên hiển thị (EN) | Định nghĩa |
 |---|---|---|
 | `card` | Card | Một lá bài; chỉ có một thuộc tính là màu (`color_*`). |
-| `stack` | — | Một chồng lá bài nằm trên `board`, có vị trí, kích thước và `layer`. Thứ tự lá tính từ trên xuống. |
-| `run` | — | Nhóm lá **cùng màu liền nhau ở trên cùng** của một `stack`. Một lần `tap` gửi đi đúng một `run`. |
+| `stack` | — | Một chồng lá bài **cùng một màu** nằm trên `board` (`color`, `count`), có vị trí, kích thước và `layer` (v2.0, R-1c). |
+| ~~`run`~~ | — | (bỏ ở v2.0: chồng một màu, một lần `tap` gửi **cả chồng**.) |
 | `board` | — | Khay bài phía dưới màn hình, chứa mọi `stack`. |
 | `layer` | — | Số nguyên ≥ 0 của một `stack`; lớn hơn là nằm trên. |
-| `covered` | — | Một `stack` bị che khi có `stack` khác `layer` cao hơn chồng lên hình chữ nhật của nó. Chồng bị che thì không chạm được. |
+| `covered` | — | Một `stack` bị che khi có `stack` **khác màu** còn lá, `layer` cao hơn, chồng lên hình chữ nhật của nó (v2.0, R-3). Chồng bị che thì không chạm được. |
 | `open` | — | `stack` không bị che, còn lá: chạm được. |
-| `target` | Target | Đích ở phía trên: một màu và sức chứa `capacity` (số lá). Đủ lá thì `target` hoàn thành và biến mất. |
-| `target_slot` | — | Một trong các vị trí hiển thị `target` (mặc định 3, đánh số trái → phải 0..n−1). |
-| `target_queue` | — | Danh sách `target` theo thứ tự của level; `target` kế tiếp lấp vào `target_slot` vừa trống. |
-| `buffer` | — | Hàng ô tạm ở giữa màn hình, chứa lá chưa có đích. Sức chứa `buffer_capacity` tính theo **số lá**. |
+| `target` | Pole | Đích ở phía trên: một màu và sức chứa `capacity` (số lá). Đủ lá thì `target` hoàn thành và biến mất. |
+| `target_slot` | — | Cọc ở đáy mỗi cột — chỉ cọc này nhận lá (mặc định 3 cột, đánh số trái → phải 0..n−1). |
+| `target_queue` | — | Hàng cọc, chia theo cột: `target` thứ i thuộc cột i mod `n_slots`; cọc đầy thì cọc phía sau cùng cột tiến lên (CR-009). |
+| `buffer` | Waiting slots | Hàng ô chờ (ô tạm) ở giữa màn hình, chứa lá chưa có đích. Sức chứa `buffer_capacity` tính theo **số lá**. |
 | `tap` | — | Một lần người chơi chạm vào một `stack` đang `open`. |
 | `settle` | — | Bước tự xử lý sau mỗi lá được đặt: dọn `target` đầy, kéo `target` mới, cho lá trong `buffer` bay lên (GDD §2.4). |
 | `overflow` | — | Một lá phải vào `buffer` khi `buffer` đã đầy, dẫn tới thua. |
+| `pending` | — | Các lá của lần chạm còn chưa đặt được khi `overflow`; Continue / Revive / RV Slot đặt lại chúng (v2.0). |
+| `stuck` | — | Thua vì kẹt: không còn `tap` hợp lệ, hoặc mọi `tap` hợp lệ đều dẫn tới `overflow` (v2.0, R-13). |
 
 ## Màu
 
@@ -33,6 +35,8 @@ Mỗi màu có thêm một **hoạ tiết** riêng để người mù màu vẫn
 | `color_3` | Green | lá cây |
 | `color_4` | Purple | mặt trăng |
 | `color_5` | Orange | hình tròn |
+| `color_6` | Pink | bông hoa (v2.0) |
+| `color_7` | Cyan | bông tuyết (v2.0) |
 
 ## Tiến trình, kinh tế và tính năng
 

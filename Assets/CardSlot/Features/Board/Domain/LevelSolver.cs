@@ -51,7 +51,7 @@ namespace Game.Domain
         /// <summary>DFS with memo. Taps whose whole run fits a target are tried first.</summary>
         public static SolveStatus Solve(LevelData level, int bufferCapacity, int stateLimit, List<int> solution, out int explored)
         {
-            var board = new BoardModel(level, null, bufferCapacity);
+            var board = new BoardModel(level, null, bufferCapacity) { LookAhead = false };
             var seen = new HashSet<string>();
             int count = 0;
             bool hitLimit = false;
@@ -90,7 +90,7 @@ namespace Game.Domain
             var open = new List<int>();
             for (int p = 0; p < playouts; p++)
             {
-                var board = new BoardModel(level);
+                var board = new BoardModel(level) { LookAhead = false };
                 while (board.Result == BoardResult.Playing)
                 {
                     open.Clear();

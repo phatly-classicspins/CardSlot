@@ -1,20 +1,20 @@
 {
   "id": "level_003",
-  "revision": 2,
+  "revision": 3,
   "seed": 300000,
   "n_slots": 3,
   "buffer_capacity": 26,
   "targets": [
+    {
+      "color": "color_0",
+      "capacity": 18
+    },
     {
       "color": "color_4",
       "capacity": 18
     },
     {
       "color": "color_1",
-      "capacity": 18
-    },
-    {
-      "color": "color_5",
       "capacity": 18
     }
   ],
@@ -26,26 +26,8 @@
       "w": 150,
       "h": 206,
       "layer": 0,
-      "cards": [
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1"
-      ]
+      "color": "color_0",
+      "count": 6
     },
     {
       "id": "s1",
@@ -54,67 +36,57 @@
       "w": 150,
       "h": 206,
       "layer": 0,
-      "cards": [
-        "color_4",
-        "color_4",
-        "color_4",
-        "color_4",
-        "color_4",
-        "color_4",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5"
-      ]
+      "color": "color_0",
+      "count": 6
     },
     {
       "id": "s2",
+      "x": 0,
+      "y": 232,
+      "w": 150,
+      "h": 206,
+      "layer": 0,
+      "color": "color_4",
+      "count": 18
+    },
+    {
+      "id": "s3",
+      "x": 176,
+      "y": 232,
+      "w": 150,
+      "h": 206,
+      "layer": 0,
+      "color": "color_1",
+      "count": 12
+    },
+    {
+      "id": "s4",
       "x": 218,
       "y": 52,
       "w": 150,
       "h": 206,
       "layer": 1,
-      "cards": [
-        "color_4",
-        "color_4",
-        "color_4",
-        "color_4",
-        "color_4",
-        "color_4",
-        "color_4",
-        "color_4",
-        "color_4",
-        "color_4",
-        "color_4",
-        "color_4"
-      ]
+      "color": "color_0",
+      "count": 6
+    },
+    {
+      "id": "s5",
+      "x": 218,
+      "y": 284,
+      "w": 150,
+      "h": 206,
+      "layer": 1,
+      "color": "color_1",
+      "count": 6
     }
   ],
   "ftue": null,
-  "max_run": 6,
   "solution": [
     "s0",
-    "s0",
-    "s0",
+    "s1",
     "s2",
-    "s2",
-    "s1",
-    "s1",
-    "s1",
-    "s1"
+    "s4",
+    "s3",
+    "s5"
   ]
 }

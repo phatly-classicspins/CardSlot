@@ -55,6 +55,8 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 19154161000247a4e810a140bf285ccf, type: 3}
   - {fileID: 21300000, guid: c58f022a4d2fda04ca544faa88d10fec, type: 3}
   - {fileID: 21300000, guid: 4085bb68b91dcc24c9c4915615c7821a, type: 3}
+  - {fileID: 21300000, guid: b33884658eef087479423232f9e209e8, type: 3}
+  - {fileID: 21300000, guid: a5887f05f0efc47449803323ad20dc88, type: 3}
   _ground: {fileID: 21300000, guid: 7daf6d21ddc4bfe41afc08f48f3a2b02, type: 3}
   _buttonPrimary: {fileID: 21300000, guid: 33684b627971d3e4eb6519afd883a092, type: 3}
   _font: {fileID: 11400000, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}

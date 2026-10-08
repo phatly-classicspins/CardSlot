@@ -10,7 +10,7 @@ namespace Game.Views
     /// </summary>
     public sealed class HomeView : MonoBehaviour
     {
-        [SerializeField] private Sprite[] _cardFace = new Sprite[6];
+        [SerializeField] private Sprite[] _cardFace = new Sprite[8];
         [SerializeField] private Sprite _ground;
         [SerializeField] private Sprite _buttonPrimary;
         [SerializeField] private TMP_FontAsset _font;

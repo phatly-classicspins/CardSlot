@@ -69,11 +69,11 @@ namespace Game.Views
     public sealed class BoardView : MonoBehaviour
     {
         [Header("Cards — index = glossary colour")]
-        [SerializeField] private Sprite[] _cardFace = new Sprite[6];
-        [SerializeField] private Sprite[] _cardUnder = new Sprite[6];
-        [SerializeField] private Sprite[] _cardMini = new Sprite[6];
-        [SerializeField] private Sprite[] _chip = new Sprite[6];
-        [SerializeField] private Sprite[] _targetBase = new Sprite[6];
+        [SerializeField] private Sprite[] _cardFace = new Sprite[8];
+        [SerializeField] private Sprite[] _cardUnder = new Sprite[8];
+        [SerializeField] private Sprite[] _cardMini = new Sprite[8];
+        [SerializeField] private Sprite[] _chip = new Sprite[8];
+        [SerializeField] private Sprite[] _targetBase = new Sprite[8];
         [Header("Board")]
         [SerializeField] private Sprite _hatch;
         [SerializeField] private Sprite _targetSlot;

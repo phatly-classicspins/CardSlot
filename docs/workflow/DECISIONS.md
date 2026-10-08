@@ -244,3 +244,7 @@ Phần phía sau cần kiểm tra lại: GDD → v2.0 + lịch sử; `glossary.m
 ### D-028 · 08-10-2026 · Bước 6 · Duyệt CR-004…CR-011 và D-027
 Quyết định (người chốt: Phat): duyệt phần đã làm của CR-004…CR-011 và D-027 (lá mỏng, bỏ booster + xu, đích 18 / ô tạm 26, cọc + lá có lỗ + bay từng lá, chạm lấy tối đa 6 lá, hàng đợi theo cột, bỏ độ khó, lưới + khay vừa khít, camera 10°) để commit trước khi bắt đầu CR-012.
 Ghi chú: CR-012 sẽ đảo một phần (CR-005 booster + xu, CR-008 `max_run`) — commit này là mốc để quay lại nếu cần.
+
+### D-029 · 08-10-2026 · Bước 6 · Duyệt CR-012 giai đoạn A (luật lõi)
+Quyết định (người chốt: Phat, "ok, commit đi"): duyệt giai đoạn A — chồng một màu (R-1c, level JSON v3 `color` + `count`), chỉ chồng khác màu mới che (R-3), chạm gửi cả chồng (R-6, bỏ `max_run` của CR-008), thua do kẹt (R-13), 8 màu (Pink `#FF6FB5` bông hoa, Cyan `#2FCFE0` bông tuyết; art 2D thêm `*_6`, `*_7`), 30 level sinh lại (revision 3, tổng số cọc theo level), `level-design.md` v2.0, `glossary.md` v2.0.
+Ghi chú: Continue (+6) giữ tạm tới giai đoạn B. Các mục [XÁC NHẬN] khác của GDD v2.0 (booster, tim, element, kinh tế…) duyệt khi tới giai đoạn của chúng.

@@ -27,16 +27,18 @@ const T = {
   ink:'#5A3415', primary:'#21B8A6', primaryEdge:'#138A7B', secondary:'#E8613C', secondaryEdge:'#B7411F',
   danger:'#E2604A', dangerEdge:'#B7411F', dangerCell:'#F6B3A4', disabled:'#CDBFAE', disabledEdge:'#A8977F',
   groundTop:'#FFF6E6', groundBottom:'#FFD9A8', toggleOff:'#BBA993',
-  cards:[['#F2475B','#B92639'],['#3D8BFF','#1F5FCC'],['#FFC93C','#D99A0B'],['#3CC26B','#22924A'],['#9B5CF6','#6C35C4'],['#FF8A3D','#D35F14']],
+  cards:[['#F2475B','#B92639'],['#3D8BFF','#1F5FCC'],['#FFC93C','#D99A0B'],['#3CC26B','#22924A'],['#9B5CF6','#6C35C4'],['#FF8A3D','#D35F14'],['#FF6FB5','#D23F88'],['#2FCFE0','#1597A8']],
 };
-const EMBLEM = [ // 100×100 paths: heart, drop, star, leaf, moon, circle (glossary color_0..5)
+const EMBLEM = [ // 100×100 paths: heart, drop, star, leaf, moon, circle, flower, snowflake (glossary color_0..7; 6-7: CR-012)
   'M50 88 12 50C-2 34 8 10 28 10c10 0 17 6 22 14 5-8 12-14 22-14 20 0 30 24 16 40z',
   'M50 6C50 6 16 46 16 64a34 34 0 0 0 68 0C84 46 50 6 50 6z',
   'm50 5 13 29 31 3-23 21 7 31-28-16-28 16 7-31L6 37l31-3z',
   'M86 10C40 8 10 30 12 70l-6 20 8 2 6-16c40 6 66-24 66-66zM30 70c10-20 26-34 44-44-16 14-30 28-40 48z',
   'M62 6a44 44 0 1 0 32 66A36 36 0 0 1 62 6z',
-  'M50 10a40 40 0 1 0 0.001 0z'];
-const COLOR_NAMES = ['red','blue','yellow','green','purple','orange'];
+  'M50 10a40 40 0 1 0 0.001 0z',
+  'M33 24a17 17 0 1 0 34 0a17 17 0 1 0-34 0zM57.7 42a17 17 0 1 0 34 0a17 17 0 1 0-34 0zM48.3 71a17 17 0 1 0 34 0a17 17 0 1 0-34 0zM17.7 71a17 17 0 1 0 34 0a17 17 0 1 0-34 0zM8.3 42a17 17 0 1 0 34 0a17 17 0 1 0-34 0zM33 50a17 17 0 1 0 34 0a17 17 0 1 0-34 0z',
+  'M45 6h10v88h-10zM9.4 32.3 14.4 23.7 90.6 67.7 85.6 76.3zM14.4 76.3 9.4 67.7 85.6 23.7 90.6 32.3z'];
+const COLOR_NAMES = ['red','blue','yellow','green','purple','orange','pink','cyan'];
 
 // ── helpers ───────────────────────────────────────────────────────────────────────────────────────
 const hex = h => [1,3,5].map(i => parseInt(h.slice(i,i+2),16));

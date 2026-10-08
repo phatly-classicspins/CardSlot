@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="104" height="114" viewBox="0 0 104 114" data-id="rbtn_secondary"><defs><linearGradient id="g41" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ef9077"/><stop offset=".38" stop-color="#E8613C"/><stop offset="1" stop-color="#E8613C"/></linearGradient></defs>
+<svg xmlns="http://www.w3.org/2000/svg" width="104" height="114" viewBox="0 0 104 114" data-id="rbtn_secondary"><defs><linearGradient id="g51" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ef9077"/><stop offset=".38" stop-color="#E8613C"/><stop offset="1" stop-color="#E8613C"/></linearGradient></defs>
   <g id="edge"><rect x="0" y="10" width="104" height="104" rx="32" fill="#B7411F"/></g>
-  <g id="face"><rect x="0" y="0" width="104" height="104" rx="32" fill="url(#g41)"/></g>
+  <g id="face"><rect x="0" y="0" width="104" height="104" rx="32" fill="url(#g51)"/></g>
   <g id="gloss"><rect x="16" y="7" width="72" height="31" rx="15.6" fill="#fff" fill-opacity=".28"/></g>
   </svg>

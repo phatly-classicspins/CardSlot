@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="66" height="140" viewBox="0 0 66 140" data-id="buffer_cell_warn"><defs><clipPath id="c35"><rect width="66" height="140" rx="16"/></clipPath></defs>
+<svg xmlns="http://www.w3.org/2000/svg" width="66" height="140" viewBox="0 0 66 140" data-id="buffer_cell_warn"><defs><clipPath id="c45"><rect width="66" height="140" rx="16"/></clipPath></defs>
   <g id="base"><rect width="66" height="140" rx="16" fill="#F6B3A4"/></g>
-  <g id="inner-shadow" clip-path="url(#c35)"><rect x="-4" y="-140" width="74" height="146" rx="16" fill="#000" fill-opacity=".12"/></g></svg>
+  <g id="inner-shadow" clip-path="url(#c45)"><rect x="-4" y="-140" width="74" height="146" rx="16" fill="#000" fill-opacity=".12"/></g></svg>

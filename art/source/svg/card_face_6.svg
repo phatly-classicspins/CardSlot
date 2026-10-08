@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="216" viewBox="0 0 150 216" data-id="card_face_6"><defs><linearGradient id="g30" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9acb"/><stop offset=".38" stop-color="#FF6FB5"/><stop offset="1" stop-color="#FF6FB5"/></linearGradient></defs>
+  <g id="edge"><rect x="0" y="10" width="150" height="206" rx="24" fill="#D23F88"/></g>
+  <g id="face"><rect x="0" y="0" width="150" height="206" rx="24" fill="url(#g30)"/></g>
+  
+  <g id="frame"><rect x="12" y="12" width="126" height="182" rx="16" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="5"/></g><g id="emblem-shadow"><path d="M33 24a17 17 0 1 0 34 0a17 17 0 1 0-34 0zM57.7 42a17 17 0 1 0 34 0a17 17 0 1 0-34 0zM48.3 71a17 17 0 1 0 34 0a17 17 0 1 0-34 0zM17.7 71a17 17 0 1 0 34 0a17 17 0 1 0-34 0zM8.3 42a17 17 0 1 0 34 0a17 17 0 1 0-34 0zM33 50a17 17 0 1 0 34 0a17 17 0 1 0-34 0z" transform="translate(33 65.2) scale(0.84)" fill="#000" fill-opacity=".15"/></g>
+  <g id="emblem"><path d="M33 24a17 17 0 1 0 34 0a17 17 0 1 0-34 0zM57.7 42a17 17 0 1 0 34 0a17 17 0 1 0-34 0zM48.3 71a17 17 0 1 0 34 0a17 17 0 1 0-34 0zM17.7 71a17 17 0 1 0 34 0a17 17 0 1 0-34 0zM8.3 42a17 17 0 1 0 34 0a17 17 0 1 0-34 0zM33 50a17 17 0 1 0 34 0a17 17 0 1 0-34 0z" transform="translate(33 61) scale(0.84)" fill="#fff" fill-opacity=".95"/></g></svg>

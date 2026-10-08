@@ -1,24 +1,24 @@
 {
   "id": "level_005",
-  "revision": 2,
-  "seed": 500007,
+  "revision": 3,
+  "seed": 500018,
   "n_slots": 2,
   "buffer_capacity": 26,
   "targets": [
     {
-      "color": "color_1",
-      "capacity": 18
-    },
-    {
-      "color": "color_2",
-      "capacity": 18
-    },
-    {
-      "color": "color_5",
+      "color": "color_4",
       "capacity": 18
     },
     {
       "color": "color_0",
+      "capacity": 18
+    },
+    {
+      "color": "color_7",
+      "capacity": 18
+    },
+    {
+      "color": "color_3",
       "capacity": 18
     }
   ],
@@ -30,32 +30,8 @@
       "w": 150,
       "h": 206,
       "layer": 0,
-      "cards": [
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1"
-      ]
+      "color": "color_7",
+      "count": 18
     },
     {
       "id": "s1",
@@ -64,82 +40,68 @@
       "w": 150,
       "h": 206,
       "layer": 0,
-      "cards": [
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_5",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0"
-      ]
+      "color": "color_3",
+      "count": 6
     },
     {
       "id": "s2",
+      "x": 0,
+      "y": 232,
+      "w": 150,
+      "h": 206,
+      "layer": 0,
+      "color": "color_3",
+      "count": 6
+    },
+    {
+      "id": "s3",
+      "x": 176,
+      "y": 232,
+      "w": 150,
+      "h": 206,
+      "layer": 0,
+      "color": "color_0",
+      "count": 12
+    },
+    {
+      "id": "s4",
       "x": 42,
       "y": 52,
       "w": 150,
       "h": 206,
       "layer": 1,
-      "cards": [
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1",
-        "color_1"
-      ]
+      "color": "color_3",
+      "count": 6
+    },
+    {
+      "id": "s5",
+      "x": 218,
+      "y": 52,
+      "w": 150,
+      "h": 206,
+      "layer": 1,
+      "color": "color_0",
+      "count": 6
+    },
+    {
+      "id": "s6",
+      "x": 42,
+      "y": 284,
+      "w": 150,
+      "h": 206,
+      "layer": 1,
+      "color": "color_4",
+      "count": 18
     }
   ],
   "ftue": null,
-  "max_run": 6,
   "solution": [
+    "s5",
+    "s6",
+    "s1",
     "s2",
-    "s2",
-    "s2",
+    "s4",
     "s0",
-    "s0",
-    "s0",
-    "s0",
-    "s1",
-    "s1",
-    "s1",
-    "s1",
-    "s1"
+    "s3"
   ]
 }

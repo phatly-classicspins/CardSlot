@@ -14,11 +14,11 @@ namespace CardSlot.SkuHeadlessTests.Levels
     /// <summary>One row of the difficulty curve (level-design.md §4).</summary>
     sealed class Row
     {
-        public int Level, Colors, MaxLayer, Buffer, Slots = 3, TargetsPerColor = 2;
+        public int Level, Colors, MaxLayer, Slots = 3, TargetsPerColor = 2, Targets;
         public string Role;
         /// <summary>Wanted difficulty = 1 − random-bot win rate (a ranking proxy, G5).</summary>
         public double TargetD;
-        public float RunBias;
+        /// <summary>One stack per target (level 1: the FTUE taps three whole stacks straight onto their poles).</summary>
         public bool SingleRun;
         public int MinBufferAtLeast; // FTUE level 2 must make the player use the buffer
         public string Ftue;
@@ -51,7 +51,7 @@ namespace CardSlot.SkuHeadlessTests.Levels
                 var (groups, _, d, n) = Pick(row);
                 if (groups == null) Assert.Fail($"level {row.Level}: no solvable candidate");
                 var level = LevelGenerator.ExpandToCards(groups, CardsPerGroup, HoldCards);
-                level.Revision = 2;   // CR-006 changed every shipped level
+                level.Revision = 3;   // CR-012: one-colour stacks (level format v3)
                 var solve = LevelSolver.Analyze(level, new Pcg32(level.Seed), BotPlayouts);
                 if (solve.Solution.Count == 0) Assert.Fail($"level {row.Level}: the card level does not solve");
                 File.WriteAllText(Path.Combine(outDir, $"{level.Id}.json"), LevelJson.Write(level, solve.Solution) + "\n");
@@ -65,10 +65,9 @@ namespace CardSlot.SkuHeadlessTests.Levels
         {
             var p = new GenParams
             {
-                Colors = row.Colors, TargetsPerColor = row.TargetsPerColor, MaxLayer = row.MaxLayer, BufferCapacity = GroupBuffer,
-                Slots = row.Slots, RunBias = row.RunBias, SingleRunStacks = row.SingleRun,
-                MinCardsPerStack = row.SingleRun ? 3 : 2, MaxCardsPerStack = row.SingleRun ? 3 : 5,
-                MaxRun = 1,   // CR-008: a tap takes one group (6 cards once expanded)
+                Colors = row.Colors, TargetsPerColor = row.TargetsPerColor, Targets = row.Targets, MaxLayer = row.MaxLayer, BufferCapacity = GroupBuffer,
+                Slots = row.Slots, SingleRunStacks = row.SingleRun,
+                MinCardsPerStack = 1, MaxCardsPerStack = 3,   // CR-012: a one-colour stack of 6 / 12 / 18 cards once expanded
             };
             LevelData best = null; double bestD = 0, bestScore = double.MaxValue; int found = 0;
             for (int attempt = 0; attempt < MaxAttemptsPerLevel && found < CandidatesPerLevel; attempt++)
@@ -100,41 +99,41 @@ namespace CardSlot.SkuHeadlessTests.Levels
         static List<Row> Curve()
         {
             var rows = new List<Row>();
-            void R(int level, string role, int colors, int layer, int buffer, double d, float runBias, int perColor = 2)
-                => rows.Add(new Row { Level = level, Role = role, Colors = colors, MaxLayer = layer, Buffer = buffer, TargetD = d, RunBias = runBias,
-                                      TargetsPerColor = perColor });
+            void R(int level, string role, int colors, int layer, double d, int targets)
+                => rows.Add(new Row { Level = level, Role = role, Colors = colors, MaxLayer = layer, TargetD = d, Targets = targets });
             // CR-011: the first levels as easy as the reference (video IMG_3750) — one target per colour, every peg in
-            // view; the back row of waiting pegs only from level 5
-            rows.Add(new Row { Level = 1, Role = "mở đầu", Colors = 2, MaxLayer = 0, Buffer = 16, Slots = 2, TargetsPerColor = 1, TargetD = 0, RunBias = 0.8f, Ftue = "ftue.l1" });
-            rows.Add(new Row { Level = 2, Role = "dễ", Colors = 3, MaxLayer = 0, Buffer = 14, Slots = 3, TargetsPerColor = 1, TargetD = 0.05, RunBias = 0.7f, Ftue = "ftue.l2" });
-            rows.Add(new Row { Level = 3, Role = "dễ", Colors = 3, MaxLayer = 1, Buffer = 14, Slots = 3, TargetsPerColor = 1, TargetD = 0.08, RunBias = 0.6f });
-            rows.Add(new Row { Level = 4, Role = "dễ · che phủ", Colors = 3, MaxLayer = 1, Buffer = 14, Slots = 3, TargetsPerColor = 1, TargetD = 0.12, RunBias = 0.5f });
-            rows.Add(new Row { Level = 5, Role = "hàng cọc chờ", Colors = 4, MaxLayer = 1, Buffer = 14, Slots = 2, TargetsPerColor = 1, TargetD = 0.15, RunBias = 0.5f });
-            R(6, "nghỉ", 3, 1, 14, 0.15, 0.4f, 4);
-            R(7, "trung bình", 4, 1, 12, 0.25, 0.45f, 3);
-            R(8, "trung bình", 4, 2, 12, 0.30, 0.4f, 3);
-            R(9, "trung bình", 4, 2, 12, 0.35, 0.45f, 3);
-            R(10, "khó", 4, 2, 10, 0.55, 0.3f, 3);
-            R(11, "nghỉ", 4, 1, 12, 0.25, 0.45f, 3);
-            R(12, "trung bình · run ngắn", 5, 2, 11, 0.35, 0.35f);
-            R(13, "trung bình · run ngắn", 5, 2, 11, 0.40, 0.35f);
-            R(14, "trung bình · run ngắn", 5, 2, 11, 0.45, 0.35f);
-            R(15, "khó", 5, 3, 10, 0.60, 0.3f);
-            R(16, "nghỉ", 4, 2, 12, 0.30, 0.4f, 3);
-            R(17, "trung bình", 5, 3, 10, 0.45, 0.4f);
-            R(18, "trung bình", 5, 3, 10, 0.50, 0.4f);
-            R(19, "trung bình", 5, 3, 10, 0.55, 0.4f);
-            R(20, "khó", 5, 3, 9, 0.65, 0.3f);
-            R(21, "nghỉ", 5, 2, 11, 0.40, 0.4f, 2);
-            R(22, "khó", 6, 3, 10, 0.55, 0.35f);
-            R(23, "khó", 6, 3, 10, 0.60, 0.35f);
-            R(24, "khó", 6, 3, 10, 0.62, 0.35f);
-            R(25, "khó", 6, 4, 9, 0.72, 0.3f);
-            R(26, "nghỉ", 5, 3, 11, 0.45, 0.45f);
-            R(27, "khó", 6, 4, 9, 0.65, 0.3f);
-            R(28, "khó", 6, 4, 9, 0.68, 0.3f);
-            R(29, "khó", 6, 4, 9, 0.70, 0.3f);
-            R(30, "khó (cuối)", 6, 4, 8, 0.80, 0.25f);
+            // view; the back row of waiting pegs only from level 5. CR-012: level 1 is three whole stacks (FTUE),
+            // colours grow to all 8 from level 20 (GDD v2.0 §3)
+            rows.Add(new Row { Level = 1, Role = "mở đầu (FTUE)", Colors = 3, MaxLayer = 0, Slots = 3, TargetsPerColor = 1, TargetD = 0, SingleRun = true, Ftue = "ftue.l1" });
+            rows.Add(new Row { Level = 2, Role = "dễ", Colors = 3, MaxLayer = 0, Slots = 3, TargetsPerColor = 1, TargetD = 0.05, Ftue = "ftue.l2" });
+            rows.Add(new Row { Level = 3, Role = "dễ", Colors = 3, MaxLayer = 1, Slots = 3, TargetsPerColor = 1, TargetD = 0.08 });
+            rows.Add(new Row { Level = 4, Role = "dễ · che phủ", Colors = 3, MaxLayer = 1, Slots = 3, TargetsPerColor = 1, TargetD = 0.12 });
+            rows.Add(new Row { Level = 5, Role = "hàng cọc chờ", Colors = 4, MaxLayer = 1, Slots = 2, TargetsPerColor = 1, TargetD = 0.15 });
+            R(6, "nghỉ", 4, 1, 0.15, 7);
+            R(7, "trung bình", 4, 2, 0.25, 8);
+            R(8, "trung bình", 5, 2, 0.30, 8);
+            R(9, "trung bình", 5, 2, 0.35, 9);
+            R(10, "khó", 5, 2, 0.55, 10);
+            R(11, "nghỉ", 5, 1, 0.25, 8);
+            R(12, "trung bình", 6, 2, 0.35, 9);
+            R(13, "trung bình", 6, 2, 0.40, 10);
+            R(14, "trung bình", 6, 2, 0.45, 10);
+            R(15, "khó", 6, 3, 0.60, 11);
+            R(16, "nghỉ", 6, 2, 0.30, 9);
+            R(17, "trung bình", 7, 2, 0.45, 10);
+            R(18, "trung bình", 7, 3, 0.50, 10);
+            R(19, "trung bình", 7, 3, 0.55, 11);
+            R(20, "khó", 8, 3, 0.65, 12);
+            R(21, "nghỉ", 7, 2, 0.40, 10);
+            R(22, "khó", 8, 3, 0.55, 11);
+            R(23, "khó", 8, 3, 0.60, 12);
+            R(24, "khó", 8, 3, 0.62, 12);
+            R(25, "khó", 8, 4, 0.72, 12);
+            R(26, "nghỉ", 7, 3, 0.45, 10);
+            R(27, "khó", 8, 4, 0.65, 12);
+            R(28, "khó", 8, 4, 0.68, 12);
+            R(29, "khó", 8, 4, 0.70, 12);
+            R(30, "khó (cuối)", 8, 4, 0.80, 12);
             rows.Sort((a, b) => a.Level.CompareTo(b.Level));
             return rows;
         }
@@ -155,7 +154,7 @@ namespace CardSlot.SkuHeadlessTests.Levels
             sb.AppendLine("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|");
             foreach (var (row, l, s, d, n) in items)
             {
-                int cards = l.Stacks.Sum(x => x.Cards.Length);
+                int cards = l.Stacks.Sum(x => x.Count);
                 int layers = l.Stacks.Max(x => x.Layer) + 1;
                 string name = row.Level.ToString(ci);
                 sb.AppendLine(string.Format(ci, "| {0} | {1} | {2} | {3} | {4} | {5} | {6} | {7} | {8} | {9} | {10} | {11:0.00} | {12:0.00} | {13} | {14} |",

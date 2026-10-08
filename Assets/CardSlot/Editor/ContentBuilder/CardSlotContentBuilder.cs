@@ -79,7 +79,9 @@ namespace Game.Editor
             return sprite;
         }
 
-        private static Sprite[] Six(string atlas, string prefix) => Enumerable.Range(0, 6).Select(i => S(atlas, prefix + i)).ToArray();
+        // one sprite per card colour, glossary color_0..7 (CR-012: 8 colours)
+        private const int CardColours = 8;
+        private static Sprite[] PerColour(string atlas, string prefix) => Enumerable.Range(0, CardColours).Select(i => S(atlas, prefix + i)).ToArray();
 
         private static void BuildPrefabs()
         {
@@ -88,11 +90,11 @@ namespace Game.Editor
 
             Save("Gameplay/BoardView", "Game.Views.BoardView, Game.Views", so =>
             {
-                Set(so, "_cardFace", Six("gameplay", "card_face_"));
-                Set(so, "_cardUnder", Six("gameplay", "card_under_"));
-                Set(so, "_cardMini", Six("gameplay", "card_mini_"));
-                Set(so, "_chip", Six("gameplay", "chip_"));
-                Set(so, "_targetBase", Six("gameplay", "target_base_"));
+                Set(so, "_cardFace", PerColour("gameplay", "card_face_"));
+                Set(so, "_cardUnder", PerColour("gameplay", "card_under_"));
+                Set(so, "_cardMini", PerColour("gameplay", "card_mini_"));
+                Set(so, "_chip", PerColour("gameplay", "chip_"));
+                Set(so, "_targetBase", PerColour("gameplay", "target_base_"));
                 Set(so, "_hatch", S("gameplay", "card_covered_hatch"));
                 Set(so, "_targetSlot", S("gameplay", "target_slot_bg"));
                 Set(so, "_trayRim", S("gameplay", "tray_rim"));
@@ -124,7 +126,7 @@ namespace Game.Editor
 
             Save("Home/HomeView", "Game.Views.HomeView, Game.Views", so =>
             {
-                Set(so, "_cardFace", Six("gameplay", "card_face_"));
+                Set(so, "_cardFace", PerColour("gameplay", "card_face_"));
                 Set(so, "_ground", S("bg", "bg_ground"));
                 Set(so, "_buttonPrimary", S("ui", "btn_primary"));
                 Set(so, "_font", font);
@@ -171,7 +173,7 @@ namespace Game.Editor
                 Set(so, "_toggleOff", S("ui", "toggle_off"));
                 Set(so, "_toggleKnob", S("ui", "toggle_knob"));
                 Set(so, "_roundButton", S("ui", "rbtn_secondary"));
-                Set(so, "_cardFace", Six("gameplay", "card_face_"));
+                Set(so, "_cardFace", PerColour("gameplay", "card_face_"));
                 Set(so, "_font", font);
                 so.ApplyModifiedPropertiesWithoutUndo();
                 PrefabUtility.SaveAsPrefabAsset(root, path);

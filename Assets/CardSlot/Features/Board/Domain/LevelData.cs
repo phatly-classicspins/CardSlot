@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Game.Domain
 {
-    /// <summary>One target in a level's queue: a card colour (glossary <c>color_0..5</c> → 0..5) and how
+    /// <summary>One target (a pole) in a level's queue: a card colour (glossary <c>color_0..7</c> → 0..7) and how
     /// many cards fill it (GDD §2.1).</summary>
     public sealed class TargetSpec
     {
@@ -13,18 +13,18 @@ namespace Game.Domain
         public TargetSpec(int color, int capacity) { Color = color; Capacity = capacity; }
     }
 
-    /// <summary>One stack on the board. <see cref="Cards"/>[0] is the top card. The rectangle is in world
-    /// units inside the tray and is what the covering rule (R-3) and R-1b test.</summary>
+    /// <summary>One stack on the board: <see cref="Count"/> cards of one <see cref="Color"/> (R-1c, GDD v2.0). The
+    /// rectangle is in world units inside the tray and is what the covering rule (R-3) and R-1b test.</summary>
     public sealed class StackSpec
     {
         public string Id;
         public int X, Y, W, H, Layer;
-        public int[] Cards;
+        public int Color, Count;
 
         public StackSpec() { }
-        public StackSpec(string id, int x, int y, int w, int h, int layer, params int[] cards)
+        public StackSpec(string id, int x, int y, int w, int h, int layer, int color, int count)
         {
-            Id = id; X = x; Y = y; W = w; H = h; Layer = layer; Cards = cards;
+            Id = id; X = x; Y = y; W = w; H = h; Layer = layer; Color = color; Count = count;
         }
 
         /// <summary>True when the two rectangles share an area greater than zero (touching edges do not).</summary>
@@ -46,10 +46,8 @@ namespace Game.Domain
         public List<StackSpec> Stacks = new List<StackSpec>();
         /// <summary>FTUE script id for this level, or null.</summary>
         public string Ftue;
-        /// <summary>CR-008: the most cards one tap takes from the top run (0 = the whole run). Shipped levels: 6 —
-        /// a run of 12 same-colour cards needs two taps.</summary>
-        public int MaxRun;
 
-        public const int ColorCount = 6;
+        /// <summary>GDD v2.0: one list of 8 colours shared by cards and poles.</summary>
+        public const int ColorCount = 8;
     }
 }

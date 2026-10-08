@@ -665,6 +665,226 @@
                                   ]
                     },
                     {
+                        "id":  "card_face_6",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_face_6.png",
+                        "w":  150,
+                        "h":  216,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "top card of a stack, pink (color_6)",
+                        "kb":  6.6,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_under_6",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_under_6.png",
+                        "w":  150,
+                        "h":  214,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "card edge peeking under a stack, pink",
+                        "kb":  2.4,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_mini_6",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_mini_6.png",
+                        "w":  66,
+                        "h":  146,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "card in the holding area, pink",
+                        "kb":  3.7,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "chip_6",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/chip_6.png",
+                        "w":  34,
+                        "h":  50,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "next-target preview chip, pink",
+                        "kb":  0.9,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "target_base_6",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/target_base_6.png",
+                        "w":  230,
+                        "h":  80,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      40,
+                                      0,
+                                      40,
+                                      0
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "target pedestal, pink (count is live text)",
+                        "kb":  3.5,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_face_7",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_face_7.png",
+                        "w":  150,
+                        "h":  216,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "top card of a stack, cyan (color_7)",
+                        "kb":  7.6,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_under_7",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_under_7.png",
+                        "w":  150,
+                        "h":  214,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "card edge peeking under a stack, cyan",
+                        "kb":  2.5,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "card_mini_7",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/card_mini_7.png",
+                        "w":  66,
+                        "h":  146,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "card in the holding area, cyan",
+                        "kb":  4.7,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "chip_7",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/chip_7.png",
+                        "w":  34,
+                        "h":  50,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "opaque",
+                        "use":  "next-target preview chip, cyan",
+                        "kb":  0.9,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "target_base_7",
+                        "atlas":  "gameplay",
+                        "file":  "gameplay/target_base_7.png",
+                        "w":  230,
+                        "h":  80,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  [
+                                      40,
+                                      0,
+                                      40,
+                                      0
+                                  ],
+                        "kind":  "opaque",
+                        "use":  "target pedestal, cyan (count is live text)",
+                        "kb":  3.8,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
                         "id":  "card_covered_hatch",
                         "atlas":  "gameplay",
                         "file":  "gameplay/card_covered_hatch.png",
@@ -729,7 +949,7 @@
                                   ],
                         "kind":  "opaque",
                         "use":  "board tray outer rim (9-slice)",
-                        "kb":  4.3,
+                        "kb":  4.4,
                         "issues":  [
 
                                    ],
@@ -927,7 +1147,7 @@
                                   ],
                         "kind":  "opaque",
                         "use":  "secondary button (9-slice)",
-                        "kb":  6.9,
+                        "kb":  7,
                         "issues":  [
 
                                    ],
@@ -953,7 +1173,7 @@
                                   ],
                         "kind":  "opaque",
                         "use":  "locked/disabled button (9-slice)",
-                        "kb":  6.5,
+                        "kb":  6.3,
                         "issues":  [
 
                                    ],
@@ -979,7 +1199,7 @@
                                   ],
                         "kind":  "opaque",
                         "use":  "HUD pill: coins, level (9-slice)",
-                        "kb":  3.6,
+                        "kb":  3.5,
                         "issues":  [
 
                                    ],
@@ -1052,7 +1272,7 @@
                         "slice":  null,
                         "kind":  "opaque",
                         "use":  "round HUD button: pause, restart, settings",
-                        "kb":  4,
+                        "kb":  3.7,
                         "issues":  [
 
                                    ],
@@ -1078,7 +1298,7 @@
                                   ],
                         "kind":  "opaque",
                         "use":  "dialog panel (9-slice)",
-                        "kb":  5.5,
+                        "kb":  5.6,
                         "issues":  [
 
                                    ],
@@ -1130,7 +1350,7 @@
                                   ],
                         "kind":  "opaque",
                         "use":  "lose-dialog title ribbon (9-slice)",
-                        "kb":  4.1,
+                        "kb":  4.2,
                         "issues":  [
 
                                    ],
@@ -1224,7 +1444,7 @@
                         "slice":  null,
                         "kind":  "opaque",
                         "use":  "dialog close button",
-                        "kb":  5.9,
+                        "kb":  6,
                         "issues":  [
 
                                    ],
@@ -1271,7 +1491,7 @@
                         "slice":  null,
                         "kind":  "opaque",
                         "use":  "toggle track, on",
-                        "kb":  3,
+                        "kb":  3.1,
                         "issues":  [
 
                                    ],
@@ -1335,7 +1555,7 @@
                         "slice":  null,
                         "kind":  "opaque",
                         "use":  "big booster icon holder in dialogs",
-                        "kb":  6.8,
+                        "kb":  6.7,
                         "issues":  [
 
                                    ],
@@ -1440,7 +1660,7 @@
                         "slice":  null,
                         "kind":  "icon",
                         "use":  "play glyph, white — tint from tokens",
-                        "kb":  0.9,
+                        "kb":  0.8,
                         "issues":  [
 
                                    ],
@@ -1461,7 +1681,7 @@
                         "slice":  null,
                         "kind":  "icon",
                         "use":  "close glyph, white — tint from tokens",
-                        "kb":  1.2,
+                        "kb":  1.3,
                         "issues":  [
 
                                    ],
@@ -1503,7 +1723,7 @@
                         "slice":  null,
                         "kind":  "icon",
                         "use":  "undo glyph, white — tint from tokens",
-                        "kb":  1.2,
+                        "kb":  1.3,
                         "issues":  [
 
                                    ],
@@ -1566,7 +1786,7 @@
                         "slice":  null,
                         "kind":  "overlay",
                         "use":  "FTUE tap ring (scaled/faded in game)",
-                        "kb":  5.1,
+                        "kb":  5.2,
                         "issues":  [
 
                                    ],
@@ -1608,7 +1828,7 @@
                         "slice":  null,
                         "kind":  "opaque",
                         "use":  "screen background, stretched to the screen (Ground token)",
-                        "kb":  34.2,
+                        "kb":  34.4,
                         "issues":  [
 
                                    ],

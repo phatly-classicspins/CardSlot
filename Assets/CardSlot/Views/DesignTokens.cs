@@ -43,9 +43,9 @@ namespace Game.Views
         public static readonly Color HintOutline = Hex("FFF6C2");
         public static readonly Color TextShadow = new Color(0f, 0f, 0f, 0.25f);
 
-        // ── Card colours (§2): glossary color_0..5 ───────────────────────────────────────────────────
+        // ── Card colours (§2): glossary color_0..7 (CR-012: 8 colours) ──────────────────────────────────
         public static readonly Color[] CardFace =
-            { Hex("F2475B"), Hex("3D8BFF"), Hex("FFC93C"), Hex("3CC26B"), Hex("9B5CF6"), Hex("FF8A3D") };
+            { Hex("F2475B"), Hex("3D8BFF"), Hex("FFC93C"), Hex("3CC26B"), Hex("9B5CF6"), Hex("FF8A3D"), Hex("FF6FB5"), Hex("2FCFE0") };
         /// <summary>Covered cards: 68% brightness tint + hatch overlay (§2).</summary>
         public static readonly Color CoveredTint = new Color(0.68f, 0.68f, 0.68f, 1f);
 

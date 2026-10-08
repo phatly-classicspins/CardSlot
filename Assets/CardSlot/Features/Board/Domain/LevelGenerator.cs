@@ -9,19 +9,19 @@ namespace Game.Domain
         public int Colors = 3;
         /// <summary>Targets per colour; every target holds <see cref="TargetCapacity"/> cards.</summary>
         public int TargetsPerColor = 2;
+        /// <summary>Total targets when &gt; 0 (overrides <see cref="TargetsPerColor"/>): every colour gets one, the rest go
+        /// to the first colours round-robin — lets 8 colours share about 12 poles.</summary>
+        public int Targets;
         public int TargetCapacity = 3;
         /// <summary>Highest layer index used (0 = no covering).</summary>
         public int MaxLayer = 1;
         public int BufferCapacity = 12;
         public int Slots = 3;
-        public int MinCardsPerStack = 2;
-        public int MaxCardsPerStack = 5;
-        /// <summary>Chance (0..1) that the next card in a stack repeats the previous colour — long runs are easier.</summary>
-        public float RunBias = 0.5f;
-        /// <summary>Each stack holds exactly one run of one colour (FTUE level 1).</summary>
+        /// <summary>Cards per stack. A stack is one colour (R-1c); in groups, 1..3 = 6 / 12 / 18 cards once expanded.</summary>
+        public int MinCardsPerStack = 1;
+        public int MaxCardsPerStack = 3;
+        /// <summary>One stack per target, holding exactly what that target takes (FTUE level 1).</summary>
         public bool SingleRunStacks;
-        /// <summary>Cards one tap may take (0 = the whole run); generation in groups uses 1 (CR-008).</summary>
-        public int MaxRun;
     }
 
     /// <summary>
@@ -39,23 +39,22 @@ namespace Game.Domain
         {
             var level = new LevelData
             {
-                Id = id, Seed = random.Seed, Slots = p.Slots, BufferCapacity = p.BufferCapacity, MaxRun = p.MaxRun,
+                Id = id, Seed = random.Seed, Slots = p.Slots, BufferCapacity = p.BufferCapacity,
             };
-            // colours: pick p.Colors of the 6
-            var palette = new List<int> { 0, 1, 2, 3, 4, 5 };
+            // colours: pick p.Colors of the 8
+            var palette = new List<int>();
+            for (int c = 0; c < LevelData.ColorCount; c++) palette.Add(c);
             random.Shuffle(palette);
             var colours = palette.GetRange(0, p.Colors);
 
             // target queue
-            for (int c = 0; c < p.Colors; c++)
-                for (int k = 0; k < p.TargetsPerColor; k++)
-                    level.Targets.Add(new TargetSpec(colours[c], p.TargetCapacity));
+            int total = p.Targets > 0 ? System.Math.Max(p.Targets, p.Colors) : p.Colors * p.TargetsPerColor;
+            for (int k = 0; k < total; k++)
+                level.Targets.Add(new TargetSpec(colours[k % p.Colors], p.TargetCapacity));
             random.Shuffle(level.Targets);
 
-            // the card multiset, then cut into stacks
-            var pool = new List<int>();
-            foreach (var t in level.Targets) for (int i = 0; i < t.Capacity; i++) pool.Add(t.Color);
-            var stacks = p.SingleRunStacks ? SingleRuns(level.Targets) : CutIntoStacks(pool, p, random);
+            // each colour's cards, cut into one-colour stacks
+            var stacks = p.SingleRunStacks ? SingleRuns(level.Targets) : CutIntoStacks(level.Targets, p, random);
 
             // CR-011 (the reference, video IMG_3750): stacks sit on an even grid; a higher layer sits a little down
             // and to the right of the stack below it, so the lower one shows at the top-left. Layer counts shrink
@@ -97,7 +96,7 @@ namespace Game.Domain
             for (int i = 0; i < stacks.Count; i++)
             {
                 var spot = spots[i];
-                level.Stacks.Add(new StackSpec($"s{i}", spot.x, spot.y, CardW, CardH, spot.layer, stacks[i].ToArray()));
+                level.Stacks.Add(new StackSpec($"s{i}", spot.x, spot.y, CardW, CardH, spot.layer, stacks[i].color, stacks[i].count));
             }
             // stable, readable order: by layer, then row, then column
             level.Stacks.Sort((a, b) => a.Layer != b.Layer ? a.Layer.CompareTo(b.Layer) : a.Y != b.Y ? a.Y.CompareTo(b.Y) : a.X.CompareTo(b.X));
@@ -109,7 +108,7 @@ namespace Game.Domain
         /// CR-006: turn a level generated in groups into the shipped card level — every card becomes
         /// <paramref name="cardsPerGroup"/> cards of its colour, every target needs that many more, and the
         /// holding area holds <paramref name="holdCards"/> single cards (one per groove, as in the reference).
-        /// Taps move whole runs (R-6), so a solution of the group level solves the card level tap for tap,
+        /// Taps move whole stacks (R-6), so a solution of the group level solves the card level tap for tap,
         /// provided <paramref name="holdCards"/> overflows on the same group: ⌊hold / group⌋ = the group buffer.
         /// Stack rectangles keep the group layout.
         /// </summary>
@@ -119,57 +118,41 @@ namespace Game.Domain
             {
                 Id = groups.Id, Seed = groups.Seed, Slots = groups.Slots, BufferCapacity = holdCards,
                 Ftue = groups.Ftue, Revision = groups.Revision,
-                MaxRun = groups.MaxRun > 0 ? groups.MaxRun * cardsPerGroup : 0,   // one group a tap ⇒ 6 cards a tap
             };
             foreach (var t in groups.Targets) level.Targets.Add(new TargetSpec(t.Color, t.Capacity * cardsPerGroup));
             foreach (var s in groups.Stacks)
-            {
-                var cards = new int[s.Cards.Length * cardsPerGroup];
-                for (int i = 0; i < cards.Length; i++) cards[i] = s.Cards[i / cardsPerGroup];
-                level.Stacks.Add(new StackSpec(s.Id, s.X, s.Y, s.W, s.H, s.Layer, cards));
-            }
+                level.Stacks.Add(new StackSpec(s.Id, s.X, s.Y, s.W, s.H, s.Layer, s.Color, s.Count * cardsPerGroup));
             return level;
         }
 
-        private static List<List<int>> SingleRuns(List<TargetSpec> targets)
+        private static List<(int color, int count)> SingleRuns(List<TargetSpec> targets)
         {
-            var result = new List<List<int>>();
-            foreach (var t in targets)
-            {
-                var s = new List<int>();
-                for (int i = 0; i < t.Capacity; i++) s.Add(t.Color);
-                result.Add(s);
-            }
+            var result = new List<(int color, int count)>();
+            foreach (var t in targets) result.Add((t.Color, t.Capacity));
             return result;
         }
 
-        private static List<List<int>> CutIntoStacks(List<int> pool, GenParams p, IRandom random)
+        // every colour's cards are cut into stacks of MinCardsPerStack..MaxCardsPerStack; the stacks are then
+        // shuffled, so the grid mixes colours
+        private static List<(int color, int count)> CutIntoStacks(List<TargetSpec> targets, GenParams p, IRandom random)
         {
-            // order the pool with a run bias: repeatedly pick the previous colour with probability RunBias
-            random.Shuffle(pool);
-            var ordered = new List<int>();
-            int prev = -1;
-            while (pool.Count > 0)
+            var perColour = new SortedDictionary<int, int>();
+            foreach (var t in targets) perColour[t.Color] = (perColour.TryGetValue(t.Color, out var had) ? had : 0) + t.Capacity;
+            var stacks = new List<(int color, int count)>();
+            foreach (var kv in perColour)
             {
-                int pick = -1;
-                if (prev >= 0 && random.NextFloat() < p.RunBias) pick = pool.IndexOf(prev);
-                if (pick < 0) pick = random.NextInt(0, pool.Count);
-                prev = pool[pick];
-                ordered.Add(prev);
-                pool.RemoveAt(pick);
+                int left = kv.Value;
+                while (left > 0)
+                {
+                    int n = random.NextInt(p.MinCardsPerStack, p.MaxCardsPerStack + 1);
+                    if (left - n > 0 && left - n < p.MinCardsPerStack) n = left - p.MinCardsPerStack;
+                    if (n > left) n = left;
+                    if (n < 1) n = 1;
+                    stacks.Add((kv.Key, n));
+                    left -= n;
+                }
             }
-            var stacks = new List<List<int>>();
-            int at = 0;
-            while (at < ordered.Count)
-            {
-                int left = ordered.Count - at;
-                int n = random.NextInt(p.MinCardsPerStack, p.MaxCardsPerStack + 1);
-                if (left - n > 0 && left - n < p.MinCardsPerStack) n = left - p.MinCardsPerStack;
-                if (n > left) n = left;
-                if (n < 1) n = 1;
-                stacks.Add(ordered.GetRange(at, n));
-                at += n;
-            }
+            random.Shuffle(stacks);
             return stacks;
         }
     }

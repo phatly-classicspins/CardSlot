@@ -1,12 +1,16 @@
 {
   "id": "level_001",
-  "revision": 2,
+  "revision": 3,
   "seed": 100000,
-  "n_slots": 2,
+  "n_slots": 3,
   "buffer_capacity": 26,
   "targets": [
     {
-      "color": "color_0",
+      "color": "color_3",
+      "capacity": 18
+    },
+    {
+      "color": "color_6",
       "capacity": 18
     },
     {
@@ -22,20 +26,8 @@
       "w": 150,
       "h": 206,
       "layer": 0,
-      "cards": [
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0"
-      ]
+      "color": "color_3",
+      "count": 18
     },
     {
       "id": "s1",
@@ -44,20 +36,8 @@
       "w": 150,
       "h": 206,
       "layer": 0,
-      "cards": [
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2"
-      ]
+      "color": "color_6",
+      "count": 18
     },
     {
       "id": "s2",
@@ -66,30 +46,14 @@
       "w": 150,
       "h": 206,
       "layer": 0,
-      "cards": [
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2",
-        "color_2"
-      ]
+      "color": "color_2",
+      "count": 18
     }
   ],
   "ftue": "ftue.l1",
-  "max_run": 6,
   "solution": [
     "s0",
-    "s0",
     "s1",
-    "s1",
-    "s2",
     "s2"
   ]
 }

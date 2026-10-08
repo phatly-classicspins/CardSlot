@@ -10,7 +10,7 @@ Người duyệt: Thiết kế Phat · Hình ảnh Phat · Art Phat · Kỹ thu�
 | 3 Art | xong | art v1: 71 sprite (`art/export/`), báo cáo xuất 0 lỗi chặn | Phat, 06-10-2026 | |
 | 4 Animation | xong (gắn Unity ở Bước 6) | animation-list v1.0 (21 animation), `art/motion/preview.html` | Phat, 06-10-2026 | |
 | 5 Logic | xong | GDD v1.2, code Board/Meta, 30 level, level-report, architecture-notes, 135 test | Phat, 06-10-2026 | |
-| 6 Ráp | 6b đã duyệt + commit (D-026); đang làm CR-004…CR-007 (lá mỏng, bỏ booster + xu, đích 18 / hold 26, cọc + lá có lỗ + bay từng lá), CR-008 (chạm lấy tối đa 6 lá), CR-009 (hàng đợi theo cột), CR-010 (bỏ độ khó), CR-011 (lưới, khay vừa khít, level đầu dễ), D-027 (camera 10°) — chờ duyệt · **CR-012 (theo GDD anh Tánh) đã chốt: làm theo GDD; còn mở mục 4** | | |
+| 6 Ráp | 6b đã duyệt + commit (D-026); CR-004…CR-011 + D-027 đã duyệt + commit (D-028, b6c218a) · **CR-012 (theo GDD anh Tánh) đã chốt: làm theo GDD, mục 4 = tràn là thua; giai đoạn A đã duyệt + commit (D-029); **đang làm giai đoạn B (Revive + RV Slot)**** | | |
 | 7 AI test | chưa bắt đầu | | |
 | 8 Máy thật/Chơi thử/Phát hành | chưa bắt đầu | | |
 
@@ -18,7 +18,7 @@ Người duyệt: Thiết kế Phat · Hình ảnh Phat · Art Phat · Kỹ thu�
 - [x] Game tham khảo: Card Slots (App Store) — D-009
 - [x] Người duyệt: Phat duyệt tất cả — D-013
 - [ ] Hạn chót, ngân sách (sinh ảnh AI, tool, license), mục tiêu hiệu năng (máy thấp nhất, FPS, dung lượng build)
-- [x] CR-012: Phat chốt "làm theo GDD của Tánh" (08-10-2026); còn mục 4
+- [x] CR-012: Phat chốt "làm theo GDD của Tánh" (08-10-2026); mục 4 = tràn là thua
 - [ ] Hỏi anh Tánh: kích thước chồng / số lá mỗi lần chạm; chạm khi chồng nhiều lá hơn ô chờ còn trống; Paper Box / Magnet hay Hand / Shuffle; revive trả bằng gì; giá trị remote config; link T&C / Privacy
 - [x] concept.md v0.2 đã duyệt (Phat, 06-10-2026)
 - [x] GDD v1.0 đã duyệt kèm 6 mục [XÁC NHẬN] — D-015
@@ -52,7 +52,9 @@ Người duyệt: Thiết kế Phat · Hình ảnh Phat · Art Phat · Kỹ thu�
 
 ## Phiên gần nhất
 
-08-10-2026 (23) · Đọc GDD anh Tánh (https://hvtanh07.github.io/Card-Slot-GDD/) → bản chụp `docs/design/reference-gdd-tanh.md`. Phat chọn mở **CR-012** theo GDD này: ghi 14 mục cần chốt + khuyến nghị + 7 giai đoạn (A luật lõi … G SFX/remote config) vào `DECISIONS.md` · chưa đụng code · chưa chạy test (không có thay đổi logic) · khuyến nghị commit CR-004…CR-011 trước khi bắt đầu CR-012.
+08-10-2026 (24) · CR-012 giai đoạn A (Phat: "làm a luôn đi"): chồng một màu (R-1c, JSON v3 `color` + `count`), chỉ chồng khác màu mới che (R-3), chạm gửi cả chồng (R-6, bỏ `max_run`), thua do kẹt (R-13, `BoardLoss.Stuck`, model thử từng nước bằng snapshot; solver tắt look-ahead), 8 màu (thêm Pink `#FF6FB5`, Cyan `#2FCFE0` vào `DesignTokens`), generator cắt chồng 1–3 tập (6 / 12 / 18 lá) + tham số tổng số cọc, level 1 = 3 chồng 18 lá (cho FTUE), 30 level sinh lại (revision 3, 40 ứng viên mỗi level); tài liệu: `level-design.md` v2.0, `glossary.md` v2.0, `design-tokens.md` (nháp) · **giữ Continue (+6) tạm thời** thay vì bỏ — giai đoạn B đổi thành Revive / RV Slot; Continue nay dùng được cả khi kẹt · bằng chứng: `dotnet test` 100 pass, 1 skip; sweep 30/30 thắng được; Unity: compile 0 lỗi (chỉ 3 cảnh báo cũ), play mode 4 lần — level 1, 5, 12 (+ sau 1 chạm: cả chồng hồng 6 lá lên cọc, ô chờ 0/26), 30; ảnh `docs/captures/cr12a/`; console 0 lỗi / exception, 0 PoolLeak; save.json máy dev đã khôi phục · **lỗi Phat gặp khi thắng level** (IndexOutOfRange ở `CardDialogView.CardFan`: art 2D chỉ có sprite 6 màu): thêm Pink (bông hoa) + Cyan (bông tuyết) vào `art/source/art.html`, `build-art.ps1` → 81 sprite, 0 lỗi chặn; `CardSlotContentBuilder` nối 8 màu (`PerColour`), Content Build; kiểm lại: thắng level 1 → dialog Thắng hiện lá hồng, Next → level 2, mọi prefab 8/8 sprite; hoàn nguyên các sprite cũ bị render lại khác byte · độ khó level 20–30 theo bot ngẫu nhiên 0.84–0.95 (cao), cần chơi thử · chưa commit (chờ duyệt).
+
+08-10-2026 (23) · Đọc GDD anh Tánh (https://hvtanh07.github.io/Card-Slot-GDD/) → bản chụp `docs/design/reference-gdd-tanh.md`. Phat chọn mở **CR-012** theo GDD này: ghi 14 mục cần chốt + khuyến nghị + 7 giai đoạn (A luật lõi … G SFX/remote config) vào `DECISIONS.md` · chưa đụng code · chưa chạy test (không có thay đổi logic) · khuyến nghị commit CR-004…CR-011 trước khi bắt đầu CR-012. Sau đó: Phat chốt "làm theo GDD của Tánh", mục 4 = tràn là thua; duyệt + commit CR-004…CR-011 (D-028, b6c218a; `dotnet test` 96 pass, 1 skip); viết **GDD v2.0 nháp** (`docs/design/GDD.md`) — chờ duyệt, các mục [XÁC NHẬN] cần Phat xem.
 
 07-10-2026 (22) · Video tham khảo IMG_3750 (level 1–5) → `docs/design/reference-video-3750.md`. CR-011 (Phat chọn): sinh level theo lưới + tầng dưới lộ góc trên-trái, lá lệch sang phải, khay vừa khít bố cục, level 1–5 dễ như game (mỗi màu một đích, hàng cọc chờ từ level 5); 30 level sinh lại · bằng chứng: `dotnet test` 96 pass, 1 skip; sweep 30/30 thắng được (level 1–4 không cần ô tạm); compile 0 lỗi; play mode level 1, 5, 12, 30 (ảnh `docs/captures/cr11/`) · chưa làm: vòng sáng khi cọc đầy (Phat chưa chọn), ô tạm hẹp lại · chưa commit (chờ duyệt).
 

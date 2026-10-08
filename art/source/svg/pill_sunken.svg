@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="140" height="128" viewBox="0 0 140 128" data-id="pill_sunken"><defs><linearGradient id="g40" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2C68C"/><stop offset=".38" stop-color="#F2C68C"/><stop offset="1" stop-color="#F2C68C"/></linearGradient></defs>
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="128" viewBox="0 0 140 128" data-id="pill_sunken"><defs><linearGradient id="g50" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2C68C"/><stop offset=".38" stop-color="#F2C68C"/><stop offset="1" stop-color="#F2C68C"/></linearGradient></defs>
   <g id="edge"><rect x="0" y="8" width="140" height="120" rx="60" fill="#d5ae7b"/></g>
-  <g id="face"><rect x="0" y="0" width="140" height="120" rx="60" fill="url(#g40)"/></g>
+  <g id="face"><rect x="0" y="0" width="140" height="120" rx="60" fill="url(#g50)"/></g>
   
   </svg>

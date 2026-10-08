@@ -8,7 +8,7 @@ namespace Game.Infrastructure
 {
     /// <summary>
     /// Reads and writes the level file format of <c>docs/design/level-design.md</c> §2 (snake_case keys,
-    /// colours as glossary ids <c>"color_0"</c>…). Engine-free apart from Newtonsoft, so the headless tests
+    /// a stack is one colour and a count (R-1c, level format v3), colours as glossary ids <c>"color_0"</c>…). Engine-free apart from Newtonsoft, so the headless tests
     /// and the level tool compile this exact file (named <c>Compile Include</c>, not a glob). Malformed
     /// data comes back as an error message, never an exception.
     /// </summary>
@@ -28,16 +28,12 @@ namespace Game.Infrastructure
                     Slots = (int?)o["n_slots"] ?? 3,
                     BufferCapacity = (int?)o["buffer_capacity"] ?? 12,
                     Ftue = (string)o["ftue"],
-                    MaxRun = (int?)o["max_run"] ?? 0,
                 };
                 foreach (var t in (JArray)o["targets"] ?? new JArray())
                     l.Targets.Add(new TargetSpec(Color((string)t["color"]), (int)t["capacity"]));
                 foreach (var s in (JArray)o["stacks"] ?? new JArray())
-                {
-                    var cards = new List<int>();
-                    foreach (var c in (JArray)s["cards"]) cards.Add(Color((string)c));
-                    l.Stacks.Add(new StackSpec((string)s["id"], (int)s["x"], (int)s["y"], (int)s["w"], (int)s["h"], (int)s["layer"], cards.ToArray()));
-                }
+                    l.Stacks.Add(new StackSpec((string)s["id"], (int)s["x"], (int)s["y"], (int)s["w"], (int)s["h"], (int)s["layer"],
+                        Color((string)s["color"]), (int)s["count"]));
                 var problems = LevelValidator.Validate(l);
                 if (problems.Count > 0) { error = string.Join("; ", problems); return false; }
                 level = l;
@@ -66,16 +62,13 @@ namespace Game.Infrastructure
             o["targets"] = targets;
             var stacks = new JArray();
             foreach (var s in l.Stacks)
-            {
-                var cards = new JArray();
-                foreach (var c in s.Cards) cards.Add(ColorId(c));
-                var so = new JObject { ["id"] = s.Id, ["x"] = s.X, ["y"] = s.Y, ["w"] = s.W, ["h"] = s.H, ["layer"] = s.Layer };
-                so["cards"] = cards;
-                stacks.Add(so);
-            }
+                stacks.Add(new JObject
+                {
+                    ["id"] = s.Id, ["x"] = s.X, ["y"] = s.Y, ["w"] = s.W, ["h"] = s.H, ["layer"] = s.Layer,
+                    ["color"] = ColorId(s.Color), ["count"] = s.Count,
+                });
             o["stacks"] = stacks;
             o["ftue"] = l.Ftue;
-            if (l.MaxRun > 0) o["max_run"] = l.MaxRun;
             if (solution != null) o["solution"] = new JArray(solution);
             return o.ToString(Formatting.Indented);
         }
@@ -94,7 +87,7 @@ namespace Game.Infrastructure
         private static int Color(string id)
         {
             if (id == null || !id.StartsWith("color_", StringComparison.Ordinal) || !int.TryParse(id.Substring(6), out var c))
-                throw new FormatException($"'{id}' is not a colour id (expected color_0..color_5)");
+                throw new FormatException($"'{id}' is not a colour id (expected color_0..color_7)");
             return c;
         }
     }
