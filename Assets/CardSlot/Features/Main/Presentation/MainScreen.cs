@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Threading;
 using ClassicSpins.PrototypeFramework.Application;
 using ClassicSpins.PrototypeFramework.Domain;
@@ -12,7 +11,7 @@ using UnityEngine;
 namespace Game.Presentation
 {
     /// <summary>
-    /// The Main (Home) screen controller: shows the current level and coins, and Play loads Gameplay
+    /// The Main (Home) screen controller: shows the current level, and Play loads Gameplay
     /// (features/level-progression.md). Plain ctor-injected class; the <see cref="HomeView"/> renders.
     /// </summary>
     public sealed class MainScreen : ScreenBase
@@ -23,7 +22,6 @@ namespace Game.Presentation
         private readonly ISceneService _scenes;
         private readonly ILocalizationService _loc;
         private readonly LevelProgressService _progress;
-        private readonly IWalletService _wallet;
         private readonly ILevelSource _levels;
         private readonly ILog _log;
 
@@ -31,15 +29,14 @@ namespace Game.Presentation
         private HomeView _view;
 
         public MainScreen(MainParam param, IAssetService assets, IRenderLayerRegistry layers, ISceneService scenes,
-            ILocalizationService loc, LevelProgressService progress, IWalletService wallet, ILevelSource levels, ILog log)
+            ILocalizationService loc, LevelProgressService progress, ILevelSource levels, ILog log)
         {
             _param = param; _assets = assets; _layers = layers; _scenes = scenes; _loc = loc; _progress = progress;
-            _wallet = wallet; _levels = levels; _log = log;
+            _levels = levels; _log = log;
         }
 
         public override async UniTask OnLoadAsync(CancellationToken ct)
         {
-            if (_param.ColdBoot) _progress.EnsureStartCoins();
             int count = await _levels.CountAsync(ct);
             _viewPrefab = await _assets.LoadAsync(AssetKeys.Home.HomeView, ct);
             _viewInstance = Object.Instantiate(_viewPrefab, _layers.GetHost(RenderLayers.Ui), false);
@@ -49,7 +46,6 @@ namespace Game.Presentation
             int level = Mathf.Min(_progress.CurrentLevel, count);
             bool allCleared = _progress.HighestCleared >= count;
             _view.Show(_loc.Get(LocKeys.HomeTitle), _loc.Get(LocKeys.HomeTagline), _loc.Get(LocKeys.HomePlay, level),
-                _wallet.Balance(CardSlotResources.Coin).ToString("N0", CultureInfo.InvariantCulture),
                 allCleared ? _loc.Get(LocKeys.HomeMoreSoon) : null);
         }
 

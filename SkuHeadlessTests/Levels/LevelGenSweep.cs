@@ -19,7 +19,7 @@ namespace CardSlot.SkuHeadlessTests.Levels
         /// <summary>Wanted difficulty = 1 − random-bot win rate (a ranking proxy, G5).</summary>
         public double TargetD;
         public float RunBias;
-        public bool Hard, SingleRun;
+        public bool SingleRun;
         public int MinBufferAtLeast; // FTUE level 2 must make the player use the buffer
         public string Ftue;
     }
@@ -34,6 +34,9 @@ namespace CardSlot.SkuHeadlessTests.Levels
     public class LevelGenSweep
     {
         const int CandidatesPerLevel = 40, MaxAttemptsPerLevel = 600, BotPlayouts = 300;
+        // CR-006: levels are generated in groups and shipped in cards — 6 cards a group, a target needs 18,
+        // and the holding area has 26 grooves like the reference, which overflows on the 5th group: 4 groups.
+        const int CardsPerGroup = 6, HoldCards = 26, GroupBuffer = HoldCards / CardsPerGroup;
 
         [Test, Slow]  // deterministic: re-running rewrites byte-identical files
         public void Generate_all_levels()
@@ -45,8 +48,12 @@ namespace CardSlot.SkuHeadlessTests.Levels
             var report = new List<(Row row, LevelData level, SolveReport solve, double d, int candidates)>();
             foreach (var row in rows)
             {
-                var (level, solve, d, n) = Pick(row);
-                if (level == null) Assert.Fail($"level {row.Level}: no solvable candidate");
+                var (groups, _, d, n) = Pick(row);
+                if (groups == null) Assert.Fail($"level {row.Level}: no solvable candidate");
+                var level = LevelGenerator.ExpandToCards(groups, CardsPerGroup, HoldCards);
+                level.Revision = 2;   // CR-006 changed every shipped level
+                var solve = LevelSolver.Analyze(level, new Pcg32(level.Seed), BotPlayouts);
+                if (solve.Solution.Count == 0) Assert.Fail($"level {row.Level}: the card level does not solve");
                 File.WriteAllText(Path.Combine(outDir, $"{level.Id}.json"), LevelJson.Write(level, solve.Solution) + "\n");
                 report.Add((row, level, solve, d, n));
                 TestContext.Progress.WriteLine($"{level.Id} seed {level.Seed} D {d:0.00} (want {row.TargetD:0.00}) minBuffer {solve.MinBufferCapacity}/{level.BufferCapacity} from {n} candidates");
@@ -58,9 +65,10 @@ namespace CardSlot.SkuHeadlessTests.Levels
         {
             var p = new GenParams
             {
-                Colors = row.Colors, TargetsPerColor = row.TargetsPerColor, MaxLayer = row.MaxLayer, BufferCapacity = row.Buffer,
-                Slots = row.Slots, RunBias = row.RunBias, SingleRunStacks = row.SingleRun, Hard = row.Hard,
+                Colors = row.Colors, TargetsPerColor = row.TargetsPerColor, MaxLayer = row.MaxLayer, BufferCapacity = GroupBuffer,
+                Slots = row.Slots, RunBias = row.RunBias, SingleRunStacks = row.SingleRun,
                 MinCardsPerStack = row.SingleRun ? 3 : 2, MaxCardsPerStack = row.SingleRun ? 3 : 5,
+                MaxRun = 1,   // CR-008: a tap takes one group (6 cards once expanded)
             };
             LevelData best = null; double bestD = 0, bestScore = double.MaxValue; int found = 0;
             for (int attempt = 0; attempt < MaxAttemptsPerLevel && found < CandidatesPerLevel; attempt++)
@@ -88,18 +96,20 @@ namespace CardSlot.SkuHeadlessTests.Levels
         }
 
         // level-design.md §4, with the wanted difficulty as a sawtooth: rising inside each group of five,
-        // a hard level on every fifth, a rest level right after it.
+        // (no hard levels since Phat: the game has no difficulty tiers — the curve only orders the levels)
         static List<Row> Curve()
         {
             var rows = new List<Row>();
             void R(int level, string role, int colors, int layer, int buffer, double d, float runBias, int perColor = 2)
                 => rows.Add(new Row { Level = level, Role = role, Colors = colors, MaxLayer = layer, Buffer = buffer, TargetD = d, RunBias = runBias,
-                                      TargetsPerColor = perColor, Hard = level % 5 == 0 });
-            rows.Add(new Row { Level = 1, Role = "FTUE: chạm", Colors = 2, MaxLayer = 0, Buffer = 16, Slots = 2, TargetD = 0, RunBias = 1, SingleRun = true, Ftue = "ftue.l1" });
-            rows.Add(new Row { Level = 2, Role = "FTUE: ô tạm", Colors = 2, MaxLayer = 0, Buffer = 14, Slots = 2, TargetD = 0.05, RunBias = 0.8f, MinBufferAtLeast = 1, Ftue = "ftue.l2" });
-            R(3, "dễ", 3, 0, 14, 0.10, 0.4f, 3);
-            R(4, "dễ · che phủ", 3, 1, 14, 0.15, 0.6f, 3);
-            R(5, "khó", 3, 1, 12, 0.45, 0.15f, 5);
+                                      TargetsPerColor = perColor });
+            // CR-011: the first levels as easy as the reference (video IMG_3750) — one target per colour, every peg in
+            // view; the back row of waiting pegs only from level 5
+            rows.Add(new Row { Level = 1, Role = "mở đầu", Colors = 2, MaxLayer = 0, Buffer = 16, Slots = 2, TargetsPerColor = 1, TargetD = 0, RunBias = 0.8f, Ftue = "ftue.l1" });
+            rows.Add(new Row { Level = 2, Role = "dễ", Colors = 3, MaxLayer = 0, Buffer = 14, Slots = 3, TargetsPerColor = 1, TargetD = 0.05, RunBias = 0.7f, Ftue = "ftue.l2" });
+            rows.Add(new Row { Level = 3, Role = "dễ", Colors = 3, MaxLayer = 1, Buffer = 14, Slots = 3, TargetsPerColor = 1, TargetD = 0.08, RunBias = 0.6f });
+            rows.Add(new Row { Level = 4, Role = "dễ · che phủ", Colors = 3, MaxLayer = 1, Buffer = 14, Slots = 3, TargetsPerColor = 1, TargetD = 0.12, RunBias = 0.5f });
+            rows.Add(new Row { Level = 5, Role = "hàng cọc chờ", Colors = 4, MaxLayer = 1, Buffer = 14, Slots = 2, TargetsPerColor = 1, TargetD = 0.15, RunBias = 0.5f });
             R(6, "nghỉ", 3, 1, 14, 0.15, 0.4f, 4);
             R(7, "trung bình", 4, 1, 12, 0.25, 0.45f, 3);
             R(8, "trung bình", 4, 2, 12, 0.30, 0.4f, 3);
@@ -147,7 +157,7 @@ namespace CardSlot.SkuHeadlessTests.Levels
             {
                 int cards = l.Stacks.Sum(x => x.Cards.Length);
                 int layers = l.Stacks.Max(x => x.Layer) + 1;
-                string name = row.Hard ? $"**{row.Level}**" : row.Level.ToString(ci);
+                string name = row.Level.ToString(ci);
                 sb.AppendLine(string.Format(ci, "| {0} | {1} | {2} | {3} | {4} | {5} | {6} | {7} | {8} | {9} | {10} | {11:0.00} | {12:0.00} | {13} | {14} |",
                     name, row.Role, row.Colors, cards, l.Stacks.Count, layers, l.Slots, l.BufferCapacity, s.MinBufferCapacity,
                     l.BufferCapacity - s.MinBufferCapacity, s.Solution.Count, row.TargetD, d, n, l.Seed));

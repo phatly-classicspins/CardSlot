@@ -95,14 +95,7 @@ MonoBehaviour:
   _pill: {fileID: 21300000, guid: 89248605d5aaabb4b9fcd279a36b9e49, type: 3}
   _roundButton: {fileID: 21300000, guid: fd0f129d418b9de459ac9f95f27a4464, type: 3}
   _iconPause: {fileID: 21300000, guid: 95ad5b0d56320414a9e4f5d23f9bb01d, type: 3}
-  _coin: {fileID: 21300000, guid: 1573b3c2b977d904da27d39b6ab43606, type: 3}
   _iconRestart: {fileID: 21300000, guid: 606e3b01f5de1a249b13ff50e28f6185, type: 3}
-  _badge: {fileID: 21300000, guid: 3c0f0ac6a69ae0740b7da74d4812b3f4, type: 3}
-  _badgePrimary: {fileID: 21300000, guid: 69cc3e23f88bb8a44977f1ee7fb3b654, type: 3}
-  _boostTile: {fileID: 21300000, guid: d6c3a3a1506e8434f8d175b191cd9f22, type: 3}
-  _iconUndo: {fileID: 21300000, guid: e471e6e9af329714596ebd2e6e9cdb2e, type: 3}
-  _iconSpace: {fileID: 21300000, guid: b4e316927ac7b3449a2e506f8dc72d09, type: 3}
-  _priceTag: {fileID: 21300000, guid: b99a15447c3796f4ba45e1957713b058, type: 3}
   _hand: {fileID: 21300000, guid: b14c3eb3880fbf141a03caf764bdddc5, type: 3}
   _ring: {fileID: 21300000, guid: 4ac879da17696924aa1d70334cad3216, type: 3}
   _font: {fileID: 11400000, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}

@@ -9,7 +9,6 @@
   "outputPath": "Assets/CardSlot/Gen/AdPlacements.gen.cs",
   "entries": [
     { "id": "RewardedContinue", "value": "rewarded_continue", "order": 0 },
-    { "id": "RewardedBooster", "value": "rewarded_booster", "order": 1 },
-    { "id": "InterstitialLevelEnd", "value": "interstitial_level_end", "order": 2 }
+    { "id": "InterstitialLevelEnd", "value": "interstitial_level_end", "order": 1 }
   ]
 }

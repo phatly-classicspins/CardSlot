@@ -50,11 +50,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 94325799ad77b7246972629434b35790
-    m_Address: BoosterUnlockDialog
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 97928457d60d3194a8bbe415b2dae9cb
     m_Address: Scenes/Gameplay
     m_ReadOnly: 0
@@ -77,11 +72,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ba5b54ca8fef93e478f6b53d43cb234c
     m_Address: PauseDialog
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: bb05ca1bcefe48b46ba8516f71c5aa54
-    m_Address: BoosterBuyDialog
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

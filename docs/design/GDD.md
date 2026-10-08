@@ -23,7 +23,7 @@ Mọi luật dưới đây là luật của **model thuần** (không phụ thu�
 | Kết quả | `playing` · `won` · `lost` |
 
 - **R-1 Hợp lệ khi bắt đầu.** Với mỗi màu, tổng số lá trên `board` = tổng `capacity` của mọi `target` màu đó. Level vi phạm sẽ bị loader từ chối.
-- **R-2 Khởi tạo.** `n_slots` `target` đầu của `target_queue` lấp các `target_slot` 0..n−1 theo thứ tự; `buffer` rỗng.
+- **R-2 Khởi tạo.** `target_queue` được chia theo cột: `target` thứ i thuộc cột i mod `n_slots` (v1.6 CR-009). `target` đầu của mỗi cột lấp `target_slot` của cột đó; `target` kế của cột đứng chờ phía sau (cọc hàng sau); `buffer` rỗng.
 
 ### 2.2 Chạm được hay không
 
@@ -34,7 +34,7 @@ Mọi luật dưới đây là luật của **model thuần** (không phụ thu�
 
 ### 2.3 Xử lý một `tap`
 
-- **R-6** Lấy `run` của `stack` được chạm (mọi lá cùng màu liền nhau tính từ trên cùng) ra khỏi `stack`.
+- **R-6** Lấy `run` của `stack` được chạm (các lá cùng màu liền nhau tính từ trên cùng, **tối đa `max_run` lá** — level phát hành: 6; run 12 lá cùng màu cần 2 lần chạm, v1.5 CR-008) ra khỏi `stack`.
 - **R-7** Đặt **từng lá** của `run`, lần lượt từ lá trên cùng. Với mỗi lá:
   1. Nếu có `target` cùng màu còn chỗ (`filled < capacity`), lá vào `target` đó. Có nhiều `target` như vậy thì chọn `target_slot` **có số nhỏ nhất** (trái nhất).
   2. Nếu không có, lá vào cuối `buffer`. Nếu `buffer` đã có đủ `buffer_capacity` lá thì xảy ra `overflow`: kết quả là `lost`, dừng xử lý.
@@ -45,7 +45,7 @@ Mọi luật dưới đây là luật của **model thuần** (không phụ thu�
 
 Lặp cho tới khi không còn gì thay đổi:
 
-- **R-9** Mỗi `target` có `filled == capacity` thì hoàn thành: xoá khỏi `target_slot`. Nếu `target_queue` còn, `target` kế tiếp lấp đúng vị trí đó.
+- **R-9** Mỗi `target` có `filled == capacity` thì hoàn thành: xoá khỏi `target_slot`. Nếu cột đó còn `target`, `target` đứng sau **trong cùng cột** tiến lên lấp vị trí đó (v1.6 CR-009 — trước đây là `target` kế tiếp của cả hàng đợi).
 - **R-10** Với mỗi `target` còn chỗ, kéo các lá cùng màu trong `buffer` theo thứ tự FIFO vào cho tới khi `target` đầy hoặc `buffer` hết lá màu đó. Xét các `target` theo thứ tự `target_slot` tăng dần.
 
 ### 2.5 Thắng và thua
@@ -61,8 +61,8 @@ Lặp cho tới khi không còn gì thay đổi:
 
 ### 2.7 Booster và Continue (luật ở model)
 
-- **R-16 `booster_undo`.** Khôi phục trạng thái ngay trước `tap` gần nhất, gồm cả mọi `settle` do `tap` đó gây ra, **trừ** `buffer_capacity`: chỗ đã cộng từ Extra Space hay Continue được giữ nguyên. Chỉ lưu lịch sử của `attempt` hiện tại. Không dùng được khi chưa có `tap` nào, hoặc khi kết quả không phải `playing`. Có thể dùng nhiều lần liên tiếp, lùi được tới đầu level. [XÁC NHẬN]
-- **R-17 `booster_add_slot`.** `buffer_capacity += add_slot_amount` (mặc định +4) cho tới hết `attempt`. Dùng tối đa `add_slot_max_per_attempt` lần (mặc định 1). [XÁC NHẬN]
+- ~~**R-16 `booster_undo`.**~~ (bỏ, CR-005) Khôi phục trạng thái ngay trước `tap` gần nhất, gồm cả mọi `settle` do `tap` đó gây ra, **trừ** `buffer_capacity`: chỗ đã cộng từ Extra Space hay Continue được giữ nguyên. Chỉ lưu lịch sử của `attempt` hiện tại. Không dùng được khi chưa có `tap` nào, hoặc khi kết quả không phải `playing`. Có thể dùng nhiều lần liên tiếp, lùi được tới đầu level. [XÁC NHẬN]
+- ~~**R-17 `booster_add_slot`.**~~ (bỏ, CR-005) `buffer_capacity += add_slot_amount` (mặc định +4) cho tới hết `attempt`. Dùng tối đa `add_slot_max_per_attempt` lần (mặc định 1). [XÁC NHẬN]
 - **R-18 `continue`.** Khi `lost` do `overflow`: `buffer_capacity += continue_slot_amount` (mặc định +4), lá gây `overflow` vào `buffer`, phần còn lại của `run` tiếp tục được đặt (R-7), kết quả quay về `playing`. Tối đa 1 lần mỗi `attempt`.
 
 ## 3. Thiết kế level
@@ -74,8 +74,8 @@ Xem `level-design.md`: 30 level, đường cong răng cưa, generator + solver.
 | Tính năng | Spec |
 |---|---|
 | Gameplay lõi + HUD | `features/core-gameplay.md` |
-| Booster (Undo, Extra Space) | `features/boosters.md` |
-| Thua → Continue | `features/continue.md` |
+| ~~Booster (Undo, Extra Space)~~ | bỏ (CR-005, v1.3) — `features/boosters.md` chỉ còn để tham khảo |
+| Thua → Continue (chỉ bằng quảng cáo thưởng, CR-005) | `features/continue.md` |
 | Thắng, tiến trình level | `features/level-progression.md` |
 | FTUE | `features/ftue.md` |
 | Tạm dừng, Cài đặt | `features/pause-settings.md` |
@@ -113,7 +113,7 @@ Xem `features/ftue.md`. Tóm tắt: Level 1 có bàn tay chỉ vào chồng cầ
 
 ## 7. Kinh tế
 
-Xem `economy-sheet.md`. Chỉ có một loại tiền là `coin`. Trong MVP không có gì mua bằng tiền thật (D-007, D-010).
+**v1.3 (CR-005): không có tiền tệ, không có booster.** Thắng không thưởng xu; Continue chỉ bằng quảng cáo thưởng; còn lại của kinh tế là quảng cáo xen kẽ (`AdPacing`). `economy-sheet.md` phần xu / booster hết hiệu lực. Trong MVP không có gì mua bằng tiền thật (D-007, D-010).
 
 ## 8. Luồng UI và màn hình
 
@@ -195,3 +195,8 @@ Các sự kiện đều ở thì quá khứ, là sự thật đã xảy ra (rule
 | v1.0 | 06-10-2026 | Duyệt lần đầu (D-015). |
 | v1.1 | 06-10-2026 | CR-001 (phát sinh ở Bước 2): giới hạn tiêu đề 18 → 26 ký tự, ribbon tự thu nhỏ chữ; thêm key `gameplay.restart.note`. Ảnh hưởng: `features/core-gameplay.md`, mock-up `win-hard`, `win-final`, `unlock-space`, `restart-confirm`. |
 | v1.2 | 06-10-2026 | CR-002 (phát sinh ở Bước 5): R-1b cấm hai chồng cùng layer giao nhau; level khó = trường `hard` trong file level; save thêm `attempts`, đổi `max_level_reached` → `highest_cleared`. Ảnh hưởng: `level-design.md` §2, `features/level-progression.md`. |
+| v1.3 | 06-10-2026 | CR-005 (phát sinh ở Bước 6): bỏ booster (R-16, R-17, thanh booster, dialog mở khoá / mua) và bỏ xu (HUD, thưởng thắng, Continue bằng xu); Continue chỉ bằng quảng cáo thưởng; khay bàn chơi kéo xuống chỗ thanh booster. CR-004: một lá của luật vẽ thành tập 6 lá mỏng (đích x/18). |
+| v1.4 | 06-10-2026 | CR-006 (phát sinh ở Bước 6): đếm từng lá — đích 18 lá, ô tạm 26 rãnh (1 lá / rãnh, đứng dọc) cho mọi level, Continue +6; 30 level sinh lại (revision 2). Thay hệ số ×6 của CR-004. |
+| v1.5 | 07-10-2026 | CR-008: R-6 — một lần chạm lấy tối đa `max_run` lá (6) của run cùng màu; level có trường `max_run`; 30 level sinh lại. |
+| v1.6 | 07-10-2026 | CR-009: hàng đợi đích chia theo cột (target i → cột i mod n_slots); cọc đầy thì cọc phía sau cùng cột tiến lên, không đổi sang màu kế tiếp của cả hàng đợi; 30 level sinh lại. |
+| v1.7 | 07-10-2026 | CR-010: không chia độ khó — bỏ level khó (badge HARD, tiêu đề thắng riêng, cờ `hard`). |

@@ -1,37 +1,37 @@
 {
   "id": "level_001",
-  "revision": 1,
+  "revision": 2,
   "seed": 100000,
-  "hard": false,
   "n_slots": 2,
-  "buffer_capacity": 16,
+  "buffer_capacity": 26,
   "targets": [
     {
       "color": "color_0",
-      "capacity": 3
+      "capacity": 18
     },
     {
       "color": "color_2",
-      "capacity": 3
-    },
-    {
-      "color": "color_0",
-      "capacity": 3
-    },
-    {
-      "color": "color_2",
-      "capacity": 3
+      "capacity": 18
     }
   ],
   "stacks": [
     {
       "id": "s0",
-      "x": 40,
-      "y": 40,
+      "x": 0,
+      "y": 0,
       "w": 150,
-      "h": 238,
+      "h": 206,
       "layer": 0,
       "cards": [
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
         "color_0",
         "color_0",
         "color_0"
@@ -39,38 +39,43 @@
     },
     {
       "id": "s1",
-      "x": 260,
-      "y": 40,
+      "x": 176,
+      "y": 0,
       "w": 150,
-      "h": 238,
+      "h": 206,
       "layer": 0,
       "cards": [
         "color_0",
         "color_0",
-        "color_0"
-      ]
-    },
-    {
-      "id": "s2",
-      "x": 700,
-      "y": 40,
-      "w": 150,
-      "h": 238,
-      "layer": 0,
-      "cards": [
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_2",
+        "color_2",
+        "color_2",
         "color_2",
         "color_2",
         "color_2"
       ]
     },
     {
-      "id": "s3",
-      "x": 700,
-      "y": 330,
+      "id": "s2",
+      "x": 88,
+      "y": 232,
       "w": 150,
-      "h": 238,
+      "h": 206,
       "layer": 0,
       "cards": [
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
         "color_2",
         "color_2",
         "color_2"
@@ -78,10 +83,13 @@
     }
   ],
   "ftue": "ftue.l1",
+  "max_run": 6,
   "solution": [
     "s0",
+    "s0",
+    "s1",
     "s1",
     "s2",
-    "s3"
+    "s2"
   ]
 }

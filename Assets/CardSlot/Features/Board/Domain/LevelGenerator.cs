@@ -20,7 +20,8 @@ namespace Game.Domain
         public float RunBias = 0.5f;
         /// <summary>Each stack holds exactly one run of one colour (FTUE level 1).</summary>
         public bool SingleRunStacks;
-        public bool Hard;
+        /// <summary>Cards one tap may take (0 = the whole run); generation in groups uses 1 (CR-008).</summary>
+        public int MaxRun;
     }
 
     /// <summary>
@@ -29,15 +30,16 @@ namespace Game.Domain
     /// </summary>
     public static class LevelGenerator
     {
-        // Tray inner area is 956×606 world units; a card is 150 wide, 206 tall, +16 per card below it.
-        public const int CardW = 150, CardH = 206, CardStep = 16, ColumnPitch = 220, LayerShift = 55;
-        private static readonly int[] RowY = { 40, 330 };
+        // A stack's footprint is one card, 150 × 206 world units. The grid leaves a small gap between cards; the tray
+        // is sized to the layout by the view (CR-011), so only the column / row counts are capped.
+        public const int CardW = 150, CardH = 206, GridPitchX = 176, GridPitchY = 232, LayerDX = 42, LayerDY = 52;
+        private const int MaxColumns = 5, MaxRows = 3;
 
         public static LevelData Generate(string id, GenParams p, IRandom random)
         {
             var level = new LevelData
             {
-                Id = id, Seed = random.Seed, Hard = p.Hard, Slots = p.Slots, BufferCapacity = p.BufferCapacity,
+                Id = id, Seed = random.Seed, Slots = p.Slots, BufferCapacity = p.BufferCapacity, MaxRun = p.MaxRun,
             };
             // colours: pick p.Colors of the 6
             var palette = new List<int> { 0, 1, 2, 3, 4, 5 };
@@ -55,38 +57,78 @@ namespace Game.Domain
             foreach (var t in level.Targets) for (int i = 0; i < t.Capacity; i++) pool.Add(t.Color);
             var stacks = p.SingleRunStacks ? SingleRuns(level.Targets) : CutIntoStacks(pool, p, random);
 
-            // positions: layer 0 first, upper layers shifted right so they cover their neighbours
+            // CR-011 (the reference, video IMG_3750): stacks sit on an even grid; a higher layer sits a little down
+            // and to the right of the stack below it, so the lower one shows at the top-left. Layer counts shrink
+            // upward and every higher stack rests on a stack of the layer below.
+            int layers = System.Math.Min(p.MaxLayer, stacks.Count - 1) + 1;
+            var counts = new int[layers];
+            int left = stacks.Count;
+            for (int layer = 0; layer < layers; layer++)
+            {
+                int share = layer == layers - 1 ? left : System.Math.Max(1, (int)System.Math.Ceiling(left * (layers == 1 ? 1.0 : 0.55)));
+                if (layer > 0) share = System.Math.Min(share, counts[layer - 1]);
+                if (layer == layers - 1 && share < left) return null;          // too many stacks for the layers — caller retries
+                counts[layer] = share;
+                left -= share;
+            }
+            int n0 = counts[0];
+            int cols = System.Math.Min(MaxColumns, (int)System.Math.Ceiling(System.Math.Sqrt(n0)));
+            int rows = (n0 + cols - 1) / cols;
+            if (rows > MaxRows) return null;
             var spots = new List<(int x, int y, int layer)>();
-            for (int layer = 0; layer <= p.MaxLayer; layer++)
-                for (int row = 0; row < RowY.Length; row++)
-                    for (int col = 0; col < 4; col++)
-                    {
-                        int x = 40 + (layer % 5) * LayerShift + col * ColumnPitch;
-                        if (x + CardW > 956 - 20) continue;
-                        spots.Add((x, RowY[row], layer));
-                    }
-            // keep layer 0 full enough and spread the rest at random across layers
-            var lower = spots.FindAll(s => s.layer == 0);
-            var upper = spots.FindAll(s => s.layer > 0);
-            random.Shuffle(lower); random.Shuffle(upper);
-            var chosen = new List<(int x, int y, int layer)>();
-            int upperShare = p.MaxLayer == 0 ? 0 : System.Math.Min(upper.Count, stacks.Count / 2);
-            chosen.AddRange(upper.GetRange(0, upperShare));
-            int needLower = stacks.Count - upperShare;
-            if (needLower > lower.Count) { chosen.AddRange(upper.GetRange(upperShare, System.Math.Min(upper.Count - upperShare, needLower - lower.Count))); needLower = lower.Count; }
-            chosen.AddRange(lower.GetRange(0, needLower));
-            if (chosen.Count < stacks.Count) return null;   // not enough room — caller retries with another seed
+            var below = new List<(int x, int y)>();
+            for (int i = 0; i < n0; i++)
+            {
+                int row = i / cols, col = i % cols;
+                int inRow = System.Math.Min(cols, n0 - row * cols);
+                int x = (int)((cols - inRow) * GridPitchX / 2) + col * GridPitchX;   // a short last row is centred
+                below.Add((x, row * GridPitchY));
+            }
+            foreach (var b in below) spots.Add((b.x, b.y, 0));
+            for (int layer = 1; layer < layers; layer++)
+            {
+                random.Shuffle(below);
+                var next = new List<(int x, int y)>();
+                for (int i = 0; i < counts[layer]; i++) next.Add((below[i].x + LayerDX, below[i].y + LayerDY));
+                foreach (var s in next) spots.Add((s.x, s.y, layer));
+                below = next;
+            }
 
             for (int i = 0; i < stacks.Count; i++)
             {
-                var spot = chosen[i];
-                var cards = stacks[i];
-                level.Stacks.Add(new StackSpec($"s{i}", spot.x, spot.y, CardW, CardH + CardStep * (cards.Count - 1), spot.layer, cards.ToArray()));
+                var spot = spots[i];
+                level.Stacks.Add(new StackSpec($"s{i}", spot.x, spot.y, CardW, CardH, spot.layer, stacks[i].ToArray()));
             }
             // stable, readable order: by layer, then row, then column
             level.Stacks.Sort((a, b) => a.Layer != b.Layer ? a.Layer.CompareTo(b.Layer) : a.Y != b.Y ? a.Y.CompareTo(b.Y) : a.X.CompareTo(b.X));
             for (int i = 0; i < level.Stacks.Count; i++) level.Stacks[i].Id = $"s{i}";
             return LevelValidator.Validate(level).Count == 0 ? level : null;
+        }
+
+        /// <summary>
+        /// CR-006: turn a level generated in groups into the shipped card level — every card becomes
+        /// <paramref name="cardsPerGroup"/> cards of its colour, every target needs that many more, and the
+        /// holding area holds <paramref name="holdCards"/> single cards (one per groove, as in the reference).
+        /// Taps move whole runs (R-6), so a solution of the group level solves the card level tap for tap,
+        /// provided <paramref name="holdCards"/> overflows on the same group: ⌊hold / group⌋ = the group buffer.
+        /// Stack rectangles keep the group layout.
+        /// </summary>
+        public static LevelData ExpandToCards(LevelData groups, int cardsPerGroup, int holdCards)
+        {
+            var level = new LevelData
+            {
+                Id = groups.Id, Seed = groups.Seed, Slots = groups.Slots, BufferCapacity = holdCards,
+                Ftue = groups.Ftue, Revision = groups.Revision,
+                MaxRun = groups.MaxRun > 0 ? groups.MaxRun * cardsPerGroup : 0,   // one group a tap ⇒ 6 cards a tap
+            };
+            foreach (var t in groups.Targets) level.Targets.Add(new TargetSpec(t.Color, t.Capacity * cardsPerGroup));
+            foreach (var s in groups.Stacks)
+            {
+                var cards = new int[s.Cards.Length * cardsPerGroup];
+                for (int i = 0; i < cards.Length; i++) cards[i] = s.Cards[i / cardsPerGroup];
+                level.Stacks.Add(new StackSpec(s.Id, s.X, s.Y, s.W, s.H, s.Layer, cards));
+            }
+            return level;
         }
 
         private static List<List<int>> SingleRuns(List<TargetSpec> targets)

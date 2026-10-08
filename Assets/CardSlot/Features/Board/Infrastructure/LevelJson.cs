@@ -25,10 +25,10 @@ namespace Game.Infrastructure
                     Id = (string)o["id"],
                     Revision = (int?)o["revision"] ?? 1,
                     Seed = (long?)o["seed"] ?? 0,
-                    Hard = (bool?)o["hard"] ?? false,
                     Slots = (int?)o["n_slots"] ?? 3,
                     BufferCapacity = (int?)o["buffer_capacity"] ?? 12,
                     Ftue = (string)o["ftue"],
+                    MaxRun = (int?)o["max_run"] ?? 0,
                 };
                 foreach (var t in (JArray)o["targets"] ?? new JArray())
                     l.Targets.Add(new TargetSpec(Color((string)t["color"]), (int)t["capacity"]));
@@ -58,7 +58,6 @@ namespace Game.Infrastructure
                 ["id"] = l.Id,
                 ["revision"] = l.Revision,
                 ["seed"] = l.Seed,
-                ["hard"] = l.Hard,
                 ["n_slots"] = l.Slots,
                 ["buffer_capacity"] = l.BufferCapacity,
             };
@@ -76,6 +75,7 @@ namespace Game.Infrastructure
             }
             o["stacks"] = stacks;
             o["ftue"] = l.Ftue;
+            if (l.MaxRun > 0) o["max_run"] = l.MaxRun;
             if (solution != null) o["solution"] = new JArray(solution);
             return o.ToString(Formatting.Indented);
         }

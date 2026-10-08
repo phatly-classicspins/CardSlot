@@ -10,7 +10,6 @@ namespace Game.Gen
     public static class AdPlacements
     {
         public static readonly AdPlacement RewardedContinue     = new("rewarded_continue");
-        public static readonly AdPlacement RewardedBooster      = new("rewarded_booster");
         public static readonly AdPlacement InterstitialLevelEnd = new("interstitial_level_end");
     }
 }

@@ -10,20 +10,12 @@ namespace Game.Gen
     public static class LocKeys
     {
         public static readonly LocKey AdsNotAvailable        = new("ads.not_available");
-        public static readonly LocKey BoosterAddSlotDesc     = new("booster.add_slot.desc");
-        public static readonly LocKey BoosterAddSlotName     = new("booster.add_slot.name");
-        public static readonly LocKey BoosterBuyFree         = new("booster.buy.free");
-        public static readonly LocKey BoosterBuyNotEnough    = new("booster.buy.not_enough");
-        public static readonly LocKey BoosterBuyTitle        = new("booster.buy.title");
-        public static readonly LocKey BoosterUndoDesc        = new("booster.undo.desc");
-        public static readonly LocKey BoosterUndoName        = new("booster.undo.name");
         public static readonly LocKey FtueL1Step1            = new("ftue.l1.step1");
         public static readonly LocKey FtueL1Step2            = new("ftue.l1.step2");
         public static readonly LocKey FtueL2Buffer           = new("ftue.l2.buffer");
         public static readonly LocKey FtueL2Warn             = new("ftue.l2.warn");
         public static readonly LocKey GameplayBufferCount    = new("gameplay.buffer_count");
         public static readonly LocKey GameplayCount          = new("gameplay.count");
-        public static readonly LocKey GameplayHard           = new("gameplay.hard");
         public static readonly LocKey GameplayHoldingArea    = new("gameplay.holding_area");
         public static readonly LocKey GameplayLevel          = new("gameplay.level");
         public static readonly LocKey GameplayNext           = new("gameplay.next");
@@ -35,7 +27,6 @@ namespace Game.Gen
         public static readonly LocKey HomePlay               = new("home.play");
         public static readonly LocKey HomeTagline            = new("home.tagline");
         public static readonly LocKey HomeTitle              = new("home.title");
-        public static readonly LocKey LoseContinueCoins      = new("lose.continue_coins");
         public static readonly LocKey LoseContinueFree       = new("lose.continue_free");
         public static readonly LocKey LoseFailedTitle        = new("lose.failed_title");
         public static readonly LocKey LoseHome               = new("lose.home");
@@ -53,15 +44,10 @@ namespace Game.Gen
         public static readonly LocKey SettingsOn             = new("settings.on");
         public static readonly LocKey SettingsSound          = new("settings.sound");
         public static readonly LocKey SettingsTitle          = new("settings.title");
-        public static readonly LocKey UnlockAddSlotTitle     = new("unlock.add_slot.title");
-        public static readonly LocKey UnlockGotIt            = new("unlock.got_it");
-        public static readonly LocKey UnlockUndoTitle        = new("unlock.undo.title");
         public static readonly LocKey WinHome                = new("win.home");
         public static readonly LocKey WinNext                = new("win.next");
         public static readonly LocKey WinPlayAgain           = new("win.play_again");
-        public static readonly LocKey WinReward              = new("win.reward");
         public static readonly LocKey WinSubtitle            = new("win.subtitle");
         public static readonly LocKey WinTitle               = new("win.title");
-        public static readonly LocKey WinTitleHard           = new("win.title_hard");
     }
 }

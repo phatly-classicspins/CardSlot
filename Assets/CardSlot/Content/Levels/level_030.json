@@ -1,229 +1,425 @@
 {
   "id": "level_030",
-  "revision": 1,
-  "seed": 3000018,
-  "hard": true,
+  "revision": 2,
+  "seed": 3000053,
   "n_slots": 3,
-  "buffer_capacity": 8,
+  "buffer_capacity": 26,
   "targets": [
     {
-      "color": "color_5",
-      "capacity": 3
-    },
-    {
-      "color": "color_1",
-      "capacity": 3
-    },
-    {
-      "color": "color_5",
-      "capacity": 3
-    },
-    {
-      "color": "color_1",
-      "capacity": 3
-    },
-    {
-      "color": "color_2",
-      "capacity": 3
+      "color": "color_0",
+      "capacity": 18
     },
     {
       "color": "color_4",
-      "capacity": 3
+      "capacity": 18
+    },
+    {
+      "color": "color_1",
+      "capacity": 18
+    },
+    {
+      "color": "color_5",
+      "capacity": 18
     },
     {
       "color": "color_3",
-      "capacity": 3
+      "capacity": 18
     },
     {
-      "color": "color_4",
-      "capacity": 3
+      "color": "color_1",
+      "capacity": 18
     },
     {
       "color": "color_3",
-      "capacity": 3
+      "capacity": 18
     },
     {
       "color": "color_0",
-      "capacity": 3
+      "capacity": 18
     },
     {
       "color": "color_2",
-      "capacity": 3
+      "capacity": 18
     },
     {
-      "color": "color_0",
-      "capacity": 3
+      "color": "color_5",
+      "capacity": 18
+    },
+    {
+      "color": "color_4",
+      "capacity": 18
+    },
+    {
+      "color": "color_2",
+      "capacity": 18
     }
   ],
   "stacks": [
     {
       "id": "s0",
-      "x": 260,
-      "y": 40,
+      "x": 0,
+      "y": 0,
       "w": 150,
-      "h": 238,
-      "layer": 0,
-      "cards": [
-        "color_1",
-        "color_3",
-        "color_5"
-      ]
-    },
-    {
-      "id": "s1",
-      "x": 480,
-      "y": 40,
-      "w": 150,
-      "h": 254,
-      "layer": 0,
-      "cards": [
-        "color_2",
-        "color_4",
-        "color_1",
-        "color_2"
-      ]
-    },
-    {
-      "id": "s2",
-      "x": 700,
-      "y": 40,
-      "w": 150,
-      "h": 222,
+      "h": 206,
       "layer": 0,
       "cards": [
         "color_5",
-        "color_0"
-      ]
-    },
-    {
-      "id": "s3",
-      "x": 260,
-      "y": 330,
-      "w": 150,
-      "h": 254,
-      "layer": 0,
-      "cards": [
-        "color_1",
-        "color_0",
-        "color_3",
-        "color_5"
-      ]
-    },
-    {
-      "id": "s4",
-      "x": 480,
-      "y": 330,
-      "w": 150,
-      "h": 254,
-      "layer": 0,
-      "cards": [
-        "color_0",
-        "color_0",
-        "color_0",
-        "color_1"
-      ]
-    },
-    {
-      "id": "s5",
-      "x": 95,
-      "y": 330,
-      "w": 150,
-      "h": 270,
-      "layer": 1,
-      "cards": [
-        "color_5",
-        "color_3",
-        "color_3",
-        "color_4",
-        "color_4"
-      ]
-    },
-    {
-      "id": "s6",
-      "x": 370,
-      "y": 330,
-      "w": 150,
-      "h": 222,
-      "layer": 2,
-      "cards": [
-        "color_4",
-        "color_2"
-      ]
-    },
-    {
-      "id": "s7",
-      "x": 645,
-      "y": 40,
-      "w": 150,
-      "h": 270,
-      "layer": 3,
-      "cards": [
         "color_5",
         "color_5",
-        "color_4",
-        "color_2",
-        "color_4"
-      ]
-    },
-    {
-      "id": "s8",
-      "x": 645,
-      "y": 330,
-      "w": 150,
-      "h": 238,
-      "layer": 3,
-      "cards": [
-        "color_1",
-        "color_1",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
         "color_3"
       ]
     },
     {
-      "id": "s9",
-      "x": 260,
-      "y": 330,
+      "id": "s1",
+      "x": 176,
+      "y": 0,
       "w": 150,
-      "h": 254,
-      "layer": 4,
+      "h": 206,
+      "layer": 0,
+      "cards": [
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0"
+      ]
+    },
+    {
+      "id": "s2",
+      "x": 352,
+      "y": 0,
+      "w": 150,
+      "h": 206,
+      "layer": 0,
+      "cards": [
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5"
+      ]
+    },
+    {
+      "id": "s3",
+      "x": 0,
+      "y": 232,
+      "w": 150,
+      "h": 206,
+      "layer": 0,
       "cards": [
         "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3"
+      ]
+    },
+    {
+      "id": "s4",
+      "x": 176,
+      "y": 232,
+      "w": 150,
+      "h": 206,
+      "layer": 0,
+      "cards": [
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4"
+      ]
+    },
+    {
+      "id": "s5",
+      "x": 352,
+      "y": 232,
+      "w": 150,
+      "h": 206,
+      "layer": 0,
+      "cards": [
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
         "color_2",
-        "color_0",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
         "color_2"
+      ]
+    },
+    {
+      "id": "s6",
+      "x": 176,
+      "y": 464,
+      "w": 150,
+      "h": 206,
+      "layer": 0,
+      "cards": [
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0"
+      ]
+    },
+    {
+      "id": "s7",
+      "x": 42,
+      "y": 52,
+      "w": 150,
+      "h": 206,
+      "layer": 1,
+      "cards": [
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1"
+      ]
+    },
+    {
+      "id": "s8",
+      "x": 218,
+      "y": 52,
+      "w": 150,
+      "h": 206,
+      "layer": 1,
+      "cards": [
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_3",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5"
+      ]
+    },
+    {
+      "id": "s9",
+      "x": 394,
+      "y": 284,
+      "w": 150,
+      "h": 206,
+      "layer": 1,
+      "cards": [
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_0",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2"
+      ]
+    },
+    {
+      "id": "s10",
+      "x": 260,
+      "y": 104,
+      "w": 150,
+      "h": 206,
+      "layer": 2,
+      "cards": [
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4",
+        "color_4"
       ]
     }
   ],
   "ftue": null,
+  "max_run": 6,
   "solution": [
-    "s0",
-    "s5",
+    "s6",
+    "s6",
     "s7",
+    "s7",
+    "s7",
+    "s0",
+    "s0",
+    "s0",
+    "s3",
+    "s10",
+    "s10",
     "s8",
-    "s0",
-    "s0",
-    "s1",
-    "s1",
-    "s1",
-    "s1",
-    "s5",
-    "s5",
-    "s7",
-    "s7",
-    "s7",
-    "s2",
-    "s2",
     "s8",
     "s9",
     "s9",
     "s9",
-    "s9",
-    "s6",
-    "s6",
     "s3",
     "s3",
-    "s3",
-    "s3",
+    "s8",
+    "s8",
+    "s8",
+    "s1",
+    "s1",
+    "s2",
+    "s2",
+    "s2",
+    "s2",
+    "s2",
     "s4",
-    "s4"
+    "s4",
+    "s9",
+    "s5",
+    "s5",
+    "s5",
+    "s5",
+    "s5"
   ]
 }

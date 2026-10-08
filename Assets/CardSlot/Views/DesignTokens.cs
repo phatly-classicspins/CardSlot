@@ -24,6 +24,8 @@ namespace Game.Views
         public static readonly Color SurfaceSunken = Hex("F2C68C");
         public static readonly Color TrayRim = Hex("B9733A");
         public static readonly Color TrayInner = Hex("F6CF98");
+        // CR-007: the target pegs (a warm grey-brown that reads against every card colour)
+        public static readonly Color PegPole = Hex("8E7B6C");
         public static readonly Color Rail = Hex("C98B52");
         public static readonly Color Ink = Hex("5A3415");
         public static readonly Color InkSoft = Hex("9A6A3F");
@@ -37,6 +39,8 @@ namespace Game.Views
         public static readonly Color Scrim = Hex("462308", 0.55f);
         public static readonly Color TutorialScrim = Hex("462308", 0.45f);
         public static readonly Color OnColor = Color.white;
+        // CR-007: the outline on a stack that can be tapped
+        public static readonly Color HintOutline = Hex("FFF6C2");
         public static readonly Color TextShadow = new Color(0f, 0f, 0f, 0.25f);
 
         // ── Card colours (§2): glossary color_0..5 ───────────────────────────────────────────────────
@@ -58,9 +62,11 @@ namespace Game.Views
             TargetSlotWidthTwo = 470f, TargetSlotGapTwo = 60f, TargetCardTop = 120f, TargetCardStep = 34f;
         public const float BufferLabelTop = 606f, BufferTop = 650f, BufferHeight = 200f, BufferCellTop = 30f,
             BufferCellWidth = 66f, BufferCellHeight = 140f, BufferInnerWidth = 960f, BufferInset = 34f;
-        public const float TrayTop = 900f, TrayHeight = 650f, TrayRimInset = 22f;
+        // CR-005: no booster bar — the tray runs down to the bottom margin; a level smaller than it is centred
+        public const float TrayTop = 900f, TrayHeight = 960f, TrayRimInset = 22f;
+        // CR-011: the tray is sized to the level (padding around the stacks, never smaller than these)
+        public const float TrayPadding = 36f, TrayMinWidth = 560f, TrayMinHeight = 420f;
         public const float CardWidth = 150f, CardHeight = 216f, CardBody = 206f, CardUnderHeight = 214f, CardStep = 16f;
-        public const float BoosterBottom = 110f, BoosterTile = 170f;
         public const float PanelSideInset = 90f, RibbonOverhang = 30f, RibbonRise = 70f, RibbonHeight = 184f;
 
         // ── Motion (animation-list.md, seconds) ──────────────────────────────────────────────────────

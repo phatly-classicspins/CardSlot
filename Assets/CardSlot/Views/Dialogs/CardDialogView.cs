@@ -17,8 +17,8 @@ namespace Game.Views
     public abstract class CardDialogView : DialogViewBase
     {
         [SerializeField] protected Sprite _panel, _ribbon, _ribbonDanger, _buttonPrimary, _buttonSecondary, _buttonDisabled;
-        [SerializeField] protected Sprite _coin, _iconPlay, _iconLock, _iconClose, _iconUndo, _iconSpace, _iconGear, _iconHolder;
-        [SerializeField] protected Sprite _closeButton, _rowSunken, _toggleOn, _toggleOff, _toggleKnob, _pillSunken, _badge, _roundButton;
+        [SerializeField] protected Sprite _iconPlay, _iconLock, _iconClose, _iconGear;
+        [SerializeField] protected Sprite _closeButton, _rowSunken, _toggleOn, _toggleOff, _toggleKnob, _roundButton;
         [SerializeField] protected Sprite[] _cardFace = new Sprite[6];
         [SerializeField] protected TMP_FontAsset _font;
 
@@ -108,18 +108,6 @@ namespace Game.Views
             return t;
         }
 
-        /// <summary>The big booster icon in its holder, with an optional "x2" gift badge.</summary>
-        protected RectTransform IconHolder(Transform parent, Sprite icon, float y, string badge = null)
-        {
-            var holder = UiKit.Image("Holder", parent, _iconHolder, (PanelWidth - 260f) / 2f, y, 260f, 272f);
-            UiKit.Image("Icon", holder.transform, icon, 50f, 46f, 160f, 160f).color = DesignTokens.Secondary;
-            if (badge != null)
-            {
-                var b = UiKit.Image("Gift", holder.transform, _badge, 180f, 210f, 120f, 70f, sliced: true);
-                UiKit.Text("Text", b.transform, _font, badge, 50f, DesignTokens.OnColor, 0f, 0f, 120f, 64f);
-            }
-            return holder.rectTransform;
-        }
 
         /// <summary>Three fanned cards (win / lose art in the mock-ups); <paramref name="dim"/> greys them.</summary>
         protected void CardFan(Transform parent, float y, int[] colors, bool dim = false)

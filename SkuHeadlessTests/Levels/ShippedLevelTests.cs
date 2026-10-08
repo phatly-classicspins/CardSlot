@@ -34,25 +34,19 @@ namespace CardSlot.SkuHeadlessTests.Levels
             Assert.That(LevelSolver.Replay(level, solution), Is.True, "stored solution no longer wins");
         }
 
-        [TestCaseSource(nameof(Files))]
-        public void Hard_flag_is_on_every_fifth_level_only(string file)
-        {
-            LevelJson.TryRead(File.ReadAllText(file), out var level, out _);
-            int n = int.Parse(level.Id.Substring("level_".Length));
-            Assert.That(level.Hard, Is.EqualTo(n % 5 == 0));
-        }
-
         [Test]
-        public void Ftue_levels_follow_level_design_6()
+        public void First_levels_are_easy_like_the_reference()
         {
+            // CR-011: one target per colour and every peg in view up to level 4; the back row from level 5
+            for (int n = 1; n <= 5; n++)
+            {
+                LevelJson.TryRead(File.ReadAllText(Path.Combine(Dir, $"level_{n:000}.json")), out var l, out _);
+                int colours = l.Targets.Select(t => t.Color).Distinct().Count();
+                Assert.That(l.Targets.Count, Is.EqualTo(colours), $"level {n}: one target per colour");
+                Assert.That(l.Targets.Count > l.Slots, Is.EqualTo(n == 5), $"level {n}: waiting pegs only from level 5");
+            }
             LevelJson.TryRead(File.ReadAllText(Path.Combine(Dir, "level_001.json")), out var l1, out _);
-            Assert.That((l1.Ftue, l1.Slots, l1.Stacks.Count), Is.EqualTo(("ftue.l1", 2, 4)));
-            Assert.That(l1.Stacks.All(s => s.Layer == 0 && s.Cards.Distinct().Count() == 1), "level 1: one run per stack, nothing covered");
-            Assert.That(LevelSolver.BotWinRate(l1, new ClassicSpins.PrototypeFramework.Domain.Pcg32(1), 100), Is.EqualTo(1.0), "level 1: every order wins");
-            LevelJson.TryRead(File.ReadAllText(Path.Combine(Dir, "level_002.json")), out var l2, out _);
-            int ignored;
-            Assert.That(LevelSolver.Solve(l2, 0, LevelSolver.DefaultStateLimit, new System.Collections.Generic.List<int>(), out ignored),
-                Is.Not.EqualTo(SolveStatus.Solved), "level 2 must make the player use the holding area");
+            Assert.That((l1.Slots, l1.Stacks.All(s => s.Layer == 0)), Is.EqualTo((2, true)), "level 1: two pegs, nothing covered");
         }
     }
 }

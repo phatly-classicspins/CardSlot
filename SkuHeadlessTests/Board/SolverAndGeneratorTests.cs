@@ -56,6 +56,32 @@ namespace CardSlot.SkuHeadlessTests.Board
         }
 
         [Test]
+        public void CR006_a_group_level_expanded_to_cards_wins_with_the_same_taps_and_overflows_on_the_same_group()
+        {
+            var p = new GenParams { Colors = 4, TargetsPerColor = 2, MaxLayer = 2, BufferCapacity = 6, MaxRun = 1 };
+            for (long seed = 1; seed < 400; seed++)
+            {
+                var groups = LevelGenerator.Generate("g", p, new Pcg32(seed));
+                if (groups == null) continue;
+                var cards = LevelGenerator.ExpandToCards(groups, 6, 38);   // 38 grooves overflow on the 7th group = 6 groups
+                Assert.That(LevelValidator.Validate(cards), Is.Empty);
+                Assert.That(cards.MaxRun, Is.EqualTo(6), "one group a tap = 6 cards a tap (CR-008)");
+                Assert.That((cards.BufferCapacity, cards.Targets[0].Capacity, cards.Stacks[0].Cards.Length),
+                    Is.EqualTo((38, groups.Targets[0].Capacity * 6, groups.Stacks[0].Cards.Length * 6)));
+                var solution = new List<int>();
+                int explored;
+                var groupStatus = LevelSolver.Solve(groups, 6, LevelSolver.DefaultStateLimit, solution, out explored);
+                Assert.That(LevelSolver.Solve(cards, 38, LevelSolver.DefaultStateLimit, new List<int>(), out explored), Is.EqualTo(groupStatus), $"seed {seed}");
+                if (groupStatus != SolveStatus.Solved) continue;
+                var ids = new List<string>();
+                foreach (var s in solution) ids.Add(groups.Stacks[s].Id);
+                Assert.That(LevelSolver.Replay(cards, ids), Is.True, "the group solution wins the card level tap for tap");
+                return;
+            }
+            Assert.Fail("no solvable group level in 400 seeds");
+        }
+
+        [Test]
         public void Level_json_round_trips_and_rejects_bad_data()
         {
             var json = LevelJson.Write(Small(), new[] { "r", "b", "y" });

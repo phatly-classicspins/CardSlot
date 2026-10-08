@@ -15,7 +15,8 @@ namespace Game.Domain
             if (level == null) { errors.Add("level is null"); return errors; }
             if (string.IsNullOrEmpty(level.Id)) errors.Add("id is empty");
             Range(errors, "slots", level.Slots, 2, 4);
-            Range(errors, "buffer_capacity", level.BufferCapacity, 6, 20);
+            Range(errors, "max_run", level.MaxRun, 0, 48);
+            Range(errors, "buffer_capacity", level.BufferCapacity, 1, 60);   // CR-006: groups (generation) or cards (shipped)
             if (level.Targets == null || level.Targets.Count == 0) errors.Add("no targets");
             if (level.Stacks == null || level.Stacks.Count == 0) errors.Add("no stacks");
             if (errors.Count > 0 && (level.Targets == null || level.Stacks == null)) return errors;
@@ -27,14 +28,14 @@ namespace Game.Domain
             foreach (var t in level.Targets)
             {
                 if (t.Color < 0 || t.Color >= LevelData.ColorCount) { errors.Add($"target colour {t.Color} out of range"); continue; }
-                Range(errors, "target capacity", t.Capacity, 2, 6);
+                Range(errors, "target capacity", t.Capacity, 2, 36);
                 targetPerColor[t.Color] += t.Capacity;
             }
             foreach (var s in level.Stacks)
             {
                 if (string.IsNullOrEmpty(s.Id) || !ids.Add(s.Id)) errors.Add($"stack id '{s.Id}' empty or duplicated");
                 if (s.Cards == null || s.Cards.Length == 0) { errors.Add($"stack {s.Id} has no cards"); continue; }
-                Range(errors, $"stack {s.Id} cards", s.Cards.Length, 1, 8);
+                Range(errors, $"stack {s.Id} cards", s.Cards.Length, 1, 48);
                 Range(errors, $"stack {s.Id} layer", s.Layer, 0, 4);
                 if (s.W <= 0 || s.H <= 0) errors.Add($"stack {s.Id} has an empty rectangle");
                 foreach (var c in s.Cards)

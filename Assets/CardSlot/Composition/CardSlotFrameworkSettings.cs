@@ -41,8 +41,8 @@ namespace Game.Composition
 
         /// <summary>
         /// Session-long game services shared by Home and Gameplay (D-023). Progress and settings persist
-        /// through the framework's <c>IUserData</c> (<see cref="UserDataProgressStore"/>); coins and boosters
-        /// through <c>IWalletService</c>. The dialog dim takes the token scrim (rule #17).
+        /// through the framework's <c>IUserData</c> (<see cref="UserDataProgressStore"/>); no coins or
+        /// boosters (CR-005). The dialog dim takes the token scrim (rule #17).
         /// </summary>
         private static void InstallGame(IContainerBuilder builder)
         {
@@ -52,7 +52,6 @@ namespace Game.Composition
             builder.Register<SettingsModel>(Lifetime.Singleton).As<IUserModel>();
             builder.Register<UserDataProgressStore>(Lifetime.Singleton).As<IProgressStore>();
             builder.Register<LevelProgressService>(Lifetime.Singleton);
-            builder.Register<BoosterService>(Lifetime.Singleton);
             builder.Register<AdPacing>(Lifetime.Singleton);
             builder.Register<AddressableLevelSource>(Lifetime.Singleton).As<Game.Presentation.ILevelSource>();
             var scrim = Game.Views.DesignTokens.Scrim;

@@ -106,37 +106,26 @@ namespace Game.Editor
                 Set(so, "_roundButton", S("ui", "rbtn_secondary"));
                 Set(so, "_iconPause", S("ui", "icon_pause"));
                 Set(so, "_iconRestart", S("ui", "icon_restart"));
-                Set(so, "_coin", S("ui", "coin"));
-                Set(so, "_badge", S("ui", "badge"));
-                Set(so, "_badgePrimary", S("ui", "badge_primary"));
-                Set(so, "_boostTile", S("ui", "boost_tile"));
-                Set(so, "_iconUndo", S("ui", "icon_undo"));
-                Set(so, "_iconSpace", S("ui", "icon_space"));
-                Set(so, "_priceTag", S("ui", "pill_ink"));
                 Set(so, "_hand", S("ui", "hand_pointer"));
                 Set(so, "_ring", S("ui", "ftue_ring"));
                 Set(so, "_font", font);
-                SetBool(so, "_draw2DBoard", false);   // CR-003: the board is 3D; this view keeps HUD, labels, boosters, tap areas
+                SetBool(so, "_draw2DBoard", false);   // CR-003: the board is 3D; this view keeps HUD, labels, tap areas
             });
 
             // the scaffolded dialog prefab variants (Scaffold.Sync owns them; this only wires their sprites)
-            foreach (var id in new[] { "Win", "Lose", "Pause", "Settings", "BoosterBuy", "BoosterUnlock", "RestartConfirm" })
+            foreach (var id in new[] { "Win", "Lose", "Pause", "Settings", "RestartConfirm" })
                 WireDialog($"Assets/CardSlot/Content/UI/{id}/Prefabs/{id}Dialog.prefab", $"Game.Views.{id}DialogView, Game.Views", font);
 
             Save("Gameplay/Board3DView", "Game.Views.Board3DView, Game.Views", so =>
             {
-                Set(so, "_cardFace", Six("gameplay", "card_face_"));
-                Set(so, "_cardMini", Six("gameplay", "card_mini_"));
                 Set(so, "_ground", S("bg", "bg_ground"));
-                SetFloat(so, "_tilt", 35f);   // D-025
+                SetFloat(so, "_tilt", 10f);   // D-027
             }, rectTransform: false);
 
             Save("Home/HomeView", "Game.Views.HomeView, Game.Views", so =>
             {
                 Set(so, "_cardFace", Six("gameplay", "card_face_"));
                 Set(so, "_ground", S("bg", "bg_ground"));
-                Set(so, "_pill", S("ui", "pill_surface"));
-                Set(so, "_coin", S("ui", "coin"));
                 Set(so, "_buttonPrimary", S("ui", "btn_primary"));
                 Set(so, "_font", font);
             });
@@ -172,21 +161,15 @@ namespace Game.Editor
                 Set(so, "_buttonPrimary", S("ui", "btn_primary"));
                 Set(so, "_buttonSecondary", S("ui", "btn_secondary"));
                 Set(so, "_buttonDisabled", S("ui", "btn_disabled"));
-                Set(so, "_coin", S("ui", "coin"));
                 Set(so, "_iconPlay", S("ui", "icon_play"));
                 Set(so, "_iconLock", S("ui", "icon_lock"));
                 Set(so, "_iconClose", S("ui", "icon_close"));
-                Set(so, "_iconUndo", S("ui", "icon_undo"));
-                Set(so, "_iconSpace", S("ui", "icon_space"));
                 Set(so, "_iconGear", S("ui", "icon_gear"));
-                Set(so, "_iconHolder", S("ui", "icon_holder"));
                 Set(so, "_closeButton", S("ui", "close_btn"));
                 Set(so, "_rowSunken", S("ui", "row_sunken"));
                 Set(so, "_toggleOn", S("ui", "toggle_on"));
                 Set(so, "_toggleOff", S("ui", "toggle_off"));
                 Set(so, "_toggleKnob", S("ui", "toggle_knob"));
-                Set(so, "_pillSunken", S("ui", "pill_sunken"));
-                Set(so, "_badge", S("ui", "badge"));
                 Set(so, "_roundButton", S("ui", "rbtn_secondary"));
                 Set(so, "_cardFace", Six("gameplay", "card_face_"));
                 Set(so, "_font", font);

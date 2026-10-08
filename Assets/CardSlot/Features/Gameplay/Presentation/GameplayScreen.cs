@@ -1,5 +1,5 @@
 using System;
-using System.Globalization;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using ClassicSpins.PrototypeFramework.Application;
@@ -17,14 +17,16 @@ namespace Game.Presentation
 {
     /// <summary>
     /// The Gameplay screen controller: loads the level, owns the attempt's <see cref="BoardModel"/>, turns taps
-    /// into rules and the model into visuals, and runs the flows of milestone 6b — boosters, win/lose dialogs
-    /// with Continue, pause/settings, restart confirm, booster unlocks and the level 1–2 tutorial
-    /// (features/*.md). Every reward/charge is saved before anything shows it (G18, G19), and a dialog that
+    /// into rules and the model into visuals, and runs the flows of milestone 6b — win/lose dialogs with
+    /// Continue (rewarded ad), pause/settings, restart confirm and the level 1–2 tutorial (features/*.md).
+    /// No boosters and no coins (CR-005). Progress is saved before anything shows it (G18, G19), and a dialog that
     /// comes back <see cref="DialogCloseReason.Aborted"/> changes nothing.
     /// </summary>
     public sealed class GameplayScreen : ScreenBase
     {
         private const string FtueL1Step1 = "ftue.l1.step1", FtueL1Step2 = "ftue.l1.step2", FtueL2Buffer = "ftue.l2.buffer", FtueL2Warn = "ftue.l2.warn";
+        // the level 1–2 tutorial is switched off for now (Phat: "hiện tại chưa cần ftue"); true brings it back
+        private const bool FtueEnabled = false;
 
         private readonly GameplayParam _param;
         private readonly ILevelSource _levels;
@@ -35,9 +37,7 @@ namespace Game.Presentation
         private readonly IDialogService _dialogs;
         private readonly IAdsService _ads;
         private readonly LevelProgressService _progress;
-        private readonly BoosterService _boosters;
         private readonly AdPacing _adPacing;
-        private readonly IWalletService _wallet;
         private readonly EconomyTuning _tuning;
         private readonly ILog _log;
 
@@ -50,15 +50,17 @@ namespace Game.Presentation
         private bool _busy;                       // a dialog or ad is up: board taps are ignored
         private int _ftuePointAt = -1;            // level 1 step 1: the only stack a tap may go to
         private float _lastAdTime = -999f;
-        private BoosterId? _pendingUnlock;      // shown by Intro, after the screen has entered
+        private readonly List<int> _grooves = new List<int>();   // the groove of each holding-area card, in buffer order
+        // CR-007: a result dialog opens a beat after the board has stopped moving
+        private const double DialogBeat = 0.3;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
         public GameplayScreen(GameplayParam param, ILevelSource levels, IAssetService assets, IRenderLayerRegistry layers,
             ISceneService scenes, ILocalizationService loc, IDialogService dialogs, IAdsService ads, LevelProgressService progress,
-            BoosterService boosters, AdPacing adPacing, IWalletService wallet, EconomyTuning tuning, ILog log)
+            AdPacing adPacing, EconomyTuning tuning, ILog log)
         {
             _param = param; _levels = levels; _assets = assets; _layers = layers; _scenes = scenes; _loc = loc; _dialogs = dialogs;
-            _ads = ads; _progress = progress; _boosters = boosters; _adPacing = adPacing; _wallet = wallet; _tuning = tuning; _log = log;
+            _ads = ads; _progress = progress; _adPacing = adPacing; _tuning = tuning; _log = log;
         }
 
         public override async UniTask OnLoadAsync(CancellationToken ct)
@@ -69,7 +71,7 @@ namespace Game.Presentation
             _board3DInstance = Object.Instantiate(_board3DPrefab, WorldRoot(), false);
             _layers.Stamp(_board3DInstance, RenderLayers.GamePlay);   // stamped while empty: Stamp zeroes every node's z
             _board3D = _board3DInstance.GetComponent<Board3DView>();
-            // … and the HUD, labels, boosters and tap areas are screen furniture on the Ui layer
+            // … and the HUD, labels and tap areas are screen furniture on the Ui layer
             _viewPrefab = await _assets.LoadAsync(AssetKeys.Gameplay.BoardView, ct);
             _viewInstance = Object.Instantiate(_viewPrefab, _layers.GetHost(RenderLayers.Ui), false);
             _layers.Stamp(_viewInstance, RenderLayers.Ui);
@@ -77,8 +79,6 @@ namespace Game.Presentation
             _view.StackTapped += OnStackTapped;
             _view.RestartPressed += () => Guard(ConfirmRestart);
             _view.PausePressed += () => Guard(Pause);
-            _view.UndoPressed += () => Guard(() => UseBooster(BoosterId.Undo));
-            _view.AddSlotPressed += () => Guard(() => UseBooster(BoosterId.AddSlot));
             await StartLevel(Mathf.Clamp(_param.Level, 1, Mathf.Max(1, _levelCount)), ct);
         }
 
@@ -121,17 +121,17 @@ namespace Game.Presentation
             _level = level;
             _data = await _levels.LoadAsync(level, ct);
             _board = new BoardModel(_data, _tuning.BoardRules());
+            _grooves.Clear();
             var start = _progress.BeginLevel(level);
-            _pendingUnlock = start.Unlocked;
             _log.Info($"[GameplayScreen] level {level} attempt {start.AttemptNo} (seed {_data.Seed}).");
             Draw();
         }
 
-        // what follows a level start once the screen is up: the unlock popup (gift already saved), then the tutorial
-        private async UniTask Intro()
+        // what follows a level start once the screen is up: the tutorial
+        private UniTask Intro()
         {
-            if (_pendingUnlock.HasValue) { var id = _pendingUnlock.Value; _pendingUnlock = null; await ShowUnlock(id); Draw(); }
             Tutorial(afterTap: false, targetCompleted: false);
+            return UniTask.CompletedTask;
         }
 
         private async UniTask Restart(int level)
@@ -140,29 +140,15 @@ namespace Game.Presentation
             await Intro();
         }
 
-        private void Draw()
+        private void Draw(CardFlight[] flights = null)
         {
             var v = Visual();
-            _board3D.Render(v);
+            _board3D.Render(v, flights);
             _view.Render(v);
             var layers = new int[v.Stacks.Length];
             for (int i = 0; i < layers.Length; i++) layers[i] = v.Stacks[i].Layer;
             _view.SetHitAreas(_board3D.StackWorldRects(v.Stacks.Length), layers);
-            _view.SetHud(_loc.Get(LocKeys.GameplayLevel, _level), _data.Hard ? _loc.Get(LocKeys.GameplayHard) : null, Coins());
-            _view.SetBoosters(BoosterButton(BoosterId.Undo), BoosterButton(BoosterId.AddSlot));
-        }
-
-        private BoosterVisual BoosterButton(BoosterId id)
-        {
-            long count = _boosters.Count(id);
-            return new BoosterVisual
-            {
-                Visible = _progress.IsUnlocked(id),
-                Enabled = BoosterService.CanApply(id, _board),
-                Name = _loc.Get(id == BoosterId.Undo ? LocKeys.BoosterUndoName : LocKeys.BoosterAddSlotName),
-                Badge = count > 0 ? count.ToString(CultureInfo.InvariantCulture) : null,
-                Price = count > 0 ? null : _tuning.PriceOf(id).ToString(CultureInfo.InvariantCulture),
-            };
+            _view.SetHud(_loc.Get(LocKeys.GameplayLevel, _level));
         }
 
         // ── taps ──────────────────────────────────────────────────────────────────────────────────────
@@ -172,22 +158,91 @@ namespace Game.Presentation
             if (_ftuePointAt >= 0 && stack != _ftuePointAt) return;      // ftue.l1.step1: only the pointed stack
             var steps = _board.Tap(stack);
             if (steps.Count == 0) return;                                // R-4: covered or finished — 6c adds the shake
-            Draw();
+            Draw(Flights(steps));
             if (_board.Result == BoardResult.Won) Guard(Won);
             else if (_board.Result == BoardResult.Lost) Guard(Lost);
             else Tutorial(afterTap: true, targetCompleted: steps.Any(s => s.Kind == BoardStepKind.TargetCompleted));
+        }
+
+        /// <summary>
+        /// CR-007: turn one change's steps into the cards the view flies, in rule order, and keep the holding
+        /// grooves up to date. A run leaves its stack from the top; a holding card keeps its groove until it leaves
+        /// and a new one takes the lowest free groove (Phat: no re-sorting); a card for a peg that already filled
+        /// up in this change carries how many times (<see cref="CardFlight.SwapGen"/>), and the cards that filled
+        /// a peg are marked so the view lets them leave with it.
+        /// </summary>
+        private CardFlight[] Flights(IReadOnlyList<BoardStep> steps)
+        {
+            var flights = new List<CardFlight>();
+            var arrival = new List<int>();                // per holding card: the flight that put it there in this change, or −1
+            for (int i = 0; i < _grooves.Count; i++) arrival.Add(-1);
+            var filling = new Dictionary<int, List<int>>();
+            var gen = new Dictionary<int, int>();         // per slot: how many times its peg filled up so far
+            var depth = new Dictionary<int, int>();       // per stack: cards already taken from its top
+            int Gen(int slot) => gen.TryGetValue(slot, out int g) ? g : 0;
+            int Depth(int stack) { depth.TryGetValue(stack, out int d); depth[stack] = d + 1; return d; }
+            void Into(int slot, int index)
+            {
+                if (!filling.TryGetValue(slot, out var list)) filling[slot] = list = new List<int>();
+                list.Add(index);
+            }
+            foreach (var s in steps)
+            {
+                switch (s.Kind)
+                {
+                    case BoardStepKind.CardToTarget:
+                        flights.Add(new CardFlight { Color = s.Color, FromStack = s.Stack, FromDepth = Depth(s.Stack), FromHeld = -1, ToSlot = s.Slot, ToIndex = s.Filled - 1, ToHeld = -1, ToHeldFinal = -1, After = -1, SwapGen = Gen(s.Slot) });
+                        Into(s.Slot, flights.Count - 1);
+                        break;
+                    case BoardStepKind.CardToBuffer:
+                        int free = 0;
+                        while (_grooves.Contains(free)) free++;
+                        _grooves.Add(free);
+                        arrival.Add(flights.Count);
+                        flights.Add(new CardFlight { Color = s.Color, FromStack = s.Stack, FromDepth = Depth(s.Stack), FromHeld = -1, ToSlot = -1, ToHeld = free, ToHeldFinal = -1, After = -1 });
+                        break;
+                    case BoardStepKind.BufferToTarget:
+                        int groove = _grooves[s.BufferIndex], from = arrival[s.BufferIndex];
+                        _grooves.RemoveAt(s.BufferIndex);
+                        arrival.RemoveAt(s.BufferIndex);
+                        flights.Add(new CardFlight
+                        {
+                            Color = s.Color, FromStack = -1, FromHeld = groove, ToSlot = s.Slot, ToIndex = s.Filled - 1,
+                            ToHeld = -1, ToHeldFinal = -1, After = from, SwapGen = Gen(s.Slot),
+                        });
+                        Into(s.Slot, flights.Count - 1);
+                        break;
+                    case BoardStepKind.TargetCompleted:
+                        if (filling.TryGetValue(s.Slot, out var done))
+                        {
+                            foreach (int i in done) { var f = flights[i]; f.Completes = true; flights[i] = f; }
+                            done.Clear();
+                        }
+                        gen[s.Slot] = Gen(s.Slot) + 1;
+                        break;
+                }
+            }
+            for (int j = 0; j < arrival.Count; j++)
+                if (arrival[j] >= 0) { var f = flights[arrival[j]]; f.ToHeldFinal = _grooves[j]; flights[arrival[j]] = f; }
+            return flights.ToArray();
+        }
+
+        private async UniTask AnimationsDone()
+        {
+            await UniTask.WaitUntil(() => _board3D == null || !_board3D.IsAnimating, cancellationToken: _cts.Token);
+            await UniTask.Delay(TimeSpan.FromSeconds(DialogBeat), cancellationToken: _cts.Token);
         }
 
         // ── win ───────────────────────────────────────────────────────────────────────────────────────
         private async UniTask Won()
         {
             _view.HideTutorial();
-            var win = _progress.CompleteLevel(_level, _data.Hard);      // persisted before anything is shown (G19)
+            var win = _progress.CompleteLevel(_level);      // persisted before anything is shown (G19)
+            await AnimationsDone();   // let the last cards land and the peg leave (CR-007)
             Draw();
             var args = new WinArgs(
-                _loc.Get(_data.Hard ? LocKeys.WinTitleHard : LocKeys.WinTitle),
+                _loc.Get(LocKeys.WinTitle),
                 _loc.Get(LocKeys.WinSubtitle, _level),
-                _loc.Get(LocKeys.WinReward, win.Reward),
                 _loc.Get(win.Final ? LocKeys.WinPlayAgain : LocKeys.WinNext),
                 _loc.Get(LocKeys.WinHome),
                 win.Final ? _loc.Get(LocKeys.HomeMoreSoon) : null,
@@ -212,13 +267,12 @@ namespace Game.Presentation
         private async UniTask Lost()
         {
             _view.HideTutorial();
+            await AnimationsDone();
             bool adReady = await _ads.IsReadyAsync(AdPlacements.RewardedContinue);
             var args = new LoseArgs(
                 _board.CanContinue,
                 _loc.Get(LocKeys.LoseTitle),
                 _loc.Get(adReady ? LocKeys.LoseContinueFree : LocKeys.AdsNotAvailable), adReady,
-                _boosters.CanBuyContinue ? $"{_loc.Get(LocKeys.LoseContinueCoins)}  {_tuning.ContinuePrice}" : _loc.Get(LocKeys.BoosterBuyNotEnough),
-                _boosters.CanBuyContinue,
                 _loc.Get(LocKeys.LoseNoThanks),
                 _loc.Get(LocKeys.LoseFailedTitle), _loc.Get(LocKeys.LoseSubtitle, _level), _loc.Get(LocKeys.LoseRetry), _loc.Get(LocKeys.LoseHome),
                 Fan());
@@ -230,12 +284,11 @@ namespace Game.Presentation
                     if (await _ads.ShowAsync(AdPlacements.RewardedContinue, _cts.Token) == AdResult.Rewarded)   // reward only on completion (G19)
                     {
                         _lastAdTime = Time.realtimeSinceStartup;
-                        await AfterContinue(_boosters.TryContinue(PaySource.Ad, _board).Count > 0);
+                        var cont = _board.Continue();
+                        Flights(cont);                                   // keeps the holding grooves in step; drawn without flights
+                        await AfterContinue(cont.Count > 0);
                     }
                     else await Lost();                                    // ad cancelled: back to the offer
-                    break;
-                case LoseChoice.ContinueCoins:
-                    await AfterContinue(_boosters.TryContinue(PaySource.Coins, _board).Count > 0);
                     break;
                 case LoseChoice.Retry:
                     await Restart(_level);
@@ -253,42 +306,6 @@ namespace Game.Presentation
             if (!continued) return;
             if (_board.Result == BoardResult.Won) await Won();
             else if (_board.Result == BoardResult.Lost) await Lost();
-        }
-
-        // ── boosters ──────────────────────────────────────────────────────────────────────────────────
-        private async UniTask UseBooster(BoosterId id)
-        {
-            if (!_progress.IsUnlocked(id) || !BoosterService.CanApply(id, _board)) return;
-            if (_boosters.Count(id) > 0) { _boosters.TryUse(id, PaySource.Inventory, _board); Draw(); return; }
-            bool adReady = await _ads.IsReadyAsync(AdPlacements.RewardedBooster);
-            var args = new BoosterBuyArgs(
-                _loc.Get(LocKeys.BoosterBuyTitle),
-                _loc.Get(id == BoosterId.Undo ? LocKeys.BoosterUndoName : LocKeys.BoosterAddSlotName),
-                _loc.Get(id == BoosterId.Undo ? LocKeys.BoosterUndoDesc : LocKeys.BoosterAddSlotDesc),
-                id == BoosterId.Undo ? 0 : 1,
-                _boosters.CanBuy(id) ? _tuning.PriceOf(id).ToString(CultureInfo.InvariantCulture) : _loc.Get(LocKeys.BoosterBuyNotEnough),
-                _boosters.CanBuy(id),
-                _loc.Get(adReady ? LocKeys.BoosterBuyFree : LocKeys.AdsNotAvailable), adReady);
-            var result = await _dialogs.ShowAsync<BoosterBuyDialog, BoosterBuyChoice>(args, default, _cts.Token);
-            if (result.Reason == DialogCloseReason.Aborted) return;
-            if (result.Value == BoosterBuyChoice.Coins) _boosters.TryUse(id, PaySource.Coins, _board);
-            else if (result.Value == BoosterBuyChoice.Ad && await _ads.ShowAsync(AdPlacements.RewardedBooster, _cts.Token) == AdResult.Rewarded)
-            {
-                _lastAdTime = Time.realtimeSinceStartup;
-                _boosters.TryUse(id, PaySource.Ad, _board);
-            }
-            Draw();
-        }
-
-        private async UniTask ShowUnlock(BoosterId id)
-        {
-            var args = new BoosterUnlockArgs(
-                _loc.Get(id == BoosterId.Undo ? LocKeys.UnlockUndoTitle : LocKeys.UnlockAddSlotTitle),
-                _loc.Get(id == BoosterId.Undo ? LocKeys.BoosterUndoDesc : LocKeys.BoosterAddSlotDesc),
-                id == BoosterId.Undo ? 0 : 1,
-                "x" + _tuning.UnlockGift.ToString(CultureInfo.InvariantCulture),
-                _loc.Get(LocKeys.UnlockGotIt));
-            await _dialogs.ShowAsync<BoosterUnlockDialog, Unit>(args, default, _cts.Token);   // gift already saved
         }
 
         // ── pause / restart ───────────────────────────────────────────────────────────────────────────
@@ -328,6 +345,7 @@ namespace Game.Presentation
         {
             _ftuePointAt = -1;
             _view.HideTutorial();
+            if (!FtueEnabled) return;
             if (_data.Ftue == "ftue.l1")
             {
                 if (!_progress.IsFtueDone(FtueL1Step1))
@@ -372,8 +390,6 @@ namespace Game.Presentation
         // ── helpers ───────────────────────────────────────────────────────────────────────────────────
         private void GoHome() => _scenes.LoadAsync(SceneKeys.Main, new MainParam(ColdBoot: false), SceneTransition.Replace).Forget();
 
-        private string Coins() => _wallet.Balance(CardSlotResources.Coin).ToString("N0", CultureInfo.InvariantCulture);
-
         private int[] Fan() => _data.Targets.Select(t => t.Color).Distinct().Take(3).ToArray();
 
         private static Transform WorldRoot()
@@ -396,10 +412,11 @@ namespace Game.Presentation
             {
                 Stacks = new StackVisual[_board.StackCount],
                 Targets = new TargetVisual[_board.SlotCount],
-                Upcoming = _board.UpcomingColors(2).ToArray(),
+                Upcoming = Enumerable.Range(0, _board.SlotCount).Select(_board.NextColorBehind).ToArray(),   // CR-009: the peg behind each slot (−1 = none)
                 Buffer = _board.Buffer.ToArray(),
                 BufferCapacity = _board.BufferCapacity,
-                BufferWarn = _board.BufferCapacity - _board.Buffer.Count <= 2,
+                BufferGrooves = _grooves.ToArray(),
+                BufferWarn = false,                         // the holding area never turns red (Phat)
                 HoldingLabel = _loc.Get(LocKeys.GameplayHoldingArea),
                 BufferCountLabel = _loc.Get(LocKeys.GameplayBufferCount, _board.Buffer.Count, _board.BufferCapacity),
                 NextLabel = _loc.Get(LocKeys.GameplayNext),
@@ -410,7 +427,7 @@ namespace Game.Presentation
                 int n = _board.Remaining(i);
                 var colors = new int[n];
                 for (int d = 0; d < n; d++) colors[d] = _board.CardAt(i, d);
-                v.Stacks[i] = new StackVisual { X = spec.X, Y = spec.Y, W = spec.W, H = spec.H, Layer = spec.Layer, Colors = colors, Covered = n > 0 && _board.IsCovered(i) };
+                v.Stacks[i] = new StackVisual { X = spec.X, Y = spec.Y, W = spec.W, H = spec.H, Layer = spec.Layer, Colors = colors, Covered = n > 0 && _board.IsCovered(i), Hint = _board.CanTap(i) };   // Phat: every stack a tap can take from
             }
             for (int s = 0; s < _board.SlotCount; s++)
             {
@@ -420,6 +437,7 @@ namespace Game.Presentation
                     Has = has,
                     Color = has ? _board.SlotColor(s) : 0,
                     Filled = has ? _board.SlotFilled(s) : 0,
+                    Capacity = has ? _board.SlotCapacity(s) : 0,
                     CountLabel = has ? _loc.Get(LocKeys.GameplayCount, _board.SlotFilled(s), _board.SlotCapacity(s)) : null,
                 };
             }

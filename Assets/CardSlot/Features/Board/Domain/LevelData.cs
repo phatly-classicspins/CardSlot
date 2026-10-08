@@ -40,14 +40,15 @@ namespace Game.Domain
         public int Revision = 1;
         /// <summary>The generator seed that produced this level (logged, so it can be reproduced).</summary>
         public long Seed;
-        /// <summary>A "hard" level in the difficulty curve (CR-002): extra win reward, HARD badge.</summary>
-        public bool Hard;
         public int Slots = 3;
         public int BufferCapacity = 12;
         public List<TargetSpec> Targets = new List<TargetSpec>();
         public List<StackSpec> Stacks = new List<StackSpec>();
         /// <summary>FTUE script id for this level, or null.</summary>
         public string Ftue;
+        /// <summary>CR-008: the most cards one tap takes from the top run (0 = the whole run). Shipped levels: 6 —
+        /// a run of 12 same-colour cards needs two taps.</summary>
+        public int MaxRun;
 
         public const int ColorCount = 6;
     }

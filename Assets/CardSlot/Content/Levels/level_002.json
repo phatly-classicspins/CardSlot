@@ -1,86 +1,118 @@
 {
   "id": "level_002",
-  "revision": 1,
-  "seed": 200141,
-  "hard": false,
-  "n_slots": 2,
-  "buffer_capacity": 14,
+  "revision": 2,
+  "seed": 200000,
+  "n_slots": 3,
+  "buffer_capacity": 26,
   "targets": [
     {
-      "color": "color_4",
-      "capacity": 3
-    },
-    {
-      "color": "color_4",
-      "capacity": 3
+      "color": "color_2",
+      "capacity": 18
     },
     {
       "color": "color_1",
-      "capacity": 3
+      "capacity": 18
     },
     {
-      "color": "color_1",
-      "capacity": 3
+      "color": "color_5",
+      "capacity": 18
     }
   ],
   "stacks": [
     {
       "id": "s0",
-      "x": 260,
-      "y": 40,
+      "x": 0,
+      "y": 0,
       "w": 150,
-      "h": 222,
+      "h": 206,
       "layer": 0,
       "cards": [
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
         "color_1",
         "color_1"
       ]
     },
     {
       "id": "s1",
-      "x": 480,
-      "y": 40,
+      "x": 176,
+      "y": 0,
       "w": 150,
-      "h": 238,
+      "h": 206,
       "layer": 0,
       "cards": [
         "color_1",
         "color_1",
-        "color_1"
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_1",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2"
       ]
     },
     {
       "id": "s2",
-      "x": 700,
-      "y": 40,
+      "x": 88,
+      "y": 232,
       "w": 150,
-      "h": 270,
+      "h": 206,
       "layer": 0,
       "cards": [
-        "color_1",
-        "color_4",
-        "color_4",
-        "color_4",
-        "color_4"
-      ]
-    },
-    {
-      "id": "s3",
-      "x": 480,
-      "y": 330,
-      "w": 150,
-      "h": 222,
-      "layer": 0,
-      "cards": [
-        "color_4",
-        "color_4"
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_2",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5",
+        "color_5"
       ]
     }
   ],
   "ftue": "ftue.l2",
+  "max_run": 6,
   "solution": [
-    "s3",
     "s0",
+    "s0",
+    "s0",
+    "s1",
+    "s1",
+    "s1",
     "s1",
     "s2",
     "s2"

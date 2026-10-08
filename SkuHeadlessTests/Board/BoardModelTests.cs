@@ -43,7 +43,7 @@ namespace CardSlot.SkuHeadlessTests.Board
         [Test]
         public void Validator_reports_out_of_range_values()
         {
-            var l = Level(5, 30, new[] { T(0), T(1) }, S("a", 0, 0, 0, 0), S("b", 1, 1, 1, 1));
+            var l = Level(5, 61, new[] { T(0), T(1) }, S("a", 0, 0, 0, 0), S("b", 1, 1, 1, 1));
             var errors = LevelValidator.Validate(l);
             Assert.That(errors, Has.Some.Contains("slots"));
             Assert.That(errors, Has.Some.Contains("buffer_capacity"));
@@ -70,7 +70,6 @@ namespace CardSlot.SkuHeadlessTests.Board
             Assert.That(b.Tap(0), Is.Empty);
             Assert.That(b.Remaining(0), Is.EqualTo(3));
             Assert.That(b.TapCount, Is.EqualTo(0));
-            Assert.That(b.CanUndo, Is.False);
         }
 
         [Test]
@@ -92,6 +91,21 @@ namespace CardSlot.SkuHeadlessTests.Board
             Assert.That(b.Remaining(0), Is.EqualTo(2));
             Assert.That(b.CardAt(0, 0), Is.EqualTo(1));
             Assert.That(b.SlotFilled(0), Is.EqualTo(2));
+        }
+
+        [Test]
+        public void R6_CR008_a_tap_takes_at_most_max_run_cards_so_a_run_of_12_needs_two_taps()
+        {
+            var cards = new int[14];
+            for (int i = 0; i < 12; i++) cards[i] = 0;
+            cards[12] = cards[13] = 1;
+            var l = Level(2, 20, new[] { T(0, 12), T(1, 4) }, S("a", 0, cards), S("b", 1, 1, 1));
+            l.MaxRun = 6;
+            var b = new BoardModel(l);
+            Assert.That(b.Tap(0).Count(s => s.Kind == BoardStepKind.CardToTarget), Is.EqualTo(6), "first tap: 6 of the 12");
+            Assert.That(b.Remaining(0), Is.EqualTo(8));
+            Assert.That(b.Tap(0).Count(s => s.Kind == BoardStepKind.CardToTarget), Is.EqualTo(6), "second tap: the other 6");
+            Assert.That(b.CardAt(0, 0), Is.EqualTo(1));
         }
 
         [Test]
@@ -137,13 +151,27 @@ namespace CardSlot.SkuHeadlessTests.Board
         [Test]
         public void R10_settle_cascades_a_release_that_completes_a_target()
         {
-            var l = Level(2, 9, new[] { T(0), T(1), T(2), T(2) }, S("y", 0, 2, 2, 2, 2, 2, 2), S("r", 1, 0, 0, 0), S("bl", 2, 1, 1, 1));
+            // CR-009: target i waits behind slot i % 2 — red, then both yellows, queue behind slot 0
+            var l = Level(2, 9, new[] { T(0), T(1), T(2), T(1), T(2) }, S("y", 0, 2, 2, 2, 2, 2, 2), S("r", 1, 0, 0, 0), S("bl", 2, 1, 1, 1, 1, 1, 1));
             var b = new BoardModel(l);
             b.Tap(0);                       // six yellows parked
             var kinds = Kinds(b.Tap(1));    // red done → yellow enters → 3 released → done → yellow enters → 3 released
             Assert.That(kinds.Count(k => k == BoardStepKind.BufferToTarget), Is.EqualTo(6));
             Assert.That(kinds.Count(k => k == BoardStepKind.TargetCompleted), Is.EqualTo(3));
             Assert.That(b.Buffer, Is.Empty);
+        }
+
+        [Test]
+        public void CR009_a_completed_slot_takes_the_target_waiting_behind_it_not_the_next_in_the_list()
+        {
+            // two slots: column 0 = red, yellow · column 1 = blue, green
+            var l = Level(2, 9, new[] { T(0), T(1), T(2), T(3) }, S("b", 0, 1, 1, 1), S("r", 1, 0, 0, 0), S("y", 2, 2, 2, 2), S("g", 3, 3, 3, 3));
+            var b = new BoardModel(l);
+            Assert.That((b.NextColorBehind(0), b.NextColorBehind(1)), Is.EqualTo((2, 3)));
+            b.Tap(0);                                    // blue completes slot 1
+            Assert.That(b.SlotColor(1), Is.EqualTo(3), "green moves up from behind slot 1 (not yellow, the next in the list)");
+            Assert.That(b.NextColorBehind(1), Is.EqualTo(-1));
+            Assert.That(b.NextColorBehind(0), Is.EqualTo(2), "yellow still waits behind slot 0");
         }
 
         // ── R-11 / R-12 ─────────────────────────────────────────────────────────────────────────────────
@@ -178,44 +206,7 @@ namespace CardSlot.SkuHeadlessTests.Board
             Assert.That(Run(), Is.EqualTo(Run()));
         }
 
-        // ── R-16 / R-17 / R-18 ──────────────────────────────────────────────────────────────────────────
-        [Test]
-        public void R16_undo_restores_everything_the_tap_caused_but_keeps_added_capacity()
-        {
-            var l = Level(2, 6, new[] { T(0), T(1), T(2) }, S("y", 0, 2, 2, 2), S("r", 1, 0, 0, 0), S("bl", 2, 1, 1, 1));
-            var b = new BoardModel(l);
-            Assert.That(b.CanUndo, Is.False);
-            b.Tap(0);
-            b.AddBufferSpace();
-            b.Tap(1);                       // red completes, yellow enters, buffer releases
-            Assert.That(b.Undo(), Is.True);
-            Assert.That(b.Buffer, Is.EqualTo(new[] { 2, 2, 2 }));
-            Assert.That(b.SlotColor(0), Is.EqualTo(0));
-            Assert.That(b.Remaining(1), Is.EqualTo(3));
-            Assert.That(b.BufferCapacity, Is.EqualTo(10), "Extra Space survives undo");
-            Assert.That(b.Undo(), Is.True, "undo can go back to the start");
-            Assert.That(b.Buffer, Is.Empty);
-            Assert.That(b.Undo(), Is.False);
-        }
-
-        [Test]
-        public void R16_undo_is_refused_after_the_attempt_ended()
-        {
-            var b = new BoardModel(Level(2, 6, new[] { T(0), T(0), T(1) }, S("bl", 0, 1, 1, 1), S("r", 1, 0, 0, 0, 0, 0, 0)), null, 2);
-            b.Tap(0);
-            Assert.That(b.Result, Is.EqualTo(BoardResult.Lost));
-            Assert.That(b.Undo(), Is.False);
-        }
-
-        [Test]
-        public void R17_extra_space_adds_the_configured_amount_once_per_attempt()
-        {
-            var b = new BoardModel(Level(2, 6, new[] { T(0), T(1) }, S("a", 0, 0, 0, 0), S("b", 1, 1, 1, 1)), new BoardRules { AddSlotAmount = 4, AddSlotMaxPerAttempt = 1 });
-            Assert.That(b.AddBufferSpace(), Is.True);
-            Assert.That(b.BufferCapacity, Is.EqualTo(10));
-            Assert.That(b.AddBufferSpace(), Is.False);
-            Assert.That(b.BufferCapacity, Is.EqualTo(10));
-        }
+        // R-16 / R-17 (Undo, Extra Space) removed with the boosters (CR-005); R-18 Continue stays
 
         [Test]
         public void R18_continue_places_the_overflowing_card_and_the_rest_of_its_run_once()

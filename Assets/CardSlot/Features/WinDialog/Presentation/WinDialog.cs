@@ -6,9 +6,9 @@ using Game.Views;
 
 namespace Game.Presentation
 {
-    /// <summary>Everything the Win dialog shows, already localized (rule #4). The reward was saved before this
-    /// dialog was requested (G19) — the dialog only displays it.</summary>
-    public sealed record WinArgs(string Title, string Subtitle, string Reward, string Primary, string Home, string Note, int[] Fan) : DialogArgs;
+    /// <summary>Everything the Win dialog shows, already localized (rule #4). Progress was saved before this
+    /// dialog was requested (G19). No coin reward (CR-005).</summary>
+    public sealed record WinArgs(string Title, string Subtitle, string Primary, string Home, string Note, int[] Fan) : DialogArgs;
 
     public enum WinChoice { Next, Home }
 
@@ -26,7 +26,7 @@ namespace Game.Presentation
             _view.NextPressed += () => Close(WinChoice.Next);
             _view.HomePressed += () => Close(WinChoice.Home);
             _view.CloseRequested += () => Close(WinChoice.Home);
-            _view.Show(a.Title, a.Subtitle, a.Reward, a.Primary, a.Home, a.Note, a.Fan);
+            _view.Show(a.Title, a.Subtitle, a.Primary, a.Home, a.Note, a.Fan);
         }
     }
 }

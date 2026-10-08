@@ -42,17 +42,15 @@ namespace Game.Domain
             $"{Kind}(stack {Stack}, slot {Slot}, buf {BufferIndex}, colour {Color}, {Filled}/{Capacity})";
     }
 
-    /// <summary>Booster and Continue amounts/limits (R-17, R-18) — tuning data, passed in by the caller.</summary>
+    /// <summary>Continue amounts/limits (R-18) — tuning data, passed in by the caller. (No boosters: CR-005.)</summary>
     public sealed class BoardRules
     {
-        public int AddSlotAmount = 4;
-        public int AddSlotMaxPerAttempt = 1;
         public int ContinueSlotAmount = 4;
         public int ContinueMaxPerAttempt = 1;
     }
 
     /// <summary>
-    /// The rules of one attempt at a level (GDD §2, R-2…R-18). Engine-free and deterministic: the final
+    /// The rules of one attempt at a level (GDD §2, R-2…R-15, R-18). Engine-free and deterministic: the final
     /// state depends only on the level and the sequence of taps (R-15). Every mutation returns the steps
     /// the view needs to animate it; no rule waits on a view.
     /// </summary>
@@ -68,7 +66,7 @@ namespace Game.Domain
         {
             public int[] Removed;
             public Target[] Slots;
-            public int QueueNext;
+            public int[] ColumnNext;
             public int[] Buffer;
             public BoardResult Result;
         }
@@ -80,8 +78,10 @@ namespace Game.Domain
         private readonly List<int> _buffer = new List<int>();
         private readonly Stack<Snapshot> _history = new Stack<Snapshot>();
         private readonly List<BoardStep> _steps = new List<BoardStep>();
-        private int _queueNext;
-        private int _addSlotsUsed, _continuesUsed;
+        // CR-009: the queue is dealt into columns — target i waits behind slot i % Slots — and a completed
+        // slot takes the next target of its own column (the reference: the peg behind moves forward)
+        private int[] _columnNext;
+        private int _continuesUsed;
         // the run left unplaced when the buffer overflowed — Continue places it (R-18)
         private int _pendingStack = -1, _pendingColor = -1, _pendingCount;
 
@@ -95,8 +95,9 @@ namespace Game.Domain
             _slots = new Target[level.Slots];
             BufferCapacity = bufferCapacityOverride ?? level.BufferCapacity;
             // R-2: the first n targets of the queue fill slots 0..n-1 in order
-            for (int s = 0; s < _slots.Length && _queueNext < level.Targets.Count; s++)
-                _slots[s] = NextTarget();
+            _columnNext = new int[_slots.Length];
+            for (int s = 0; s < _slots.Length; s++)
+                if (HasNext(s)) _slots[s] = NextTarget(s);
         }
 
         public LevelData Level => _level;
@@ -105,10 +106,8 @@ namespace Game.Domain
         public IReadOnlyList<int> Buffer => _buffer;
         public int StackCount => _removed.Length;
         public int SlotCount => _slots.Length;
-        public int QueuedTargets => _level.Targets.Count - _queueNext;
+        public int QueuedTargets { get { int used = 0; foreach (int c in _columnNext) used += c; return _level.Targets.Count - used; } }
         public int TapCount { get; private set; }
-        public bool CanUndo => Result == BoardResult.Playing && _history.Count > 0;
-        public bool CanAddSlot => Result == BoardResult.Playing && _addSlotsUsed < _rules.AddSlotMaxPerAttempt;
         public bool CanContinue => Result == BoardResult.Lost && _pendingCount > 0 && _continuesUsed < _rules.ContinueMaxPerAttempt;
 
         public int Remaining(int stack) => _level.Stacks[stack].Cards.Length - _removed[stack];
@@ -118,11 +117,11 @@ namespace Game.Domain
         public int SlotColor(int slot) => _slots[slot].Color;
         public int SlotFilled(int slot) => _slots[slot].Filled;
         public int SlotCapacity(int slot) => _slots[slot].Capacity;
-        /// <summary>Colours of the next <paramref name="count"/> queued targets (the "next" chips).</summary>
-        public IEnumerable<int> UpcomingColors(int count)
-        {
-            for (int i = _queueNext; i < _level.Targets.Count && i < _queueNext + count; i++) yield return _level.Targets[i].Color;
-        }
+        /// <summary>CR-009: the colour of the target waiting behind <paramref name="slot"/> (the back-row peg), or −1.</summary>
+        public int NextColorBehind(int slot) => HasNext(slot) ? _level.Targets[ColumnIndex(slot)].Color : -1;
+
+        private int ColumnIndex(int slot) => slot + _columnNext[slot] * _slots.Length;
+        private bool HasNext(int slot) => ColumnIndex(slot) < _level.Targets.Count;
 
         /// <summary>R-3: covered when another stack that still has cards, on a higher layer, overlaps it.</summary>
         public bool IsCovered(int stack)
@@ -154,31 +153,12 @@ namespace Game.Domain
             if (!CanTap(stack)) return Array.Empty<BoardStep>();
             _history.Push(Capture());
             TapCount++;
-            // R-6: the whole run (same-colour cards from the top) leaves the stack
+            // R-6: the run (same-colour cards from the top, at most MaxRun of them — CR-008) leaves the stack
             int color = CardAt(stack, 0), run = 0;
-            while (run < Remaining(stack) && CardAt(stack, run) == color) run++;
+            while (run < Remaining(stack) && CardAt(stack, run) == color && (_level.MaxRun <= 0 || run < _level.MaxRun)) run++;
             _removed[stack] += run;
             PlaceRun(stack, color, run);
             return _steps.ToArray();
-        }
-
-        /// <summary>R-16: restore the state just before the most recent tap, including every settle it
-        /// caused — except buffer capacity, which boosters/Continue only ever add to.</summary>
-        public bool Undo()
-        {
-            if (!CanUndo) return false;
-            Restore(_history.Pop());
-            TapCount--;
-            return true;
-        }
-
-        /// <summary>R-17: Extra Space.</summary>
-        public bool AddBufferSpace()
-        {
-            if (!CanAddSlot) return false;
-            BufferCapacity += _rules.AddSlotAmount;
-            _addSlotsUsed++;
-            return true;
         }
 
         /// <summary>R-18: after an overflow, add space, put the overflowing card in the buffer and keep
@@ -243,9 +223,9 @@ namespace Game.Domain
                     if (!_slots[s].Has || _slots[s].Filled < _slots[s].Capacity) continue;
                     _steps.Add(new BoardStep(BoardStepKind.TargetCompleted, slot: s, color: _slots[s].Color));
                     _slots[s] = default;
-                    if (_queueNext < _level.Targets.Count)
+                    if (HasNext(s))
                     {
-                        _slots[s] = NextTarget();
+                        _slots[s] = NextTarget(s);
                         _steps.Add(new BoardStep(BoardStepKind.TargetEntered, slot: s, color: _slots[s].Color, capacity: _slots[s].Capacity));
                     }
                     changed = true;
@@ -280,9 +260,10 @@ namespace Game.Domain
             _steps.Add(new BoardStep(BoardStepKind.Lost));
         }
 
-        private Target NextTarget()
+        private Target NextTarget(int slot)
         {
-            var t = _level.Targets[_queueNext++];
+            var t = _level.Targets[ColumnIndex(slot)];
+            _columnNext[slot]++;
             return new Target { Has = true, Color = t.Color, Capacity = t.Capacity };
         }
 
@@ -290,7 +271,7 @@ namespace Game.Domain
         {
             Removed = (int[])_removed.Clone(),
             Slots = (Target[])_slots.Clone(),
-            QueueNext = _queueNext,
+            ColumnNext = (int[])_columnNext.Clone(),
             Buffer = _buffer.ToArray(),
             Result = Result,
         };
@@ -299,7 +280,7 @@ namespace Game.Domain
         {
             Array.Copy(s.Removed, _removed, _removed.Length);
             Array.Copy(s.Slots, _slots, _slots.Length);
-            _queueNext = s.QueueNext;
+            Array.Copy(s.ColumnNext, _columnNext, _columnNext.Length);
             _buffer.Clear(); _buffer.AddRange(s.Buffer);
             Result = s.Result;
             _pendingStack = _pendingColor = -1; _pendingCount = 0;
@@ -318,7 +299,7 @@ namespace Game.Domain
             foreach (var r in _removed) sb.Append(r).Append(',');
             sb.Append('|');
             foreach (var t in _slots) sb.Append(t.Has ? t.Color : -1).Append(':').Append(t.Filled).Append(',');
-            sb.Append('|').Append(_queueNext).Append('|');
+            sb.Append('|'); foreach (int c in _columnNext) sb.Append(c).Append(','); sb.Append('|');
             foreach (var b in _buffer) sb.Append(b);
             return sb.ToString();
         }
@@ -328,7 +309,7 @@ namespace Game.Domain
         internal bool RunFitsTargets(int stack)
         {
             int color = CardAt(stack, 0), run = 0, room = 0;
-            while (run < Remaining(stack) && CardAt(stack, run) == color) run++;
+            while (run < Remaining(stack) && CardAt(stack, run) == color && (_level.MaxRun <= 0 || run < _level.MaxRun)) run++;
             for (int s = 0; s < _slots.Length; s++)
                 if (_slots[s].Has && _slots[s].Color == color) room += _slots[s].Capacity - _slots[s].Filled;
             return room >= run;

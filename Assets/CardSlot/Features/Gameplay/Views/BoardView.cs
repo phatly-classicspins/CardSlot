@@ -12,12 +12,35 @@ namespace Game.Views
         public int X, Y, W, H, Layer;
         public int[] Colors;
         public bool Covered;
+        /// <summary>Drawn as a fan around a pivot below the stack (CR-004) instead of a straight pile.</summary>
+        public bool Fan;
+        /// <summary>The stack can be tapped right now (not covered, not empty): draw the hint outline (decided by the controller).</summary>
+        public bool Hint;
+    }
+
+    /// <summary>
+    /// One card flying after a tap (CR-007: a run leaves card by card, as in the reference). Indices are
+    /// the controller's; the view only looks positions up. A source is a stack card (<see cref="FromStack"/>,
+    /// <see cref="FromDepth"/> from the top, as drawn before the tap) or a holding groove (<see cref="FromHeld"/>);
+    /// a destination is a peg position (<see cref="ToSlot"/>, <see cref="ToIndex"/>) or a groove
+    /// (<see cref="ToHeld"/>, a groove index). <see cref="ToHeldFinal"/> is where that card sits once the tap has settled
+    /// (−1 = it left the holding area again), <see cref="After"/> the flight it must wait for, and
+    /// <see cref="Completes"/> marks a card whose peg fills up and leaves.
+    /// </summary>
+    public struct CardFlight
+    {
+        public int Color, FromStack, FromDepth, FromHeld, ToSlot, ToIndex, ToHeld, ToHeldFinal, After;
+        public bool Completes;
+        /// <summary>How many times <see cref="ToSlot"/>'s peg filled up earlier in this same change: 0 = the peg on screen,
+        /// 1 = the one that replaced it, … A card for a replacement peg waits until the full one has left and the
+        /// replacement has moved up (Phat: the next peg only takes cards after the old one is gone).</summary>
+        public int SwapGen;
     }
 
     public struct TargetVisual
     {
         public bool Has;
-        public int Color, Filled;
+        public int Color, Filled, Capacity;
         public string CountLabel;
     }
 
@@ -27,19 +50,15 @@ namespace Game.Views
     {
         public StackVisual[] Stacks = Array.Empty<StackVisual>();
         public TargetVisual[] Targets = Array.Empty<TargetVisual>();
+        /// <summary>CR-009: per slot, the colour of the target waiting behind it (−1 = none).</summary>
         public int[] Upcoming = Array.Empty<int>();
         public int[] Buffer = Array.Empty<int>();
         public int BufferCapacity;
+        /// <summary>The groove of each holding-area card, in <see cref="Buffer"/> order: a card keeps its groove until
+        /// it leaves, so the others never shift (Phat).</summary>
+        public int[] BufferGrooves = Array.Empty<int>();
         public bool BufferWarn;
         public string HoldingLabel, BufferCountLabel, NextLabel;
-    }
-
-    /// <summary>One booster button. Not visible = still locked. <see cref="Badge"/> (count) or <see cref="Price"/>
-    /// (coins) is shown — whichever the controller set.</summary>
-    public struct BoosterVisual
-    {
-        public bool Visible, Enabled;
-        public string Name, Badge, Price;
     }
 
     /// <summary>
@@ -65,30 +84,22 @@ namespace Game.Views
         [SerializeField] private Sprite _bufferCell;
         [SerializeField] private Sprite _bufferCellWarn;
         [SerializeField] private Sprite _ground;
-        [Header("HUD, boosters, tutorial")]
+        [Header("HUD, tutorial")]
         [SerializeField] private Sprite _pill;
         [SerializeField] private Sprite _roundButton;
         [SerializeField] private Sprite _iconPause;
-        [SerializeField] private Sprite _coin;
         [SerializeField] private Sprite _iconRestart;
-        [SerializeField] private Sprite _badge;
-        [SerializeField] private Sprite _badgePrimary;
-        [SerializeField] private Sprite _boostTile;
-        [SerializeField] private Sprite _iconUndo;
-        [SerializeField] private Sprite _iconSpace;
-        [SerializeField] private Sprite _priceTag;
         [SerializeField] private Sprite _hand;
         [SerializeField] private Sprite _ring;
         [SerializeField] private TMP_FontAsset _font;
-        [Tooltip("False when the board is drawn in 3D (CR-003): this view then draws only the HUD, labels, boosters and tap areas.")]
+        [Tooltip("False when the board is drawn in 3D (CR-003): this view then draws only the HUD, labels and tap areas.")]
         [SerializeField] private bool _draw2DBoard = true;
 
         public event Action<int> StackTapped;
-        public event Action PausePressed, RestartPressed, UndoPressed, AddSlotPressed;
+        public event Action PausePressed, RestartPressed;
 
-        private RectTransform _root, _boardLayer, _boosterLayer, _tutorialLayer;
-        private TextMeshProUGUI _levelLabel, _hardBadge, _coinsLabel;
-        private Image _hardBadgeImage;
+        private RectTransform _root, _boardLayer, _tutorialLayer;
+        private TextMeshProUGUI _levelLabel;
 
         private float Height => _root != null && _root.rect.height > 1f ? _root.rect.height : 1920f;
         private float Tall => Mathf.Max(0f, Height - 1920f);
@@ -104,20 +115,14 @@ namespace Game.Views
             }
             _boardLayer = UiKit.Stretch("Board", _root);
             BuildHud();
-            _boosterLayer = UiKit.Stretch("Boosters", _root);
             _tutorialLayer = UiKit.Stretch("Tutorial", _root);
         }
 
         private void BuildHud()
         {
             float m = DesignTokens.ScreenMargin, b = DesignTokens.RoundButton;
-            var coins = UiKit.Image("CoinPill", _root, _pill, m, 70f, 240f, 104f, sliced: true);
-            UiKit.Image("Coin", coins.transform, _coin, 14f, 14f, 68f, 68f);
-            _coinsLabel = UiKit.Text("Coins", coins.transform, _font, string.Empty, DesignTokens.TypeHud, DesignTokens.Ink, 88f, 0f, 140f, 96f, TextAlignmentOptions.Left);
             var pill = UiKit.Image("LevelPill", _root, _pill, 540f - 125f, 70f, 250f, 104f, sliced: true);
             _levelLabel = UiKit.Text("Level", pill.transform, _font, string.Empty, DesignTokens.TypeHud, DesignTokens.Ink, 0f, 0f, 250f, 96f);
-            _hardBadgeImage = UiKit.Image("Hard", _root, _badge, 540f + 95f, 46f, 116f, 56f, sliced: true);
-            _hardBadge = UiKit.Text("HardText", _hardBadgeImage.transform, _font, string.Empty, DesignTokens.TypeLabel, DesignTokens.OnColor, 0f, 0f, 116f, 50f);
             var restart = UiKit.Image("Restart", _root, _roundButton, 1080f - m - 2f * b - 32f, DesignTokens.HudTop, b, b + 10f);
             UiKit.Image("Icon", restart.transform, _iconRestart, 26f, 20f, 52f, 52f).color = DesignTokens.OnColor;
             UiKit.Button(restart, () => RestartPressed?.Invoke());
@@ -126,14 +131,10 @@ namespace Game.Views
             UiKit.Button(pause, () => PausePressed?.Invoke());
         }
 
-        /// <param name="hardLabel">Badge text; null hides the badge.</param>
-        public void SetHud(string levelLabel, string hardLabel, string coinsLabel)
+        public void SetHud(string levelLabel)
         {
             EnsureBuilt();
-            _coinsLabel.SetText(coinsLabel ?? string.Empty);
             _levelLabel.SetText(levelLabel ?? string.Empty);
-            _hardBadgeImage.gameObject.SetActive(hardLabel != null);
-            _hardBadge.SetText(hardLabel ?? string.Empty);
         }
 
         /// <summary>Redraw the whole board. 6a redraws after every tap; 6c replays the model's steps as motion.</summary>
@@ -178,23 +179,11 @@ namespace Game.Views
         private void DrawLabels(BoardVisual v)
         {
             float m = DesignTokens.ScreenMargin;
-            int n = v.Targets.Length;
-            float w = n == 2 ? DesignTokens.TargetSlotWidthTwo : DesignTokens.TargetSlotWidth;
-            float gap = n == 2 ? DesignTokens.TargetSlotGapTwo : DesignTokens.TargetSlotGap;
-            float x0 = 540f - (n * w + (n - 1) * gap) / 2f;
-            for (int i = 0; i < n; i++)
-                if (v.Targets[i].Has)
-                    UiKit.Text($"Count{i}", _boardLayer, _font, v.Targets[i].CountLabel, DesignTokens.TypeCount, DesignTokens.OnColor, x0 + i * (w + gap), 395f, w, 60f);
+            // no x/18 count: a pole is exactly 18 cards tall, so how full it is shows on the peg (Phat)
             UiKit.Text("HoldingLabel", _boardLayer, _font, v.HoldingLabel, DesignTokens.TypeLabel, DesignTokens.InkSoft, m + 30f, DesignTokens.BufferLabelTop, 400f, 40f, TextAlignmentOptions.Left);
             UiKit.Text("BufferCount", _boardLayer, _font, v.BufferCountLabel, DesignTokens.TypeLabel, v.BufferWarn ? DesignTokens.DangerText : DesignTokens.Ink,
                 1080f - m - 30f - 300f, DesignTokens.BufferLabelTop, 300f, 40f, TextAlignmentOptions.Right);
-            if (v.Upcoming.Length > 0)
-            {
-                float x = 1080f - m - 12f - v.Upcoming.Length * 44f;
-                UiKit.Text("NextLabel", _boardLayer, _font, v.NextLabel, 28f, DesignTokens.InkSoft, x - 90f, 194f, 84f, 46f, TextAlignmentOptions.Right);
-                for (int i = 0; i < v.Upcoming.Length; i++)
-                    UiKit.Image($"Next{i}", _boardLayer, _chip[v.Upcoming[i]], x + i * 44f, 194f, 34f, 50f);
-            }
+            // CR-007: the queue is drawn as the back row of pegs in Board3DView, not as chips
         }
 
         private void DrawTargets(BoardVisual v)
@@ -218,7 +207,7 @@ namespace Game.Views
                 float x = 1080f - DesignTokens.ScreenMargin - 12f - v.Upcoming.Length * 44f;
                 UiKit.Text("NextLabel", _boardLayer, _font, v.NextLabel, 28f, DesignTokens.InkSoft, x - 90f, 194f, 84f, 46f, TextAlignmentOptions.Right);
                 for (int i = 0; i < v.Upcoming.Length; i++)
-                    UiKit.Image($"Next{i}", _boardLayer, _chip[v.Upcoming[i]], x + i * 44f, 194f, 34f, 50f);
+                    if (v.Upcoming[i] >= 0) UiKit.Image($"Next{i}", _boardLayer, _chip[v.Upcoming[i]], x + i * 44f, 194f, 34f, 50f);
             }
         }
 
@@ -275,37 +264,6 @@ namespace Game.Views
                 relay.Index = i;
                 relay.Tapped = index => StackTapped?.Invoke(index);
             }
-        }
-
-        /// <summary>The two booster buttons at the bottom (mock-up gameplay-v01 / gameplay-warning-v01).</summary>
-        public void SetBoosters(BoosterVisual undo, BoosterVisual addSlot)
-        {
-            EnsureBuilt();
-            for (int i = _boosterLayer.childCount - 1; i >= 0; i--) Destroy(_boosterLayer.GetChild(i).gameObject);
-            Booster(undo, _iconUndo, 250f, () => UndoPressed?.Invoke());
-            Booster(addSlot, _iconSpace, 660f, () => AddSlotPressed?.Invoke());
-        }
-
-        private void Booster(BoosterVisual b, Sprite icon, float x, Action onPress)
-        {
-            if (!b.Visible) return;
-            float t = DesignTokens.BoosterTile, y = DesignTokens.BoosterBottom + 70f;
-            var tile = UiKit.Image("Booster", _boosterLayer, _boostTile, x, y, t, t + 12f, fromBottom: true);
-            if (!b.Enabled) tile.color = DesignTokens.CoveredTint;
-            UiKit.Image("Icon", tile.transform, icon, 43f, 43f, 84f, 84f).color = b.Enabled ? DesignTokens.Secondary : DesignTokens.Disabled;
-            if (b.Badge != null)
-            {
-                var badge = UiKit.Image("Badge", tile.transform, _badgePrimary, t - 48f, -16f, 64f, 70f, sliced: true);
-                UiKit.Text("Count", badge.transform, _font, b.Badge, 36f, DesignTokens.OnColor, 0f, 0f, 64f, 64f);
-            }
-            else if (b.Price != null)
-            {
-                var tag = UiKit.Image("Price", tile.transform, _priceTag, (t - 120f) / 2f, t - 28f, 120f, 56f, sliced: true);
-                UiKit.Image("Coin", tag.transform, _coin, 8f, 7f, 42f, 42f);
-                UiKit.Text("Amount", tag.transform, _font, b.Price, 30f, DesignTokens.OnColor, 52f, 0f, 64f, 56f, TextAlignmentOptions.Left);
-            }
-            UiKit.Text("Name", tile.transform, _font, b.Name, 28f, DesignTokens.InkSoft, -20f, t + 40f, t + 40f, 40f);
-            UiKit.Button(tile, onPress);
         }
 
         /// <summary>FTUE (features/ftue.md): a hand + ring over <paramref name="pointAt"/> (world rect; empty = no

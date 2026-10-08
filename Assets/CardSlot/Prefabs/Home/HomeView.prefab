@@ -56,7 +56,5 @@ MonoBehaviour:
   - {fileID: 21300000, guid: c58f022a4d2fda04ca544faa88d10fec, type: 3}
   - {fileID: 21300000, guid: 4085bb68b91dcc24c9c4915615c7821a, type: 3}
   _ground: {fileID: 21300000, guid: 7daf6d21ddc4bfe41afc08f48f3a2b02, type: 3}
-  _pill: {fileID: 21300000, guid: 89248605d5aaabb4b9fcd279a36b9e49, type: 3}
-  _coin: {fileID: 21300000, guid: 1573b3c2b977d904da27d39b6ab43606, type: 3}
   _buttonPrimary: {fileID: 21300000, guid: 33684b627971d3e4eb6519afd883a092, type: 3}
   _font: {fileID: 11400000, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}

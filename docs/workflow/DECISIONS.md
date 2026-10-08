@@ -157,3 +157,90 @@ Quyết định (người chốt: Phat):
 - Kiểu bày: thêm **xoè vòng cung** (lá xoay quanh một tâm, lá trên cùng ở đầu cung); chồng thẳng hiện tại vẫn dùng. Xoè hai bên / so le: không làm.
 - Thứ tự: commit 6b trước, rồi làm CR-004: mock-up 3D chồng xoè để duyệt → rồi mới code.
 Ảnh hưởng: luật R-1…R-18, solver, kinh tế, save **không đổi**; 30 level giữ nguyên luật, chỉ có thể thêm trường hiển thị `style` cho chồng (luật bỏ qua); mock-up gameplay 3D lên v03.
+
+### D-027 · 06-10-2026 · Bước 6 · Góc nhìn gần từ trên xuống + chồng lá nghiêng (CR-004)
+Quyết định (người chốt: Phat): camera nhìn **gần như từ trên xuống** — nghiêng **10°** (thay 35° của D-025); trong chồng thẳng, mỗi lá mỏng **lệch liên tục** sang một bên 3.5 đơn vị so với lá dưới (21 / tập 6 lá), chồng ở nửa trái khay nghiêng sang trái, nửa phải nghiêng sang phải; lá dày 9 đơn vị; mọi lá có hoạ tiết mặt.
+Ghi chú: góc gần thẳng đứng làm chiều cao chồng gần như không còn che ô tạm / nhãn đích như ở 35°. Sửa sau: 3.5/lá × 36 lá (6 tập) = 126 — gần bằng chiều rộng một lá, quá nhiều → giảm còn **1.5/lá** (9/tập).
+
+### CR-005 · phát sinh ở Bước 6 (CR-004) · ảnh hưởng GDD v1.2 §2 (R-16, R-17), §4, §7, `economy-sheet.md`, `features/boosters.md`, `features/continue.md`, D-026 (6b)
+Vấn đề: Phat: game tham khảo không có booster; khay bàn chơi có thể kéo xuống chỗ thanh booster.
+Quyết định (người chốt: Phat):
+- Booster: a) **bỏ hẳn** (Undo, Extra Space, thanh booster, dialog mở khoá / mua, giá booster) · b) chỉ ẩn → **a**.
+- Xu: a) chỉ dùng cho Continue · b) **bỏ xu luôn** (HUD, thưởng thắng; Continue chỉ bằng quảng cáo) → **b**.
+Đã làm: xoá `BoosterService`, `CardSlotResources`, `BoosterId`, R-16/R-17 trong `BoardModel` (solver vẫn dùng lịch sử nội bộ), dialog BoosterBuy/BoosterUnlock (manifest + file), key loc booster/xu, placement `rewarded_booster`; `ProgressModel` bỏ `StartCoinsGranted`, `UnlockedBoosters` (chưa phát hành nên không cần migrator); `DesignTokens.TrayHeight` 650 → 960, bố cục level được căn giữa trong khay; `gameplay.restart.note` → "Your progress on this level will be lost."
+Còn lại: sprite booster/xu (`coin`, `icon_undo`, `icon_space`, `boost_tile`…) vẫn trong bộ art, không dùng; ví xu của framework trong save.json máy dev còn số cũ (không hiển thị).
+
+### CR-006 · phát sinh ở Bước 6 (CR-004) · ảnh hưởng GDD v1.3 §2–3, `level-design.md`, 30 level, CR-004 (đơn vị "tập")
+Vấn đề: Phat so khay hold với game tham khảo: khoảng **25–26 rãnh, mỗi rãnh 1 lá đứng dọc**; lúc đó ô tạm của mình đếm theo tập 6 lá và level có 6–14 tập.
+Quyết định (người chốt: Phat): **"làm như game luôn"**.
+Đã làm:
+- Lá được đếm **từng lá** (bỏ hệ số ×6 của CR-004): đích cần **18 lá**, một lần chạm đẩy cả run cùng màu (R-6) — thường là 6 lá hoặc bội của 6; ô tạm **26 rãnh** cho mọi level; Continue +6 rãnh; ô tạm báo đỏ khi còn ≤ 6 rãnh.
+- Luật (BoardModel) không đổi. Level sinh trong không gian "tập" với ô tạm 4 tập rồi `LevelGenerator.ExpandToCards` (×6 lá, đích ×6, ô tạm 26): 26 rãnh tràn đúng ở tập thứ 5 như 4 tập, nên lời giải của level tập thắng level lá từng chạm (test `CR006_…`). 30 level sinh lại (revision 2), solver chứng minh thắng được; `level-report.md` sinh lại — 9 level lệch đường cong > 0.12 (đa số khó hơn mong muốn: 22, 23, 24, 27, 28).
+- `LevelValidator`: ô tạm 1..60, sức chứa đích 2..36, lá mỗi chồng 1..48.
+- Hiển thị: mọi lá là lá mỏng; ô tạm vẽ 26 rãnh, mỗi lá đứng dọc trong một rãnh; nhãn x/18 chuyển xuống dưới bệ đích (không bị lá che).
+
+### CR-007 · phát sinh ở Bước 6 · ảnh hưởng mock-up gameplay 3D v03, art v1 (mặt lá), `animation-list.md` (bay lá), `Board3DView`, `BoardView`
+Vấn đề: Phat quay video game tham khảo (IMG_3748, level 23–25) — game mình sai nhiều chỗ. Ghi chú 11 điểm: `docs/design/reference-video-3748.md`, ảnh `docs/reference/video-3748/`.
+Quyết định (người chốt: Phat):
+- Làm theo game: **đích là cọc**, lá **chữ nhật đứng 3:4 bo góc, viền trắng mảnh, lỗ giữa** (sửa sau: lúc đầu làm vuông — Phat "không phải hình vuông") xỏ vào cọc, cọc đầy **đứng lại một lúc** rồi biến mất, cọc sau thay chỗ · **hàng cọc chờ phía sau** thay chip "next" · **lá bay từng lá thành dòng** khi chạm (kéo từ 6c lên) · **không tô tối** chồng bị che.
+- Phong cách: **giữ Warm Toybox** (D-017) — đổi hình khối theo game (khay phẳng, lá trơn có lỗ), giữ bảng màu.
+- Xu: **giữ không có xu** (CR-005).
+
+### CR-008 · phát sinh ở Bước 6 · ảnh hưởng GDD v1.4 R-6, `LevelData`, 30 level
+Vấn đề / quyết định (người chốt: Phat): **một lần chạm chỉ lấy 6 lá**; cọc cùng màu thì mỗi lần chạm lấy 6 lá, nên run 12 lá cùng màu phải chạm 2 lần.
+Đã làm: `LevelData.MaxRun` (JSON `max_run`, 0 = cả run) — luật (BoardModel R-6) và solver dùng cùng trường nên luôn khớp; sinh level theo tập với `MaxRun = 1`, `ExpandToCards` nhân thành 6; 30 level sinh lại, solver chứng minh thắng được; còn 5 level lệch đường cong > 0.12 (12, 22, 24, 27, 28 — đều khó hơn). Test mới `R6_CR008_…` (run 12 → 2 lần chạm 6).
+
+### CR-009 · phát sinh ở Bước 6 · ảnh hưởng GDD v1.5 R-2, R-9, 30 level
+Vấn đề / quyết định (người chốt: Phat): "khi 1 cột xong, thì cột phía sau di chuyển lên cột trước, chứ không có đổi màu không" — mỗi cột có hàng đợi riêng như game tham khảo.
+Đã làm: `BoardModel` chia `target_queue` theo cột (target i → cột i mod n_slots), `NextColorBehind(slot)` cho cọc hàng sau; dữ liệu level giữ nguyên dạng, chỉ đổi nghĩa ⇒ 30 level sinh lại (solver chứng minh thắng được). Hình: cọc đầy đứng lại, co đi, cọc phía sau trượt lên + lớn ra, rồi cọc mới hiện phía sau. Test mới `CR009_…`, sửa test R-10 cho đúng cột. Độ khó tăng: 11 level lệch đường cong > 0.12 (khó hơn) — cần chỉnh đường cong / tham số sweep khi chơi thử.
+
+### CR-010 · phát sinh ở Bước 6 · ảnh hưởng CR-002 (level khó), GDD §3, `level-design.md` §4, D-023 (đường cong độ khó)
+Quyết định (người chốt: Phat): "hiện tại game không chia độ khó" — **bỏ level khó** (badge HARD trên HUD, tiêu đề "Hard Level Cleared!", cờ `hard` trong level) và **đường cong độ khó không còn là việc phải làm**; sweep vẫn dùng bảng tham số để xếp 30 level nhưng không gắn nhãn khó.
+Đã làm: xoá `LevelData.Hard`, `GenParams.Hard`, `WinInfo.Hard`, key `gameplay.hard`, `win.title_hard`, badge trên HUD; 30 level sinh lại không có trường `hard` (cùng seed, cùng bố cục); bỏ test "cờ hard ở mỗi level thứ 5" (30 ca).
+
+### CR-011 · phát sinh ở Bước 6 · ảnh hưởng `LevelGenerator`, 30 level, `Board3DView` (khay), `level-design.md` §4
+Vấn đề: video game tham khảo IMG_3750 (level 1–5) — ghi chú `docs/design/reference-video-3750.md`, ảnh `docs/reference/video-3750/`.
+Quyết định (người chốt: Phat): làm **khay vừa khít bố cục**, **chồng xếp lưới + lệch như game**, **level đầu dễ như game**. Không làm (lần này): vòng sáng khi cọc đầy.
+Đã làm:
+- Sinh level theo **lưới đều** (bước 176 × 232, tối đa 5 cột × 3 hàng, hàng cuối thiếu thì căn giữa); tầng trên nằm lệch **xuống-phải** (42, 52) so với chồng tầng dưới nên tầng dưới lộ ra ở góc trên-trái; số chồng giảm dần lên trên; hình chữ nhật chồng = một lá (150 × 206).
+- Lá trong chồng lệch **sang phải** 1.5/lá (bỏ "nghiêng về nửa gần").
+- **Khay vừa khít**: rộng / cao theo bố cục + đệm 36 (tối thiểu 560 × 420), căn giữa ngang, chừa thêm phía trên cho chồng cao (do bàn nghiêng 10°).
+- **Level 1–5**: mỗi màu một đích; level 1: 2 cọc 2 màu; level 2–4: 3 cọc 3 màu, chưa có hàng cọc chờ; level 5: 4 màu trên 2 cọc → hàng cọc chờ bắt đầu. Bỏ ràng buộc "level 2 bắt dùng ô tạm" (FTUE đang tắt). Test mới `First_levels_are_easy_like_the_reference`.
+Còn lại: ô tạm vẫn rộng gần hết màn hình (thu hẹp làm rãnh mỏng đi).
+
+### CR-012 · phát sinh ở Bước 6 · ảnh hưởng GDD v1.7 (gần như toàn bộ), `glossary.md`, `level-design.md`, `economy-sheet.md`, `screen-inventory.md`, `features/*`, mock-up (Bước 2), art v1 (Bước 3), `animation-list.md` (Bước 4), `BoardModel` + solver + `LevelGenerator` + 30 level (Bước 5), save, CR-005, CR-008 — **Phat chốt 08-10-2026: làm theo GDD anh Tánh** (xem "Đã chốt" cuối mục)
+Vấn đề: Phat đưa GDD "Card Slots" của anh Tánh (https://hvtanh07.github.io/Card-Slot-GDD/, bản chụp `docs/design/reference-gdd-tanh.md`) và chọn mở CR theo GDD này. GDD đó lệch GDD v1.7 ở luật lõi, có lại booster + xu (ngược CR-005), thêm tim, revive bằng Remove, RV Slot, 3 element, thanh tiến độ mở element, FTUE mới, 8 màu, bảng SFX/rung, remote config.
+Khuyến nghị chung: commit phần CR-004…CR-011 đang chờ duyệt **trước**, rồi làm CR-012 theo từng giai đoạn (dưới), mỗi giai đoạn qua cổng duyệt riêng; GDD lên **v2.0** sau khi chốt mục 1–4.
+
+Cần chốt (khuyến nghị in đậm):
+1. **Vai trò GDD anh Tánh.** **a) là nguồn chuẩn: viết lại GDD.md thành v2.0 theo nó, chỗ GDD đó chưa nói thì giữ v1.7** · b) chỉ lấy từng phần Phat chọn.
+2. **Màu trong chồng.** Hiện tại: chồng nhiều màu, chạm lấy run cùng màu trên cùng tối đa 6 lá (CR-008); level 12 có 7/9 chồng nhiều màu. GDD: "lá cùng màu nằm chung một chồng". **a) mỗi chồng một màu, chạm gửi cả chồng (bỏ `max_run`)** · b) mỗi chồng một màu nhưng vẫn lấy tối đa 6 lá mỗi lần chạm · c) giữ chồng nhiều màu (bỏ qua câu này của GDD). Ghi chú: video IMG_3748 (CR-008) thấy chạm lấy 6 lá — nên hỏi anh Tánh kích thước chồng thường gặp.
+3. **Chồng che.** Hiện tại (R-3): mọi chồng tầng cao hơn giao nhau đều che. GDD: chỉ chồng **khác màu** mới che. **a) theo GDD** · b) giữ R-3.
+4. **Thua khi ô chờ đầy.** Hiện tại (R-12): lá không còn chỗ trong ô chờ ⇒ thua ngay (tràn). GDD: thua khi ô chờ đầy **và** không còn nước đi khớp màu — GDD không nói khi một lần chạm có nhiều lá hơn số ô trống. a) chồng không vừa ô trống thì không cho chạm (chồng rung) · b) lá điền tới khi đầy, phần dư ở lại chồng · c) giữ tràn = thua. **Hỏi anh Tánh; nếu cần chốt ngay: c**, vì a/b đổi cảm giác chơi mà GDD không mô tả.
+5. **Revive.** Hiện tại: Continue bằng quảng cáo, +6 ô chờ, 1 lần / attempt. GDD: 2 lần Remove miễn phí lên cọc đáy ít lá nhất, lặp tới khi hết kẹt; remote config có giá lần đầu + hệ số tăng + tối đa mỗi level. **a) theo GDD, trả bằng quảng cáo thưởng hoặc xu (giá tăng dần), tối đa theo remote config** · b) theo GDD nhưng chỉ bằng quảng cáo.
+6. **RV Slot.** **a) theo GDD: 2 lần / level, mỗi lần +8 ô, nút nằm cạnh ô chờ** · b) không làm.
+7. **Booster (ngược CR-005a).** **a) làm lại Hand (L5), Shuffle (L8), Remove (L10), mỗi loại tặng 3, có popup mở khoá** · b) không làm. Tên booster bán trong remote config (Paper Box / Magnet) lệch Hand / Shuffle — **hỏi anh Tánh; tạm dùng Hand / Shuffle / Remove**. Shuffle là ngẫu nhiên lúc chơi ⇒ R-15 đổi: model nhận `IRandom` (rule #14), seed ghi log.
+8. **Xu (ngược CR-005b).** **a) có lại xu: thưởng thắng, nhân thưởng bằng quảng cáo, mua booster, trả revive** · b) không có xu (booster chỉ nhận từ tặng / quảng cáo). Giá trị: AI đề xuất trong `economy-sheet.md` v2, Phat duyệt.
+9. **Tim.** **a) theo GDD: 5 tim, hồi 20 phút, mất khi thua-chơi-lại / restart / thoát về Home; hết tim thì có màn chờ** (cần mock-up mới) · b) không làm. Ghi chú: tính năng theo thời gian ⇒ trường hợp biên "đổi giờ máy" phải xử lý (dùng giờ lưu + chặn quay ngược).
+10. **Element + thanh tiến độ.** **a) làm cả 3 (L7, L12, L17) + thanh tiến độ trên màn Win** · b) chỉ thanh tiến độ khi có element. Generator, solver và 30 level phải hỗ trợ element; level 7–30 sinh lại.
+11. **FTUE.** **a) bật lại FTUE theo GDD: bước T&C / Privacy, 3 bước chạm có highlight + input masking, lưu bước; popup element / booster** · b) giữ tắt. T&C cần link thật (ai cung cấp?).
+12. **Số màu.** Level hiện dùng 6 màu (`color_0`…`color_5`). **a) 8 màu theo GDD (thêm 2 màu vào token + art, giữ Warm Toybox)** · b) giữ 6.
+13. **SFX / rung, animation, remote config.** **a) theo bảng GDD; remote config dùng ConfigKey của framework, giá trị mặc định do AI đề xuất** · b) để sau.
+14. **Chỗ GDD chưa nói** — giữ của v1.7 cho tới khi anh Tánh bổ sung: cọc 18 lá, 3 cột, ô chờ 26 rãnh, 30 level, chạm khi đang có hoạt ảnh vẫn nhận (R-8). **a) giữ** · b) hỏi anh Tánh trước khi làm.
+
+Giai đoạn đề xuất (mỗi giai đoạn: tài liệu → mock-up nếu có màn mới → code + test headless → play mode xem → duyệt):
+- A. Luật lõi (mục 2, 3, 4, 12) → `BoardModel`, solver, generator, 30 level sinh lại.
+- B. Revive + RV Slot (5, 6).
+- C. Xu + booster (7, 8).
+- D. Element + thanh tiến độ (10).
+- E. Tim (9).
+- F. FTUE (11).
+- G. SFX / rung / remote config (13).
+
+Phần phía sau cần kiểm tra lại: GDD → v2.0 + lịch sử; `glossary.md` (pole, queue, waiting slot, element, booster); `level-design.md`; `economy-sheet.md` v2; `screen-inventory.md` (hết tim, T&C, popup element / booster, thanh tiến độ, nút RV Slot); mock-up mới; art (icon booster cũ không dùng lại được — Hand / Shuffle / Remove khác Undo / Extra Space; tim; băng; khói; 2 màu mới); `animation-list.md`; save (chưa phát hành ⇒ chưa cần migrator, như CR-005); test headless (R-3, R-6, R-12, R-15, R-18 đổi).
+
+Đã chốt (người chốt: Phat, 08-10-2026): **"mình làm theo GDD của Tánh"** ⇒ mục 1 = a (GDD anh Tánh là nguồn chuẩn, GDD.md lên v2.0); mục 2, 3, 5–13 = phương án theo GDD (a); booster dùng tên Hand / Shuffle / Remove như thân GDD. Mục 14 = a (chỗ GDD chưa nói giữ của v1.7 — đúng theo 1a). Mục 4 = **c (tràn = thua, giữ R-12)** cho tới khi anh Tánh bổ sung. Thứ tự: commit CR-004…CR-011 trước (D-028), rồi làm giai đoạn A.
+
+### D-028 · 08-10-2026 · Bước 6 · Duyệt CR-004…CR-011 và D-027
+Quyết định (người chốt: Phat): duyệt phần đã làm của CR-004…CR-011 và D-027 (lá mỏng, bỏ booster + xu, đích 18 / ô tạm 26, cọc + lá có lỗ + bay từng lá, chạm lấy tối đa 6 lá, hàng đợi theo cột, bỏ độ khó, lưới + khay vừa khít, camera 10°) để commit trước khi bắt đầu CR-012.
+Ghi chú: CR-012 sẽ đảo một phần (CR-005 booster + xu, CR-008 `max_run`) — commit này là mốc để quay lại nếu cần.
