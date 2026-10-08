@@ -18,8 +18,8 @@ namespace Game.Presentation
     /// <summary>
     /// The Gameplay screen controller: loads the level, owns the attempt's <see cref="BoardModel"/>, turns taps
     /// into rules and the model into visuals, and runs the flows of milestone 6b — win/lose dialogs with
-    /// Continue (rewarded ad), pause/settings, restart confirm and the level 1–2 tutorial (features/*.md).
-    /// No boosters and no coins (CR-005). Progress is saved before anything shows it (G18, G19), and a dialog that
+    /// Revive and RV Slot (rewarded ads, CR-012 stage B), pause/settings, restart confirm and the level 1–2 tutorial
+    /// (features/*.md). No boosters and no coins yet (stage C). Progress is saved before anything shows it (G18, G19), and a dialog that
     /// comes back <see cref="DialogCloseReason.Aborted"/> changes nothing.
     /// </summary>
     public sealed class GameplayScreen : ScreenBase
@@ -79,6 +79,7 @@ namespace Game.Presentation
             _view.StackTapped += OnStackTapped;
             _view.RestartPressed += () => Guard(ConfirmRestart);
             _view.PausePressed += () => Guard(Pause);
+            _view.RvSlotPressed += () => Guard(RvSlotDuringPlay);
             await StartLevel(Mathf.Clamp(_param.Level, 1, Mathf.Max(1, _levelCount)), ct);
         }
 
@@ -263,16 +264,19 @@ namespace Game.Presentation
             _adPacing.RecordInterstitialShown();
         }
 
-        // ── lose / continue ───────────────────────────────────────────────────────────────────────────
+        // ── lose: Revive / RV Slot (CR-012 stage B) ───────────────────────────────────────────────────
         private async UniTask Lost()
         {
             _view.HideTutorial();
             await AnimationsDone();
-            bool adReady = await _ads.IsReadyAsync(AdPlacements.RewardedContinue);
+            bool adReady = await _ads.IsReadyAsync(AdPlacements.RewardedRevive);
+            string unavailable = adReady ? null : _loc.Get(LocKeys.AdsNotAvailable);
             var args = new LoseArgs(
-                _board.CanContinue,
-                _loc.Get(LocKeys.LoseTitle),
-                _loc.Get(adReady ? LocKeys.LoseContinueFree : LocKeys.AdsNotAvailable), adReady,
+                _loc.Get(_board.Loss == BoardLoss.Stuck ? LocKeys.LoseTitleStuck : LocKeys.LoseTitle),
+                _board.CanRevive ? unavailable ?? _loc.Get(LocKeys.LoseRevive) : null,
+                _loc.Get(LocKeys.LoseReviveNote, _board.ReviveRemoves),
+                _board.CanRvSlot ? unavailable ?? _loc.Get(LocKeys.LoseRvSlot, _board.RvSlotAmount) : null,
+                adReady,
                 _loc.Get(LocKeys.LoseNoThanks),
                 _loc.Get(LocKeys.LoseFailedTitle), _loc.Get(LocKeys.LoseSubtitle, _level), _loc.Get(LocKeys.LoseRetry), _loc.Get(LocKeys.LoseHome),
                 Fan());
@@ -280,15 +284,13 @@ namespace Game.Presentation
             if (result.Reason == DialogCloseReason.Aborted) return;
             switch (result.Value)
             {
-                case LoseChoice.ContinueAd:
-                    if (await _ads.ShowAsync(AdPlacements.RewardedContinue, _cts.Token) == AdResult.Rewarded)   // reward only on completion (G19)
-                    {
-                        _lastAdTime = Time.realtimeSinceStartup;
-                        var cont = _board.Continue();
-                        Flights(cont);                                   // keeps the holding grooves in step; drawn without flights
-                        await AfterContinue(cont.Count > 0);
-                    }
+                case LoseChoice.ReviveAd:
+                    if (await Rewarded(AdPlacements.RewardedRevive)) await AfterRescue(_board.Revive());
                     else await Lost();                                    // ad cancelled: back to the offer
+                    break;
+                case LoseChoice.RvSlotAd:
+                    if (await Rewarded(AdPlacements.RewardedRvSlot)) await AfterRescue(_board.RvSlot());
+                    else await Lost();
                     break;
                 case LoseChoice.Retry:
                     await Restart(_level);
@@ -299,11 +301,26 @@ namespace Game.Presentation
             }
         }
 
-        // called from inside the Lost flow (busy): chain the next flow directly instead of through Guard
-        private async UniTask AfterContinue(bool continued)
+        // R-23 from the board's button while playing: more holding cells, nothing else moves
+        private async UniTask RvSlotDuringPlay()
         {
-            Draw();
-            if (!continued) return;
+            if (_board == null || _board.Result != BoardResult.Playing || !_board.CanRvSlot) return;
+            if (!await _ads.IsReadyAsync(AdPlacements.RewardedRvSlot)) return;   // not ready: the button simply does nothing
+            if (await Rewarded(AdPlacements.RewardedRvSlot)) { _board.RvSlot(); Draw(); }
+        }
+
+        // reward only on completion (G19)
+        private async UniTask<bool> Rewarded(AdPlacement placement)
+        {
+            if (await _ads.ShowAsync(placement, _cts.Token) != AdResult.Rewarded) return false;
+            _lastAdTime = Time.realtimeSinceStartup;
+            return true;
+        }
+
+        // called from inside the Lost flow (busy): chain the next flow directly instead of through Guard
+        private async UniTask AfterRescue(IReadOnlyList<BoardStep> steps)
+        {
+            Draw(Flights(steps));
             if (_board.Result == BoardResult.Won) await Won();
             else if (_board.Result == BoardResult.Lost) await Lost();
         }
@@ -420,6 +437,8 @@ namespace Game.Presentation
                 HoldingLabel = _loc.Get(LocKeys.GameplayHoldingArea),
                 BufferCountLabel = _loc.Get(LocKeys.GameplayBufferCount, _board.Buffer.Count, _board.BufferCapacity),
                 NextLabel = _loc.Get(LocKeys.GameplayNext),
+                // R-23: offered on the board only while playing; after a loss the lose dialog offers it
+                RvSlotLabel = _board.Result == BoardResult.Playing && _board.CanRvSlot ? _loc.Get(LocKeys.GameplayRvSlot, _board.RvSlotAmount) : null,
             };
             for (int i = 0; i < _board.StackCount; i++)
             {

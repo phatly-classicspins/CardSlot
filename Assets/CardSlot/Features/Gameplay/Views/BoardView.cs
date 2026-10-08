@@ -59,6 +59,8 @@ namespace Game.Views
         public int[] BufferGrooves = Array.Empty<int>();
         public bool BufferWarn;
         public string HoldingLabel, BufferCountLabel, NextLabel;
+        /// <summary>R-23: the RV Slot button label ("+8 slots"), or null to hide the button (none left, or not playing).</summary>
+        public string RvSlotLabel;
     }
 
     /// <summary>
@@ -89,6 +91,8 @@ namespace Game.Views
         [SerializeField] private Sprite _roundButton;
         [SerializeField] private Sprite _iconPause;
         [SerializeField] private Sprite _iconRestart;
+        [SerializeField] private Sprite _buttonPrimary;
+        [SerializeField] private Sprite _iconPlay;
         [SerializeField] private Sprite _hand;
         [SerializeField] private Sprite _ring;
         [SerializeField] private TMP_FontAsset _font;
@@ -96,7 +100,7 @@ namespace Game.Views
         [SerializeField] private bool _draw2DBoard = true;
 
         public event Action<int> StackTapped;
-        public event Action PausePressed, RestartPressed;
+        public event Action PausePressed, RestartPressed, RvSlotPressed;
 
         private RectTransform _root, _boardLayer, _tutorialLayer;
         private TextMeshProUGUI _levelLabel;
@@ -183,7 +187,22 @@ namespace Game.Views
             UiKit.Text("HoldingLabel", _boardLayer, _font, v.HoldingLabel, DesignTokens.TypeLabel, DesignTokens.InkSoft, m + 30f, DesignTokens.BufferLabelTop, 400f, 40f, TextAlignmentOptions.Left);
             UiKit.Text("BufferCount", _boardLayer, _font, v.BufferCountLabel, DesignTokens.TypeLabel, v.BufferWarn ? DesignTokens.DangerText : DesignTokens.Ink,
                 1080f - m - 30f - 300f, DesignTokens.BufferLabelTop, 300f, 40f, TextAlignmentOptions.Right);
+            if (v.RvSlotLabel != null) DrawRvSlot(v.RvSlotLabel);
             // CR-007: the queue is drawn as the back row of pegs in Board3DView, not as chips
+        }
+
+        // R-23 (CR-012 stage B): a small primary pill above the holding rail, right of centre, clear of the pegs: ad icon + "+8 slots"
+        private void DrawRvSlot(string label)
+        {
+            const float w = 260f, h = 58f, x = 620f, y = DesignTokens.BufferLabelTop - 14f;
+            var img = UiKit.Image("RvSlot", _boardLayer, _buttonPrimary, x, y, w, h, sliced: true, raycast: true);
+            float s = 26f;
+            var t = UiKit.Text("Label", img.transform, _font, label, DesignTokens.TypeLabel, DesignTokens.OnColor, 0f, 0f, w, h - 8f);
+            float labelWidth = t.GetPreferredValues(label).x, total = s + 10f + labelWidth;
+            t.rectTransform.anchoredPosition = new Vector2((w - total) / 2f + s + 10f, 0f);
+            t.rectTransform.sizeDelta = new Vector2(labelWidth + 4f, h - 8f);
+            UiKit.Image("Icon", img.transform, _iconPlay, (w - total) / 2f, (h - 8f - s) / 2f, s, s).color = DesignTokens.OnColor;
+            UiKit.Button(img, () => RvSlotPressed?.Invoke());
         }
 
         private void DrawTargets(BoardVisual v)

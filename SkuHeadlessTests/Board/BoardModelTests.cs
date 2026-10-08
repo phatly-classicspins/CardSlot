@@ -237,49 +237,86 @@ namespace CardSlot.SkuHeadlessTests.Board
             Assert.That(Run(), Is.EqualTo(Run()));
         }
 
-        // R-16 / R-17 (Undo, Extra Space) removed with the boosters (CR-005). R-18 Continue stays until Revive and
-        // RV Slot replace it (CR-012 stage B).
+        // R-16 / R-17 (Undo, Extra Space) removed with the boosters (CR-005); R-18 Continue replaced by R-22 / R-23.
 
+        // ── R-19 / R-22 Revive ──────────────────────────────────────────────────────────────────────────
         [Test]
-        public void R18_continue_places_the_overflowing_card_and_the_rest_of_its_stack_once()
+        public void R22_revive_removes_the_two_emptiest_poles_then_places_the_pending_cards()
         {
-            var l = Level(2, 6, new[] { T(0), T(0), T(1) }, S("bl", 0, 1, 3), S("r", 1, 0, 6));
-            var b = new BoardModel(l, new BoardRules { ContinueSlotAmount = 4, ContinueMaxPerAttempt = 1 }, 2);
+            // slots: red, blue; yellow waits behind red. Three yellows into a buffer of 2: the third overflows.
+            var l = Level(2, 2, new[] { T(0), T(1), T(2) }, S("y", 0, 2, 3), S("r", 1, 0, 3), S("b", 2, 1, 3));
+            var b = new BoardModel(l);
             b.Tap(0);
-            Assert.That(b.CanContinue, Is.True);
-            var steps = b.Continue();
-            Assert.That((b.Result, b.Loss), Is.EqualTo((BoardResult.Playing, BoardLoss.None)));
-            Assert.That(b.BufferCapacity, Is.EqualTo(6));
-            Assert.That(steps.Count(s => s.Kind == BoardStepKind.CardToBuffer), Is.EqualTo(1));
-            Assert.That(b.Buffer.Count, Is.EqualTo(3));
-            b.Tap(1);                        // reds clear both red targets, blue enters and takes the buffer
+            Assert.That((b.Result, b.Loss, b.CanRevive), Is.EqualTo((BoardResult.Lost, BoardLoss.Overflow, true)));
+            var steps = b.Revive();
+            // red (leftmost of two empty poles) pulls the red stack and leaves; yellow moves up and takes the 2 held;
+            // blue is now the emptiest and pulls the blue stack; the pending yellow completes yellow
+            Assert.That(steps.Count(s => s.Kind == BoardStepKind.TargetCompleted), Is.EqualTo(3));
+            Assert.That(steps.Count(s => s.Kind == BoardStepKind.BufferToTarget), Is.EqualTo(2));
+            Assert.That((b.Remaining(1), b.Remaining(2)), Is.EqualTo((0, 0)), "Remove took the red and blue stacks off the table");
             Assert.That(b.Result, Is.EqualTo(BoardResult.Won));
         }
 
         [Test]
-        public void R18_continue_after_stuck_adds_room_and_play_goes_on()
+        public void R22_revive_keeps_removing_one_more_pole_while_still_stuck_and_reports_no_loss_in_between()
         {
-            var b = new BoardModel(StuckLevel(), new BoardRules { ContinueSlotAmount = 4, ContinueMaxPerAttempt = 1 });
-            b.Tap(0);
-            Assert.That(b.CanContinue, Is.True);
-            b.Continue();
-            Assert.That((b.Result, b.BufferCapacity), Is.EqualTo((BoardResult.Playing, 6)));
-            Assert.That(b.Tap(4), Is.Not.Empty, "green fits in the buffer now");
+            var b = new BoardModel(StuckLevel(), new BoardRules { ReviveRemoves = 0 });
+            b.Tap(0);                                    // stuck: buffer full of yellow, yellow 1 and green would overflow
+            var steps = b.Revive();
+            Assert.That(b.Result, Is.EqualTo(BoardResult.Playing));
+            Assert.That(steps.Any(s => s.Kind == BoardStepKind.Lost || s.Kind == BoardStepKind.Overflow), Is.False);
+            Assert.That(b.Remaining(2), Is.EqualTo(0), "red (covered by green) was pulled by the one extra Remove");
+            Assert.That((b.SlotColor(0), b.Buffer.Count), Is.EqualTo((2, 0)), "yellow moved up and took the held cards");
         }
 
         [Test]
-        public void R18_continue_is_only_after_a_loss_and_limited_per_attempt()
+        public void R22_revive_is_only_after_a_loss_and_limited_per_attempt()
         {
-            var b = new BoardModel(Level(2, 6, new[] { T(0), T(1) }, S("a", 0, 0, 3), S("b", 1, 1, 3)));
-            Assert.That(b.CanContinue, Is.False);
-            Assert.That(b.Continue(), Is.Empty);
-            var l = Level(2, 6, new[] { T(0), T(0), T(1), T(2) }, S("bl", 0, 1, 3), S("y", 1, 2, 3), S("r", 2, 0, 6));
-            var c = new BoardModel(l, new BoardRules { ContinueSlotAmount = 1, ContinueMaxPerAttempt = 1 }, 2);
-            c.Tap(0);                        // 2 blue in, third overflows
-            c.Continue();                    // +1 → 3 slots, blue in
-            c.Tap(1);                        // yellow overflows again
-            Assert.That(c.Result, Is.EqualTo(BoardResult.Lost));
-            Assert.That(c.CanContinue, Is.False);
+            var l = Level(2, 1, new[] { T(0), T(1), T(2), T(3) }, S("y", 0, 2, 3), S("g", 1, 3, 3), S("r", 2, 0, 3), S("b", 3, 1, 3));
+            var b = new BoardModel(l, new BoardRules { ReviveRemoves = 1, ReviveMaxPerAttempt = 1 }, 1);
+            Assert.That(b.CanRevive, Is.False);
+            Assert.That(b.Revive(), Is.Empty);
+            b.Tap(0);                                    // yellow: 1 held, 2 pending
+            b.Revive();                                  // red leaves, yellow moves up and completes
+            Assert.That(b.Result, Is.EqualTo(BoardResult.Playing));
+            b.Tap(1);                                    // green has no pole yet: overflows again
+            Assert.That((b.Result, b.CanRevive), Is.EqualTo((BoardResult.Lost, false)));
+        }
+
+        // ── R-23 RV Slot ────────────────────────────────────────────────────────────────────────────────
+        [Test]
+        public void R23_rv_slot_while_playing_adds_cells_up_to_the_limit()
+        {
+            var b = new BoardModel(Level(2, 6, new[] { T(0), T(1) }, S("a", 0, 0, 3), S("b", 1, 1, 3)), new BoardRules { RvSlotAmount = 8, RvSlotMaxPerAttempt = 2 });
+            Assert.That(b.RvSlotsLeft, Is.EqualTo(2));
+            b.RvSlot(); b.RvSlot();
+            Assert.That((b.BufferCapacity, b.RvSlotsLeft, b.CanRvSlot), Is.EqualTo((22, 0, false)));
+            Assert.That(b.RvSlot(), Is.Empty);
+        }
+
+        [Test]
+        public void R23_rv_slot_after_an_overflow_places_the_pending_cards_and_play_goes_on()
+        {
+            var l = Level(2, 6, new[] { T(0), T(0), T(1) }, S("bl", 0, 1, 3), S("r", 1, 0, 6));
+            var b = new BoardModel(l, new BoardRules { RvSlotAmount = 8 }, 2);
+            b.Tap(0);
+            Assert.That(b.CanRvSlot, Is.True);
+            var steps = b.RvSlot();
+            Assert.That((b.Result, b.Loss, b.BufferCapacity), Is.EqualTo((BoardResult.Playing, BoardLoss.None, 10)));
+            Assert.That(steps.Count(s => s.Kind == BoardStepKind.CardToBuffer), Is.EqualTo(1));
+            b.Tap(1);                        // reds clear both red poles, blue moves up and takes the buffer
+            Assert.That(b.Result, Is.EqualTo(BoardResult.Won));
+        }
+
+        [Test]
+        public void R23_rv_slot_after_stuck_adds_room_so_a_tap_fits_again()
+        {
+            var b = new BoardModel(StuckLevel(), new BoardRules { RvSlotAmount = 4 });
+            b.Tap(0);
+            Assert.That(b.CanRvSlot, Is.True);
+            b.RvSlot();
+            Assert.That((b.Result, b.BufferCapacity), Is.EqualTo((BoardResult.Playing, 6)));
+            Assert.That(b.Tap(4), Is.Not.Empty, "green fits in the buffer now");
         }
     }
 }

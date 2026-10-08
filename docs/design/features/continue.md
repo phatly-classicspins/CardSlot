@@ -1,4 +1,4 @@
-# Spec: Thua → Continue
+# Spec: Thua → Continue (hết hiệu lực — thay bằng `revive.md`, CR-012 giai đoạn B)
 
 > v1.0 · Bước 1 · đã duyệt (Phat, 06-10-2026). Luật: R-12, R-18. Con số: `economy-sheet.md` §2.
 

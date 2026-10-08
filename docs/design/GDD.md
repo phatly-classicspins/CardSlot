@@ -68,7 +68,7 @@ Lặp cho tới khi không còn gì thay đổi:
 Booster dùng được khi kết quả là `playing`, hoặc ở màn thua (khi đó nếu booster làm hết kẹt thì kết quả về `playing`). Booster không tính là `tap`.
 
 - ~~**R-16 Undo**~~, ~~**R-17 Extra Space**~~ (bỏ ở CR-005; v2.0 không dùng lại).
-- ~~**R-18 Continue**~~ (bỏ ở v2.0, thay bằng Revive R-22 và RV Slot R-23). Code giữ Continue (+6 ô, 1 lần) **tạm thời** tới giai đoạn B; từ giai đoạn A nó dùng được cả khi thua do kẹt.
+- ~~**R-18 Continue**~~ (bỏ ở v2.0, thay bằng Revive R-22 và RV Slot R-23 — code xong ở giai đoạn B).
 - **R-19 Remove** (mở ở level 10). Người chơi chọn **bất kỳ** `target` nào — ở đáy hoặc trong hàng chờ, kể cả Hidden (lộ màu ngay). `target` đó lấy lá cùng màu cho tới đầy, theo thứ tự:
   1. **[XÁC NHẬN]** `pending` rồi `buffer` (FIFO) — GDD chỉ nói "từ bàn"; lấy ô chờ trước vì đó là chỗ người chơi đang kẹt.
   2. Chồng thường không bị che → chồng thường bị che → chồng Hidden → chồng Locked (bị lấy thì mở khoá ngay).
@@ -110,7 +110,7 @@ Booster dùng được khi kết quả là `playing`, hoặc ở màn thua (khi 
 | Tính năng | Spec | Giai đoạn CR-012 |
 |---|---|---|
 | Gameplay lõi + HUD | `features/core-gameplay.md` v2 | A |
-| Revive, RV Slot | `features/continue.md` → `features/revive.md` | B |
+| Revive, RV Slot | `features/revive.md` (thay `continue.md`) | B — xong, chờ duyệt |
 | Xu, booster Hand / Shuffle / Remove, mua booster | `features/boosters.md` v2, `economy-sheet.md` v2 | C |
 | Element + thanh tiến độ mở element | `features/elements.md` (mới) | D |
 | Tim | `features/lives.md` (mới) | E |

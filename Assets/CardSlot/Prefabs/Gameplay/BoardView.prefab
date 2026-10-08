@@ -106,6 +106,8 @@ MonoBehaviour:
   _roundButton: {fileID: 21300000, guid: fd0f129d418b9de459ac9f95f27a4464, type: 3}
   _iconPause: {fileID: 21300000, guid: 95ad5b0d56320414a9e4f5d23f9bb01d, type: 3}
   _iconRestart: {fileID: 21300000, guid: 606e3b01f5de1a249b13ff50e28f6185, type: 3}
+  _buttonPrimary: {fileID: 21300000, guid: 33684b627971d3e4eb6519afd883a092, type: 3}
+  _iconPlay: {fileID: 21300000, guid: a2e6b9a51b0f49940862e9be6ad0c7ff, type: 3}
   _hand: {fileID: 21300000, guid: b14c3eb3880fbf141a03caf764bdddc5, type: 3}
   _ring: {fileID: 21300000, guid: 4ac879da17696924aa1d70334cad3216, type: 3}
   _font: {fileID: 11400000, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}

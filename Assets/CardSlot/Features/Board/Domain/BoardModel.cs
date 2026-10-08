@@ -46,16 +46,19 @@ namespace Game.Domain
             $"{Kind}(stack {Stack}, slot {Slot}, buf {BufferIndex}, colour {Color}, {Filled}/{Capacity})";
     }
 
-    /// <summary>Continue amounts/limits — tuning data, passed in by the caller. Continue (R-18) stays until
-    /// Revive / RV Slot replace it (CR-012 stage B).</summary>
+    /// <summary>Revive / RV Slot amounts and limits (GDD v2.0 §2.8, §7) — tuning data, passed in by the caller.</summary>
     public sealed class BoardRules
     {
-        public int ContinueSlotAmount = 4;
-        public int ContinueMaxPerAttempt = 1;
+        /// <summary>R-22: targets a revive removes for free before placing the pending cards.</summary>
+        public int ReviveRemoves = 2;
+        public int ReviveMaxPerAttempt = 3;
+        /// <summary>R-23: holding cells one RV Slot adds.</summary>
+        public int RvSlotAmount = 8;
+        public int RvSlotMaxPerAttempt = 2;
     }
 
     /// <summary>
-    /// The rules of one attempt at a level (GDD v2.0 §2, R-2…R-15, R-18). Engine-free and deterministic: the final
+    /// The rules of one attempt at a level (GDD v2.0 §2, R-2…R-15, R-19 Remove, R-22 Revive, R-23 RV Slot). Engine-free and deterministic: the final
     /// state depends only on the level and the sequence of taps (R-15). Every mutation returns the steps
     /// the view needs to animate it; no rule waits on a view.
     /// </summary>
@@ -87,8 +90,8 @@ namespace Game.Domain
         // CR-009: the queue is dealt into columns — target i waits behind slot i % Slots — and a completed
         // slot takes the next target of its own column (the reference: the peg behind moves forward)
         private int[] _columnNext;
-        private int _continuesUsed;
-        // the run left unplaced when the buffer overflowed — Continue places it (R-18)
+        private int _revivesUsed, _rvSlotsUsed;
+        // the cards left unplaced when the buffer overflowed (R-7.2) — Revive / RV Slot place them
         private int _pendingStack = -1, _pendingColor = -1, _pendingCount;
 
         public BoardModel(LevelData level, BoardRules rules = null, int? bufferCapacityOverride = null)
@@ -118,9 +121,15 @@ namespace Game.Domain
         public int SlotCount => _slots.Length;
         public int QueuedTargets { get { int used = 0; foreach (int c in _columnNext) used += c; return _level.Targets.Count - used; } }
         public int TapCount { get; private set; }
-        /// <summary>After an overflow, or when stuck with a tap still possible (more room lets it through).</summary>
-        public bool CanContinue => Result == BoardResult.Lost && _continuesUsed < _rules.ContinueMaxPerAttempt
-                                   && (_pendingCount > 0 || AnyTappable());
+        /// <summary>R-22: after any loss, while revives are left this attempt.</summary>
+        public bool CanRevive => Result == BoardResult.Lost && _revivesUsed < _rules.ReviveMaxPerAttempt;
+        /// <summary>R-23: while playing, or after a loss that more room can undo (cards still to place, or a stack
+        /// that can still be tapped).</summary>
+        public bool CanRvSlot => _rvSlotsUsed < _rules.RvSlotMaxPerAttempt
+                                 && (Result == BoardResult.Playing || Result == BoardResult.Lost && (_pendingCount > 0 || AnyTappable()));
+        public int RvSlotsLeft => Math.Max(0, _rules.RvSlotMaxPerAttempt - _rvSlotsUsed);
+        public int RvSlotAmount => _rules.RvSlotAmount;
+        public int ReviveRemoves => _rules.ReviveRemoves;
 
         public int Remaining(int stack) => _level.Stacks[stack].Count - _removed[stack];
         /// <summary>Colour of the card <paramref name="depth"/> below the current top (0 = top) — every card of a
@@ -179,14 +188,52 @@ namespace Game.Domain
             PlaceRun(stack, _level.Stacks[stack].Color, count);
         }
 
-        /// <summary>R-18: after an overflow, add space, put the overflowing card in the buffer and keep
-        /// placing the rest of the stack; when stuck (R-13), add space so a tap fits again.</summary>
-        public IReadOnlyList<BoardStep> Continue()
+        /// <summary>R-23 RV Slot: add holding cells. While playing that is all; after a loss the pending cards are
+        /// placed and play goes on unless it is still lost.</summary>
+        public IReadOnlyList<BoardStep> RvSlot()
         {
             _steps.Clear();
-            if (!CanContinue) return Array.Empty<BoardStep>();
-            _continuesUsed++;
-            BufferCapacity += _rules.ContinueSlotAmount;
+            if (!CanRvSlot) return Array.Empty<BoardStep>();
+            _rvSlotsUsed++;
+            BufferCapacity += _rules.RvSlotAmount;
+            if (Result == BoardResult.Lost) Resume();
+            return _steps.ToArray();
+        }
+
+        /// <summary>
+        /// R-22 Revive: free Removes (R-19) on the <see cref="BoardRules.ReviveRemoves"/> slot targets holding the
+        /// fewest cards (leftmost first), then the pending cards are placed; while it is still lost, one more free
+        /// Remove and again — until play goes on, the level is won, or no target is left. Loss steps of the
+        /// intermediate rounds are dropped: only the final outcome is reported.
+        /// </summary>
+        public IReadOnlyList<BoardStep> Revive()
+        {
+            _steps.Clear();
+            if (!CanRevive) return Array.Empty<BoardStep>();
+            _revivesUsed++;
+            int removes = _rules.ReviveRemoves;
+            while (true)
+            {
+                for (int k = 0; k < removes; k++)
+                {
+                    int slot = FewestFilledSlot();
+                    if (slot < 0) break;
+                    RemoveTarget(slot);
+                }
+                int mark = _steps.Count;
+                Resume();
+                if (Result != BoardResult.Lost || FewestFilledSlot() < 0) break;
+                // still lost: drop this round's loss report (the cards it placed did move), remove one more
+                for (int i = _steps.Count - 1; i >= mark; i--)
+                    if (_steps[i].Kind == BoardStepKind.Lost || _steps[i].Kind == BoardStepKind.Overflow) _steps.RemoveAt(i);
+                removes = 1;
+            }
+            return _steps.ToArray();
+        }
+
+        // back to playing, place what the overflow left, then win / stuck as usual
+        private void Resume()
+        {
             Result = BoardResult.Playing;
             Loss = BoardLoss.None;
             if (_pendingCount > 0)
@@ -196,7 +243,66 @@ namespace Game.Domain
                 PlaceRun(stack, color, count);
             }
             else CheckEnd();
-            return _steps.ToArray();
+        }
+
+        private int FewestFilledSlot()
+        {
+            int best = -1;
+            for (int s = 0; s < _slots.Length; s++)
+                if (_slots[s].Has && (best < 0 || _slots[s].Filled < _slots[best].Filled)) best = s;
+            return best;
+        }
+
+        /// <summary>
+        /// R-19 Remove on the target in <paramref name="slot"/>: it takes cards of its colour until full — the pending
+        /// cards, then the buffer (FIFO), then the board (open stacks before covered ones, higher layer first) —
+        /// and leaves (R-9). R-1 guarantees there are enough. Steps reuse <see cref="BoardStepKind.CardToTarget"/>
+        /// (from a stack) and <see cref="BoardStepKind.BufferToTarget"/>, so the view animates them like a tap.
+        /// </summary>
+        private void RemoveTarget(int slot)
+        {
+            var t = _slots[slot];
+            if (!t.Has) return;
+            while (_pendingCount > 0 && _pendingColor == t.Color && _slots[slot].Filled < t.Capacity)
+            {
+                _pendingCount--;
+                Fill(slot, BoardStepKind.CardToTarget, _pendingStack, -1);
+            }
+            if (_pendingCount == 0) _pendingStack = _pendingColor = -1;
+            for (int i = 0; i < _buffer.Count && _slots[slot].Filled < t.Capacity;)
+            {
+                if (_buffer[i] != t.Color) { i++; continue; }
+                _buffer.RemoveAt(i);
+                Fill(slot, BoardStepKind.BufferToTarget, -1, i);
+            }
+            var order = new List<int>();
+            for (int i = 0; i < _removed.Length; i++)
+                if (Remaining(i) > 0 && _level.Stacks[i].Color == t.Color) order.Add(i);
+            order.Sort((a, b) =>
+            {
+                bool ca = IsCovered(a), cb = IsCovered(b);
+                if (ca != cb) return ca ? 1 : -1;
+                int la = _level.Stacks[a].Layer, lb = _level.Stacks[b].Layer;
+                return la != lb ? lb.CompareTo(la) : a.CompareTo(b);
+            });
+            foreach (int i in order)
+            {
+                while (Remaining(i) > 0 && _slots[slot].Filled < t.Capacity)
+                {
+                    _removed[i]++;
+                    Fill(slot, BoardStepKind.CardToTarget, i, -1);
+                }
+                if (Remaining(i) == 0) _steps.Add(new BoardStep(BoardStepKind.StackEmptied, stack: i));
+                if (_slots[slot].Filled >= t.Capacity) break;
+            }
+            Settle();
+        }
+
+        private void Fill(int slot, BoardStepKind kind, int stack, int bufferIndex)
+        {
+            _slots[slot].Filled++;
+            _steps.Add(new BoardStep(kind, stack: stack, slot: slot, bufferIndex: bufferIndex, color: _slots[slot].Color,
+                filled: _slots[slot].Filled, capacity: _slots[slot].Capacity));
         }
 
         private void PlaceRun(int stack, int color, int count)

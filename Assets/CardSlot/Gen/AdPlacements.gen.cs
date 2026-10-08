@@ -9,7 +9,8 @@ namespace Game.Gen
     /// <summary>Typed AdPlacement values for the SKU (features/ads.md, D-007: served by the framework's fake ads in MVP). Codegen-owned; never hand-edit the generated file.</summary>
     public static class AdPlacements
     {
-        public static readonly AdPlacement RewardedContinue     = new("rewarded_continue");
+        public static readonly AdPlacement RewardedRevive       = new("rewarded_revive");
         public static readonly AdPlacement InterstitialLevelEnd = new("interstitial_level_end");
+        public static readonly AdPlacement RewardedRvSlot       = new("rewarded_rv_slot");
     }
 }

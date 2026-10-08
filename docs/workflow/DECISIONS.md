@@ -248,3 +248,7 @@ Ghi chú: CR-012 sẽ đảo một phần (CR-005 booster + xu, CR-008 `max_run`
 ### D-029 · 08-10-2026 · Bước 6 · Duyệt CR-012 giai đoạn A (luật lõi)
 Quyết định (người chốt: Phat, "ok, commit đi"): duyệt giai đoạn A — chồng một màu (R-1c, level JSON v3 `color` + `count`), chỉ chồng khác màu mới che (R-3), chạm gửi cả chồng (R-6, bỏ `max_run` của CR-008), thua do kẹt (R-13), 8 màu (Pink `#FF6FB5` bông hoa, Cyan `#2FCFE0` bông tuyết; art 2D thêm `*_6`, `*_7`), 30 level sinh lại (revision 3, tổng số cọc theo level), `level-design.md` v2.0, `glossary.md` v2.0.
 Ghi chú: Continue (+6) giữ tạm tới giai đoạn B. Các mục [XÁC NHẬN] khác của GDD v2.0 (booster, tim, element, kinh tế…) duyệt khi tới giai đoạn của chúng.
+
+### D-030 · 08-10-2026 · Bước 6 · Duyệt CR-012 giai đoạn B (Revive + RV Slot)
+Quyết định (người chốt: Phat, "ok commit"): duyệt R-19 Remove (lõi), R-22 Revive (2 Remove miễn phí lên cọc ít lá nhất, lặp tới khi hết kẹt, tối đa 3 / lượt), R-23 RV Slot (+8, 2 / lượt, lúc chơi hoặc ở màn thua), bỏ Continue; màn thua 2 lựa chọn + nút "▶ +8 slots" trên ô chờ; `features/revive.md` v1.0; quảng cáo `rewarded_revive`, `rewarded_rv_slot`.
+Ghi chú: Revive / RV Slot hiện chỉ bằng quảng cáo; trả bằng xu và hoạt ảnh "cọc bay về bàn" làm ở giai đoạn C.

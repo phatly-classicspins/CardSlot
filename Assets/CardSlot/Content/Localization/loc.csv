@@ -17,7 +17,6 @@ lose.title,Out of space!
 lose.subtitle,Level {0}
 lose.retry,Retry
 lose.home,Home
-lose.continue_free,Continue free
 lose.no_thanks,No thanks
 lose.failed_title,Level failed
 pause.title,Paused
@@ -39,3 +38,8 @@ ftue.l1.step1,Tap a stack to send its cards!
 ftue.l1.step2,Fill the targets to clear them!
 ftue.l2.buffer,"No match? Cards wait here."
 ftue.l2.warn,Don't let it fill up!
+lose.title_stuck,No moves left!
+lose.revive,Revive
+lose.revive_note,Clears {0} poles
+lose.rv_slot,+{0} slots
+gameplay.rv_slot,+{0} slots

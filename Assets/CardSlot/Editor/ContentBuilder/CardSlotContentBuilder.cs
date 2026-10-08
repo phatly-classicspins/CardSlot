@@ -108,6 +108,8 @@ namespace Game.Editor
                 Set(so, "_roundButton", S("ui", "rbtn_secondary"));
                 Set(so, "_iconPause", S("ui", "icon_pause"));
                 Set(so, "_iconRestart", S("ui", "icon_restart"));
+                Set(so, "_buttonPrimary", S("ui", "btn_primary"));   // R-23 RV Slot pill
+                Set(so, "_iconPlay", S("ui", "icon_play"));
                 Set(so, "_hand", S("ui", "hand_pointer"));
                 Set(so, "_ring", S("ui", "ftue_ring"));
                 Set(so, "_font", font);
