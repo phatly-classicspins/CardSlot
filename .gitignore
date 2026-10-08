@@ -75,3 +75,10 @@ SkuHeadlessTests/TestResults/
 __pycache__/
 *.pyc
 # <<< PrototypeFramework agent-doc sync
+
+# Ảnh thử trung gian bố cục level (D-034): chỉ commit video-layouts-1-5 + automatic-stack-layout
+docs/captures/reference-levels-1-5/
+docs/captures/reference-levels-1-5-spread/
+docs/captures/reference-levels-1-5-support/
+docs/captures/wider-global-spacing/
+docs/captures/bidirectional-spread/
