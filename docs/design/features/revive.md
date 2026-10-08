@@ -2,13 +2,13 @@
 
 > **v1.0 · nháp, chờ duyệt** (CR-012 giai đoạn B). Thay `continue.md`. Luật: GDD v2.0 R-12, R-13, R-19, R-22, R-23. Con số: GDD §7 (`EconomyTuning`).
 
-**Mục đích.** Cho người chơi chơi tiếp thay vì mất cả level; là điểm chạm rewarded ad chính. Xu cho Revive đến ở giai đoạn C.
+**Mục đích.** Cho người chơi chơi tiếp thay vì mất cả level; là điểm chạm rewarded ad chính. Từ C1 (D-032) Revive trả được bằng xu.
 
 ## Luồng người chơi
 
 1. Thua do tràn (R-12) hoặc do kẹt (R-13) → mở `LoseDialog` ở trạng thái `offer`. Tiêu đề: "Out of space!" (tràn) / "No moves left!" (kẹt).
 2. `offer` có tối đa ba lựa chọn:
-   - **Revive** (quảng cáo) — dòng phụ "Clears 2 poles". Hiện khi còn lượt Revive trong `attempt` (mặc định 3). Hoàn thành → R-22: Remove miễn phí 2 cọc ở đáy hàng có ít lá nhất (bằng nhau thì bên trái), đặt lại lá dở; còn kẹt thì Remove thêm từng cọc. Huỷ quảng cáo → quay lại `offer`.
+   - **Revive** — hai nút cạnh nhau (mock-up `lose-offer-coins-v02`, C1): **trả xu** (100, rồi 200, 400 … trong cùng lượt; khoá khi không đủ xu) hoặc **xem quảng cáo**. Dòng phụ "Clears 2 poles". Hiện khi còn lượt Revive trong `attempt` (mặc định 3). Hoàn thành → R-22: Remove miễn phí 2 cọc ở đáy hàng có ít lá nhất (bằng nhau thì bên trái), đặt lại lá dở; còn kẹt thì Remove thêm từng cọc. Huỷ quảng cáo → quay lại `offer`.
    - **+8 slots** (quảng cáo, nút phụ) — hiện khi còn lượt RV Slot (2 / `attempt`) và thêm chỗ còn cứu được (còn lá dở hoặc còn chồng chạm được). Hoàn thành → R-23.
    - **No thanks** → trạng thái `failed`.
    Quảng cáo chưa sẵn sàng: các nút hiện "Ad not available" và bị khoá.

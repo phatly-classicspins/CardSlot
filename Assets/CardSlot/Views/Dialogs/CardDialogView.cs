@@ -19,6 +19,7 @@ namespace Game.Views
         [SerializeField] protected Sprite _panel, _ribbon, _ribbonDanger, _buttonPrimary, _buttonSecondary, _buttonDisabled;
         [SerializeField] protected Sprite _iconPlay, _iconLock, _iconClose, _iconGear;
         [SerializeField] protected Sprite _closeButton, _rowSunken, _toggleOn, _toggleOff, _toggleKnob, _roundButton;
+        [SerializeField] protected Sprite _pill, _coin;
         [SerializeField] protected Sprite[] _cardFace = new Sprite[8];
         [SerializeField] protected TMP_FontAsset _font;
 
@@ -60,8 +61,9 @@ namespace Game.Views
 
         protected float PanelWidth => 1080f - 2f * DesignTokens.PanelSideInset;
 
-        protected Button Button(Transform parent, string label, ButtonStyle style, float y, float w, float h, Action onClick, Sprite icon = null, float x = float.NaN)
+        protected Button Button(Transform parent, string label, ButtonStyle style, float y, float w, float h, Action onClick, Sprite icon = null, float x = float.NaN, float fontSize = float.NaN)
         {
+            float fs = float.IsNaN(fontSize) ? h * 0.36f : fontSize;
             var sprite = style == ButtonStyle.Primary ? _buttonPrimary : style == ButtonStyle.Secondary ? _buttonSecondary : _buttonDisabled;
             float left = float.IsNaN(x) ? (PanelWidth - w) / 2f : x;
             var img = UiKit.Image("Button", parent, sprite, left, y, w, h, sliced: true);
@@ -69,18 +71,40 @@ namespace Game.Views
             if (icon != null)
             {
                 float s = h * 0.38f;
-                var t = UiKit.Text("Label", img.transform, _font, label, h * 0.36f, DesignTokens.OnColor, 0f, 0f, w, h - 14f);
+                var t = UiKit.Text("Label", img.transform, _font, label, fs, DesignTokens.OnColor, 0f, 0f, w, h - 14f);
                 float labelWidth = t.GetPreferredValues(label ?? string.Empty).x;
                 float total = s + 16f + labelWidth;
                 textX = (w - total) / 2f + s + 16f; textW = labelWidth + 4f;
                 t.rectTransform.anchoredPosition = new Vector2(textX, 0f); t.rectTransform.sizeDelta = new Vector2(textW, h - 14f);
                 UiKit.Image("Icon", img.transform, icon, (w - total) / 2f, (h - 14f - s) / 2f, s, s).color = DesignTokens.OnColor;
             }
-            else UiKit.Text("Label", img.transform, _font, label, h * 0.4f, DesignTokens.OnColor, 0f, 0f, w, h - 14f);
+            else UiKit.Text("Label", img.transform, _font, label, float.IsNaN(fontSize) ? h * 0.4f : fontSize, DesignTokens.OnColor, 0f, 0f, w, h - 14f);
             var b = UiKit.Button(img, onClick);
             b.interactable = style != ButtonStyle.Disabled;
             return b;
         }
+
+        /// <summary>A button that pays coins (mock-up lose-offer-coins-v02): label, coin, price, centred as one row.</summary>
+        protected Button PriceButton(Transform parent, string label, string price, ButtonStyle style, float y, float x, float w, float h, float fontSize, Action onClick)
+        {
+            var sprite = style == ButtonStyle.Primary ? _buttonPrimary : style == ButtonStyle.Secondary ? _buttonSecondary : _buttonDisabled;
+            var img = UiKit.Image("PriceButton", parent, sprite, x, y, w, h, sliced: true);
+            float coin = fontSize * 1.1f, gap = 12f;
+            var a = UiKit.Text("Label", img.transform, _font, label, fontSize, DesignTokens.OnColor, 0f, 0f, w, h - 14f);
+            var b = UiKit.Text("Price", img.transform, _font, price, fontSize, DesignTokens.OnColor, 0f, 0f, w, h - 14f);
+            float wa = a.GetPreferredValues(label ?? string.Empty).x, wb = b.GetPreferredValues(price ?? string.Empty).x;
+            float left = (w - (wa + gap + coin + gap + wb)) / 2f;
+            a.rectTransform.anchoredPosition = new Vector2(left, 0f); a.rectTransform.sizeDelta = new Vector2(wa + 4f, h - 14f);
+            UiKit.Image("Coin", img.transform, _coin, left + wa + gap, (h - 14f - coin) / 2f, coin, coin);
+            b.rectTransform.anchoredPosition = new Vector2(left + wa + gap + coin + gap, 0f); b.rectTransform.sizeDelta = new Vector2(wb + 4f, h - 14f);
+            var button = UiKit.Button(img, onClick);
+            button.interactable = style != ButtonStyle.Disabled;
+            return button;
+        }
+
+        /// <summary>The coin counter above the dim (mock-ups win / lose-offer-coins-v02): the same pill and place as the HUD's, so the
+        /// player watches the balance while the dialog is up.</summary>
+        protected void CoinPill(string coins) { if (coins != null) UiKit.CoinPill(Root, _pill, _coin, _font, coins); }
 
         /// <summary>A text-only action ("Home", "No thanks").</summary>
         protected GameObject Link(Transform parent, string label, float y, Action onClick)

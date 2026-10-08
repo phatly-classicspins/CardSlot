@@ -33,3 +33,17 @@ Hướng **B · Warm Toybox** (D-017). Làm bằng HTML/CSS → PNG qua Edge hea
 | `restart-confirm-v01` | Xác nhận chơi lại (nút ↻) | v01 | đã duyệt (Phat, 06-10-2026) |
 
 **Chưa có mock-up riêng (dựng từ spec):** `CoinCounter` đang đếm lên và hoạt ảnh lá bay / đích nổ. Đây là chuyển động, để Bước 4 lo.
+
+## CR-012 giai đoạn C1 — xu (D-031)
+
+Nguồn: `.working/c1.html` (sprite thật từ `art/export/ui` + ảnh chụp game hiện tại làm nền). Render: `render.ps1 -Page c1.html -OutDir c1 -Jobs 'b:<screen>:1920'`.
+
+| Mock-up | Màn / trạng thái | Phiên bản | Trạng thái |
+|---|---|---|---|
+| `gameplay-coins-v02` | GameplayScreen · pill xu góc trên-trái | v02 | đã duyệt (Phat, 08-10-2026) |
+| `home-coins-v02` | MainScreen · pill xu góc trên-trái | v02 | đã duyệt (Phat, 08-10-2026) |
+| `win-coins-v02` | WinDialog · thưởng +20 · "▶ Claim ×2" (quảng cáo) · "Next" (nhận 20) · Home | v02 | đã duyệt (Phat, 08-10-2026) |
+| `lose-offer-coins-v02` | LoseDialog · Revive bằng xu (100) hoặc quảng cáo · +8 slots · No thanks | v02 | đã duyệt (Phat, 08-10-2026) |
+| `lose-offer-coins-poor-v02` | LoseDialog · không đủ xu: nút xu khoá | v02 | đã duyệt (Phat, 08-10-2026) |
+
+Pill xu nằm trên lớp mờ của dialog để số xu đếm lên khi nhận thưởng (chuyển động làm khi code).

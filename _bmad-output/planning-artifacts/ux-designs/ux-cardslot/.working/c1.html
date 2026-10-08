@@ -1,0 +1,99 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>CardSlot C1 mock-ups</title>
+<!-- CR-012 stage C1 (D-031): coins. Real sprites from art/export/ui on top of real game captures; layout numbers mirror
+     DesignTokens.cs / CardDialogView.cs so the build can follow this 1:1. Render: render.ps1 -Page c1.html -OutDir c1 -Jobs "b:<screen>:1920" -->
+<style>
+  :root { --ink:#5A3415; --ink-soft:#9A6A3F; --on:#fff; --scrim:rgba(70,35,8,.55); }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { width:1080px; height:1920px; overflow:hidden; position:relative; font-family:"Liberation Sans", Arial, sans-serif; font-weight:700; background:#FFE9C8; }
+  .abs { position:absolute; }
+  .bg { left:0; top:0; width:1080px; height:1920px; }
+  .scrim { left:0; top:0; width:1080px; height:1920px; background:var(--scrim); }
+  .nine { position:absolute; border-style:solid; }
+  .pill { border-width:0 50px; border-image:url(../../../../../art/export/ui/pill_surface.png) 0 50 0 50 fill; }
+  .panel { border-width:70px 70px 88px 70px; border-image:url(../../../../../art/export/ui/panel.png) 70 70 88 70 fill; }
+  .ribbon { border-width:0 50px; border-image:url(../../../../../art/export/ui/ribbon_secondary.png) 0 50 0 50 fill; }
+  .ribbon.danger { border-image-source:url(../../../../../art/export/ui/ribbon_danger.png); }
+  .btn { border-width:60px 64px 74px 64px; border-image:url(../../../../../art/export/ui/btn_primary.png) 60 64 74 64 fill; }
+  .btn.secondary { border-image-source:url(../../../../../art/export/ui/btn_secondary.png); }
+  .btn.disabled { border-image-source:url(../../../../../art/export/ui/btn_disabled.png); }
+  .label { position:absolute; display:flex; align-items:center; justify-content:center; gap:16px; color:var(--on); white-space:nowrap; }
+  .text { position:absolute; display:flex; align-items:center; justify-content:center; white-space:nowrap; }
+  img.icon { display:block; }
+  .play { filter:brightness(0) invert(1); }
+</style></head>
+<body>
+<script>
+const q = new URLSearchParams(location.search), screen = q.get('screen') || 'gameplay';
+const UI = '../../../../../art/export/ui/', GP = '../../../../../art/export/gameplay/', CAP = '../../../../../docs/captures/';
+const H = 1920, PW = 900, PX = 90;
+const el = (html) => { document.body.insertAdjacentHTML('beforeend', html); return document.body.lastElementChild; };
+
+// coin counter pill (HUD, top-left; Home, top-left): live text, the pill grows with the number
+function coinPill(n, x = 40, y = 66) {
+  const w = 270;
+  el(`<div class="nine pill" style="left:${x}px;top:${y}px;width:${w}px;height:104px"></div>`);
+  el(`<img class="abs icon" src="${UI}coin.png" style="left:${x - 6}px;top:${y + 4}px;width:96px;height:96px">`);
+  el(`<div class="text" style="left:${x + 84}px;top:${y}px;width:${w - 100}px;height:96px;font-size:44px;color:var(--ink)">${n}</div>`);
+}
+function panel(title, h, danger) {
+  const top = (H - h) / 2 + 40;
+  el(`<div class="nine panel" style="left:${PX}px;top:${top}px;width:${PW}px;height:${h}px"></div>`);
+  const ts = Math.min(76, 1500 / title.length);
+  el(`<div class="nine ribbon${danger ? ' danger' : ''}" style="left:${PX - 30}px;top:${top - 70}px;width:${PW + 60}px;height:184px"></div>`);
+  el(`<div class="text" style="left:${PX - 30}px;top:${top - 70}px;width:${PW + 60}px;height:170px;font-size:${ts}px;color:var(--on)">${title}</div>`);
+  return top;
+}
+function button(top, y, w, h, style, inner, x, fs) {
+  const left = PX + (x ?? (PW - w) / 2);
+  el(`<div class="nine btn ${style}" style="left:${left}px;top:${top + y}px;width:${w}px;height:${h}px"></div>`);
+  el(`<div class="label" style="left:${left}px;top:${top + y}px;width:${w}px;height:${h - 14}px;font-size:${fs ?? Math.round(h * 0.36)}px">${inner}</div>`);
+}
+const playIcon = (s) => `<img class="icon play" src="${UI}icon_play.png" style="width:${s}px;height:${s}px">`;
+const coinIcon = (s) => `<img class="icon" src="${UI}coin.png" style="width:${s}px;height:${s}px">`;
+function line(top, y, text, size, color, h = 70) {
+  el(`<div class="text" style="left:${PX + 60}px;top:${top + y}px;width:${PW - 120}px;height:${h}px;font-size:${size}px;color:${color}">${text}</div>`);
+}
+function link(top, y, text) { line(top, y, text, 44, 'var(--ink-soft)', 80); }
+function fan(top, y, colors, dim) {
+  colors.forEach((c, i) => {
+    const rot = (i - (colors.length - 1) / 2) * 16;
+    el(`<div class="abs" style="left:${PX + PW / 2}px;top:${top + y + 300}px;transform:rotate(${rot}deg);transform-origin:0 0">
+          <img src="${GP}card_face_${c}.png" style="position:absolute;left:-75px;top:-300px;width:150px;height:216px;${dim ? 'filter:brightness(.68)' : ''}"></div>`);
+  });
+}
+
+if (screen === 'gameplay') {
+  el(`<img class="abs bg" src="${CAP}cr12b/a-level12-start.png">`);
+  coinPill('9,999');
+} else if (screen === 'home') {
+  el(`<img class="abs bg" src="${CAP}cr5/home.png">`);
+  coinPill('9,999');
+} else if (screen === 'win') {
+  el(`<img class="abs bg" src="${CAP}cr12a/level12-after-tap.png">`);
+  el(`<div class="abs scrim"></div>`);
+  coinPill('9,999');                                         // stays above the scrim: the reward counts up into it
+  const top = panel('Level Complete!', 1200);
+  line(top, 150, 'Level 12', 54, 'var(--ink-soft)');
+  fan(top, 240, [6, 1, 2]);
+  // the reward chip: coin + "+20"
+  el(`<div class="text" style="left:${PX}px;top:${top + 560}px;width:${PW}px;height:96px;gap:14px;font-size:66px;color:var(--ink)">${coinIcon(84)}+20</div>`);
+  button(top, 690, 680, 164, '', `${playIcon(62)}<span>Claim ×2</span>`);
+  button(top, 878, 560, 140, 'secondary', `<span>Next</span>`);
+  link(top, 1036, 'Home');
+} else if (screen === 'lose-offer' || screen === 'lose-offer-poor') {
+  const poor = screen === 'lose-offer-poor';
+  el(`<img class="abs bg" src="${CAP}cr12b/a-level12-start.png">`);
+  el(`<div class="abs scrim"></div>`);
+  coinPill(poor ? '40' : '9,999');
+  const top = panel('Out of space!', 1060, true);
+  fan(top, 150, [7, 4, 1]);
+  // Revive: coins (primary) or an ad (secondary), side by side
+  button(top, 470, 420, 164, poor ? 'disabled' : '', `<span>Revive</span>${coinIcon(58)}<span>100</span>`, 30, 50);
+  button(top, 470, 400, 164, 'secondary', `${playIcon(52)}<span>Revive</span>`, PW - 30 - 400, 50);
+  line(top, 634, 'Clears 2 poles', 34, 'var(--ink-soft)', 56);
+  button(top, 714, 560, 140, 'secondary', `${playIcon(52)}<span>+8 slots</span>`);
+  link(top, 878, 'No thanks');
+}
+</script>
+</body></html>

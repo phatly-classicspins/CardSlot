@@ -47,6 +47,7 @@ namespace Game.Presentation
         private int _level, _levelCount;
         private LevelData _data;
         private BoardModel _board;
+        private int _paidRevives;                 // revives paid with coins this attempt: the next costs more (GDD v2.0 §7)
         private bool _busy;                       // a dialog or ad is up: board taps are ignored
         private int _ftuePointAt = -1;            // level 1 step 1: the only stack a tap may go to
         private float _lastAdTime = -999f;
@@ -66,6 +67,7 @@ namespace Game.Presentation
         public override async UniTask OnLoadAsync(CancellationToken ct)
         {
             _levelCount = await _levels.CountAsync(ct);
+            _progress.EnsureStartCoins();             // CR-012 C1: once per install (also granted from Home)
             // CR-003: the board is 3D under WorldRoot (Renderer content anchored in game space, rule #16) …
             _board3DPrefab = await _assets.LoadAsync(AssetKeys.Gameplay.Board3DView, ct);
             _board3DInstance = Object.Instantiate(_board3DPrefab, WorldRoot(), false);
@@ -122,6 +124,7 @@ namespace Game.Presentation
             _level = level;
             _data = await _levels.LoadAsync(level, ct);
             _board = new BoardModel(_data, _tuning.BoardRules());
+            _paidRevives = 0;
             _grooves.Clear();
             var start = _progress.BeginLevel(level);
             _log.Info($"[GameplayScreen] level {level} attempt {start.AttemptNo} (seed {_data.Seed}).");
@@ -149,7 +152,7 @@ namespace Game.Presentation
             var layers = new int[v.Stacks.Length];
             for (int i = 0; i < layers.Length; i++) layers[i] = v.Stacks[i].Layer;
             _view.SetHitAreas(_board3D.StackWorldRects(v.Stacks.Length), layers);
-            _view.SetHud(_loc.Get(LocKeys.GameplayLevel, _level));
+            _view.SetHud(_loc.Get(LocKeys.GameplayLevel, _level), Coins());
         }
 
         // ── taps ──────────────────────────────────────────────────────────────────────────────────────
@@ -238,22 +241,37 @@ namespace Game.Presentation
         private async UniTask Won()
         {
             _view.HideTutorial();
-            var win = _progress.CompleteLevel(_level);      // persisted before anything is shown (G19)
+            var win = _progress.CompleteLevel(_level);      // progress + the plain reward persisted before anything is shown (G19)
             await AnimationsDone();   // let the last cards land and the peg leave (CR-007)
             Draw();
-            var args = new WinArgs(
-                _loc.Get(LocKeys.WinTitle),
-                _loc.Get(LocKeys.WinSubtitle, _level),
-                _loc.Get(win.Final ? LocKeys.WinPlayAgain : LocKeys.WinNext),
-                _loc.Get(LocKeys.WinHome),
-                win.Final ? _loc.Get(LocKeys.HomeMoreSoon) : null,
-                Fan());
-            var result = await _dialogs.ShowAsync<WinDialog, WinChoice>(args, default, _cts.Token);
-            if (result.Reason == DialogCloseReason.Aborted) return;
-            if (result.Value == WinChoice.Home) { GoHome(); return; }
+            while (true)
+            {
+                bool adReady = win.Reward > 0 && await _ads.IsReadyAsync(AdPlacements.RewardedWinDouble);
+                var args = new WinArgs(
+                    _loc.Get(LocKeys.WinTitle),
+                    _loc.Get(LocKeys.WinSubtitle, _level),
+                    _loc.Get(LocKeys.WinReward, win.Reward),
+                    adReady ? _loc.Get(LocKeys.WinClaim, _tuning.WinAdMultiplier) : _loc.Get(LocKeys.AdsNotAvailable), adReady,
+                    _loc.Get(win.Final ? LocKeys.WinPlayAgain : LocKeys.WinNext),
+                    _loc.Get(LocKeys.WinHome),
+                    win.Final ? _loc.Get(LocKeys.HomeMoreSoon) : null,
+                    Coins(), Fan());
+                var result = await _dialogs.ShowAsync<WinDialog, WinChoice>(args, default, _cts.Token);
+                if (result.Reason == DialogCloseReason.Aborted) return;
+                if (result.Value == WinChoice.Home) { GoHome(); return; }
+                if (result.Value == WinChoice.ClaimDouble)
+                {
+                    if (!await Rewarded(AdPlacements.RewardedWinDouble)) continue;   // ad cancelled: back to the dialog
+                    _progress.GrantWinBonus(win.Reward);
+                    Draw();
+                }
+                break;
+            }
             await MaybeInterstitial(_level);
             await Restart(win.Saved ? win.NextLevel : _level);
         }
+
+        private string Coins() => _loc.Get(LocKeys.HudCoins, _progress.Coins);
 
         private async UniTask MaybeInterstitial(int levelJustWon)
         {
@@ -270,12 +288,15 @@ namespace Game.Presentation
             _view.HideTutorial();
             await AnimationsDone();
             bool adReady = await _ads.IsReadyAsync(AdPlacements.RewardedRevive);
-            string unavailable = adReady ? null : _loc.Get(LocKeys.AdsNotAvailable);
+            long price = _tuning.RevivePriceAfter(_paidRevives);
             var args = new LoseArgs(
                 _loc.Get(_board.Loss == BoardLoss.Stuck ? LocKeys.LoseTitleStuck : LocKeys.LoseTitle),
-                _board.CanRevive ? unavailable ?? _loc.Get(LocKeys.LoseRevive) : null,
+                Coins(),
+                _board.CanRevive ? _loc.Get(LocKeys.LoseRevive) : null,
+                _loc.Get(LocKeys.LoseRevivePrice, price),
+                _progress.Coins >= price,
                 _loc.Get(LocKeys.LoseReviveNote, _board.ReviveRemoves),
-                _board.CanRvSlot ? unavailable ?? _loc.Get(LocKeys.LoseRvSlot, _board.RvSlotAmount) : null,
+                _board.CanRvSlot ? _loc.Get(LocKeys.LoseRvSlot, _board.RvSlotAmount) : null,
                 adReady,
                 _loc.Get(LocKeys.LoseNoThanks),
                 _loc.Get(LocKeys.LoseFailedTitle), _loc.Get(LocKeys.LoseSubtitle, _level), _loc.Get(LocKeys.LoseRetry), _loc.Get(LocKeys.LoseHome),
@@ -284,6 +305,10 @@ namespace Game.Presentation
             if (result.Reason == DialogCloseReason.Aborted) return;
             switch (result.Value)
             {
+                case LoseChoice.ReviveCoins:
+                    if (_progress.TrySpendCoins(price)) { _paidRevives++; await AfterRescue(_board.Revive()); }
+                    else await Lost();                                    // could not pay (or save): back to the offer
+                    break;
                 case LoseChoice.ReviveAd:
                     if (await Rewarded(AdPlacements.RewardedRevive)) await AfterRescue(_board.Revive());
                     else await Lost();                                    // ad cancelled: back to the offer

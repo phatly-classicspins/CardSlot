@@ -110,6 +110,7 @@ namespace Game.Editor
                 Set(so, "_iconRestart", S("ui", "icon_restart"));
                 Set(so, "_buttonPrimary", S("ui", "btn_primary"));   // R-23 RV Slot pill
                 Set(so, "_iconPlay", S("ui", "icon_play"));
+                Set(so, "_coin", S("ui", "coin"));                     // CR-012 C1 coin pill
                 Set(so, "_hand", S("ui", "hand_pointer"));
                 Set(so, "_ring", S("ui", "ftue_ring"));
                 Set(so, "_font", font);
@@ -128,6 +129,8 @@ namespace Game.Editor
 
             Save("Home/HomeView", "Game.Views.HomeView, Game.Views", so =>
             {
+                Set(so, "_pill", S("ui", "pill_surface"));              // CR-012 C1 coin pill
+                Set(so, "_coin", S("ui", "coin"));
                 Set(so, "_cardFace", PerColour("gameplay", "card_face_"));
                 Set(so, "_ground", S("bg", "bg_ground"));
                 Set(so, "_buttonPrimary", S("ui", "btn_primary"));
@@ -162,6 +165,8 @@ namespace Game.Editor
                 Set(so, "_panel", S("ui", "panel"));
                 Set(so, "_ribbon", S("ui", "ribbon_secondary"));
                 Set(so, "_ribbonDanger", S("ui", "ribbon_danger"));
+                Set(so, "_pill", S("ui", "pill_surface"));              // CR-012 C1 coin pill above the dim
+                Set(so, "_coin", S("ui", "coin"));
                 Set(so, "_buttonPrimary", S("ui", "btn_primary"));
                 Set(so, "_buttonSecondary", S("ui", "btn_secondary"));
                 Set(so, "_buttonDisabled", S("ui", "btn_disabled"));

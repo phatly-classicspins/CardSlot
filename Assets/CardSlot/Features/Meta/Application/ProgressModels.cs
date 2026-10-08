@@ -3,6 +3,12 @@ using ClassicSpins.PrototypeFramework.Domain;
 
 namespace Game.Application
 {
+    /// <summary>Wallet resources of the SKU (GDD v2.0 §7): coins are the only soft currency.</summary>
+    public static class CardSlotResources
+    {
+        public static readonly ResourceKey Coin = new ResourceKey("coin");
+    }
+
     /// <summary>Level progress, FTUE and ad pacing (GDD §5, v1.2). Saved through the framework's
     /// <c>IUserData</c> envelope; shape changes need a new migrator (rule #2).</summary>
     public sealed class ProgressModel : IUserModel
@@ -15,19 +21,21 @@ namespace Game.Application
         public int Attempts;
         public List<string> FtueCompleted = new List<string>();
         public int WinsSinceInterstitial;
+        /// <summary>CR-012 C1: the starting coins were granted (once per install).</summary>
+        public bool StartCoinsGranted;
 
         public ProgressModel Clone() => new ProgressModel
         {
             CurrentLevel = CurrentLevel, HighestCleared = HighestCleared, Attempts = Attempts,
             FtueCompleted = new List<string>(FtueCompleted),
-            WinsSinceInterstitial = WinsSinceInterstitial,
+            WinsSinceInterstitial = WinsSinceInterstitial, StartCoinsGranted = StartCoinsGranted,
         };
 
         public void CopyFrom(ProgressModel o)
         {
             CurrentLevel = o.CurrentLevel; HighestCleared = o.HighestCleared; Attempts = o.Attempts;
             FtueCompleted = new List<string>(o.FtueCompleted);
-            WinsSinceInterstitial = o.WinsSinceInterstitial;
+            WinsSinceInterstitial = o.WinsSinceInterstitial; StartCoinsGranted = o.StartCoinsGranted;
         }
     }
 

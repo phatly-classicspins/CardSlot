@@ -93,6 +93,7 @@ namespace Game.Views
         [SerializeField] private Sprite _iconRestart;
         [SerializeField] private Sprite _buttonPrimary;
         [SerializeField] private Sprite _iconPlay;
+        [SerializeField] private Sprite _coin;
         [SerializeField] private Sprite _hand;
         [SerializeField] private Sprite _ring;
         [SerializeField] private TMP_FontAsset _font;
@@ -103,7 +104,7 @@ namespace Game.Views
         public event Action PausePressed, RestartPressed, RvSlotPressed;
 
         private RectTransform _root, _boardLayer, _tutorialLayer;
-        private TextMeshProUGUI _levelLabel;
+        private TextMeshProUGUI _levelLabel, _coinsLabel;
 
         private float Height => _root != null && _root.rect.height > 1f ? _root.rect.height : 1920f;
         private float Tall => Mathf.Max(0f, Height - 1920f);
@@ -125,6 +126,7 @@ namespace Game.Views
         private void BuildHud()
         {
             float m = DesignTokens.ScreenMargin, b = DesignTokens.RoundButton;
+            _coinsLabel = UiKit.CoinPill(_root, _pill, _coin, _font, string.Empty);   // CR-012 C1
             var pill = UiKit.Image("LevelPill", _root, _pill, 540f - 125f, 70f, 250f, 104f, sliced: true);
             _levelLabel = UiKit.Text("Level", pill.transform, _font, string.Empty, DesignTokens.TypeHud, DesignTokens.Ink, 0f, 0f, 250f, 96f);
             var restart = UiKit.Image("Restart", _root, _roundButton, 1080f - m - 2f * b - 32f, DesignTokens.HudTop, b, b + 10f);
@@ -135,10 +137,11 @@ namespace Game.Views
             UiKit.Button(pause, () => PausePressed?.Invoke());
         }
 
-        public void SetHud(string levelLabel)
+        public void SetHud(string levelLabel, string coinsLabel)
         {
             EnsureBuilt();
             _levelLabel.SetText(levelLabel ?? string.Empty);
+            _coinsLabel.SetText(coinsLabel ?? string.Empty);
         }
 
         /// <summary>Redraw the whole board. 6a redraws after every tap; 6c replays the model's steps as motion.</summary>

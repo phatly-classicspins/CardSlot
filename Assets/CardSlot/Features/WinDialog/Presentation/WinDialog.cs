@@ -6,13 +6,14 @@ using Game.Views;
 
 namespace Game.Presentation
 {
-    /// <summary>Everything the Win dialog shows, already localized (rule #4). Progress was saved before this
-    /// dialog was requested (G19). No coin reward (CR-005).</summary>
-    public sealed record WinArgs(string Title, string Subtitle, string Primary, string Home, string Note, int[] Fan) : DialogArgs;
+    /// <summary>Everything the Win dialog shows, already localized (rule #4). Progress and the plain reward were saved
+    /// before this dialog was requested (G19); <c>ClaimEnabled</c> is whether the ×2 rewarded ad is ready.</summary>
+    public sealed record WinArgs(string Title, string Subtitle, string Reward, string Claim, bool ClaimEnabled, string Next,
+        string Home, string Note, string Coins, int[] Fan) : DialogArgs;
 
-    public enum WinChoice { Next, Home }
+    public enum WinChoice { ClaimDouble, Next, Home }
 
-    /// <summary>features/level-progression.md — the win dialog.</summary>
+    /// <summary>features/level-progression.md — the win dialog (CR-012 C1: reward + Claim ×2).</summary>
     public sealed class WinDialog : DialogBase<WinChoice>
     {
         private WinDialogView _view;
@@ -23,10 +24,11 @@ namespace Game.Presentation
         {
             var a = (WinArgs)args;
             _view = await LoadViewAsync<WinDialogView>(AssetKeys.WinDialog, ct);
+            _view.ClaimPressed += () => { if (a.ClaimEnabled) Close(WinChoice.ClaimDouble); };
             _view.NextPressed += () => Close(WinChoice.Next);
             _view.HomePressed += () => Close(WinChoice.Home);
             _view.CloseRequested += () => Close(WinChoice.Home);
-            _view.Show(a.Title, a.Subtitle, a.Primary, a.Home, a.Note, a.Fan);
+            _view.Show(a.Title, a.Subtitle, a.Reward, a.Claim, a.ClaimEnabled, a.Next, a.Home, a.Note, a.Coins, a.Fan);
         }
     }
 }

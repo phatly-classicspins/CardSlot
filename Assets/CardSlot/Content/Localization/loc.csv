@@ -43,3 +43,7 @@ lose.revive,Revive
 lose.revive_note,Clears {0} poles
 lose.rv_slot,+{0} slots
 gameplay.rv_slot,+{0} slots
+hud.coins,"{0:#,0}"
+win.reward,+{0}
+win.claim,Claim ×{0}
+lose.revive_price,"{0:#,0}"

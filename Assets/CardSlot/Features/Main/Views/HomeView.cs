@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Game.Views
 {
     /// <summary>
-    /// Home (mock-up <c>docs/mockups/home-v01.png</c>, no coins since CR-005): the live-text logo (the commercial name is not
+    /// Home (mock-ups <c>docs/mockups/home-v01.png</c>, <c>home-coins-v02.png</c> — CR-012 C1 coin pill): the live-text logo (the commercial name is not
     /// final, D-012), a fan of the six card colours and the Play button. Renders given labels; relays Play.
     /// </summary>
     public sealed class HomeView : MonoBehaviour
@@ -13,12 +13,13 @@ namespace Game.Views
         [SerializeField] private Sprite[] _cardFace = new Sprite[8];
         [SerializeField] private Sprite _ground;
         [SerializeField] private Sprite _buttonPrimary;
+        [SerializeField] private Sprite _pill, _coin;
         [SerializeField] private TMP_FontAsset _font;
 
         public event Action PlayPressed;
 
         private RectTransform _root;
-        private TextMeshProUGUI _title, _tagline, _play, _note;
+        private TextMeshProUGUI _title, _tagline, _play, _note, _coins;
 
         private float Tall => _root != null ? Mathf.Max(0f, _root.rect.height - 1920f) : 0f;
 
@@ -27,6 +28,7 @@ namespace Game.Views
             if (_root != null) return;
             _root = UiKit.Stretch("Root", transform);
             UiKit.Fill("Ground", _root, Color.white, false).sprite = _ground;
+            _coins = UiKit.CoinPill(_root, _pill, _coin, _font, string.Empty);
             float tall = Tall;
             _title = UiKit.Text("Title", _root, _font, string.Empty, DesignTokens.TypeLogo, DesignTokens.Secondary, 0f, 330f + tall / 6f, 1080f, 200f);
             _tagline = UiKit.Text("Tagline", _root, _font, string.Empty, 42f, DesignTokens.InkSoft, 0f, 530f + tall / 6f, 1080f, 60f);
@@ -44,9 +46,10 @@ namespace Game.Views
         }
 
         /// <param name="note">Line under Play (e.g. "More levels coming soon"); null hides it.</param>
-        public void Show(string title, string tagline, string playLabel, string note)
+        public void Show(string title, string tagline, string playLabel, string note, string coins)
         {
             EnsureBuilt();
+            _coins.SetText(coins ?? string.Empty);
             _title.SetText(title ?? string.Empty);
             _tagline.SetText(tagline ?? string.Empty);
             _play.SetText(playLabel ?? string.Empty);

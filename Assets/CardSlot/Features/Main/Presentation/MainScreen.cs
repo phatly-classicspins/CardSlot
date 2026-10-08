@@ -43,10 +43,11 @@ namespace Game.Presentation
             _layers.Stamp(_viewInstance, RenderLayers.Ui);
             _view = _viewInstance.GetComponent<HomeView>();
             _view.PlayPressed += Play;
+            _progress.EnsureStartCoins();                                   // CR-012 C1: once per install
             int level = Mathf.Min(_progress.CurrentLevel, count);
             bool allCleared = _progress.HighestCleared >= count;
             _view.Show(_loc.Get(LocKeys.HomeTitle), _loc.Get(LocKeys.HomeTagline), _loc.Get(LocKeys.HomePlay, level),
-                allCleared ? _loc.Get(LocKeys.HomeMoreSoon) : null);
+                allCleared ? _loc.Get(LocKeys.HomeMoreSoon) : null, _loc.Get(LocKeys.HudCoins, _progress.Coins));
         }
 
         public override void OnEnter() => _log.Info("[MainScreen] entered.");

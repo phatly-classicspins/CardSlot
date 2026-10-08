@@ -28,12 +28,14 @@ namespace Game.Gen
         public static readonly LocKey HomePlay               = new("home.play");
         public static readonly LocKey HomeTagline            = new("home.tagline");
         public static readonly LocKey HomeTitle              = new("home.title");
+        public static readonly LocKey HudCoins               = new("hud.coins");
         public static readonly LocKey LoseFailedTitle        = new("lose.failed_title");
         public static readonly LocKey LoseHome               = new("lose.home");
         public static readonly LocKey LoseNoThanks           = new("lose.no_thanks");
         public static readonly LocKey LoseRetry              = new("lose.retry");
         public static readonly LocKey LoseRevive             = new("lose.revive");
         public static readonly LocKey LoseReviveNote         = new("lose.revive_note");
+        public static readonly LocKey LoseRevivePrice        = new("lose.revive_price");
         public static readonly LocKey LoseRvSlot             = new("lose.rv_slot");
         public static readonly LocKey LoseSubtitle           = new("lose.subtitle");
         public static readonly LocKey LoseTitle              = new("lose.title");
@@ -48,9 +50,11 @@ namespace Game.Gen
         public static readonly LocKey SettingsOn             = new("settings.on");
         public static readonly LocKey SettingsSound          = new("settings.sound");
         public static readonly LocKey SettingsTitle          = new("settings.title");
+        public static readonly LocKey WinClaim               = new("win.claim");
         public static readonly LocKey WinHome                = new("win.home");
         public static readonly LocKey WinNext                = new("win.next");
         public static readonly LocKey WinPlayAgain           = new("win.play_again");
+        public static readonly LocKey WinReward              = new("win.reward");
         public static readonly LocKey WinSubtitle            = new("win.subtitle");
         public static readonly LocKey WinTitle               = new("win.title");
     }

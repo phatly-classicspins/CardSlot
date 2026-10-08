@@ -82,6 +82,16 @@ namespace Game.Views
             b.onClick.AddListener(() => onClick?.Invoke());
             return b;
         }
+
+        /// <summary>The coin counter (mock-ups *-coins-v02, CR-012 C1): a surface pill at the top-left screen corner with
+        /// the coin overlapping its left end; returns the number text so the caller can update it.</summary>
+        public static TextMeshProUGUI CoinPill(Transform parent, Sprite pill, Sprite coin, TMP_FontAsset font, string label)
+        {
+            const float x = 40f, y = 66f, w = 270f, h = 104f;
+            Image("CoinPill", parent, pill, x, y, w, h, sliced: true);
+            Image("Coin", parent, coin, x - 6f, y + 4f, 96f, 96f);
+            return Text("Coins", parent, font, label ?? string.Empty, DesignTokens.TypeHud, DesignTokens.Ink, x + 84f, y, w - 100f, h - 8f);
+        }
     }
 
     /// <summary>Relays a tap on a board element as its index (rule #9: EventSystem only, no polling;

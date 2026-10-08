@@ -12,5 +12,6 @@ namespace Game.Gen
         public static readonly AdPlacement RewardedRevive       = new("rewarded_revive");
         public static readonly AdPlacement InterstitialLevelEnd = new("interstitial_level_end");
         public static readonly AdPlacement RewardedRvSlot       = new("rewarded_rv_slot");
+        public static readonly AdPlacement RewardedWinDouble    = new("rewarded_win_double");
     }
 }

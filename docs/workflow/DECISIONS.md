@@ -252,3 +252,12 @@ Ghi chú: Continue (+6) giữ tạm tới giai đoạn B. Các mục [XÁC NHẬ
 ### D-030 · 08-10-2026 · Bước 6 · Duyệt CR-012 giai đoạn B (Revive + RV Slot)
 Quyết định (người chốt: Phat, "ok commit"): duyệt R-19 Remove (lõi), R-22 Revive (2 Remove miễn phí lên cọc ít lá nhất, lặp tới khi hết kẹt, tối đa 3 / lượt), R-23 RV Slot (+8, 2 / lượt, lúc chơi hoặc ở màn thua), bỏ Continue; màn thua 2 lựa chọn + nút "▶ +8 slots" trên ô chờ; `features/revive.md` v1.0; quảng cáo `rewarded_revive`, `rewarded_rv_slot`.
 Ghi chú: Revive / RV Slot hiện chỉ bằng quảng cáo; trả bằng xu và hoạt ảnh "cọc bay về bàn" làm ở giai đoạn C.
+
+### D-031 · 08-10-2026 · Bước 6 · Cách làm CR-012 giai đoạn C
+Quyết định (người chốt: Phat): (1) **mock-up trước** cho mọi màn mới / đổi của giai đoạn C, duyệt rồi mới code; (2) **số kinh tế đề xuất ở GDD v2.0 §7 được duyệt làm mặc định** — 100 xu khởi đầu, thắng +20, quảng cáo ×2 ở màn Thắng; Hand 100 / Shuffle 80 / Remove 120 xu (1 cái mỗi lần mua); tặng 3 khi mở khoá; Revive 100 xu lần đầu, ×2 mỗi lần sau, tối đa 3 / lượt; tất cả là config; (3) **chia C1 / C2** — C1: ví xu, HUD xu, thưởng thắng + ×2, Revive bằng xu; C2: booster Hand / Shuffle / Remove + mở khoá + mua. Mỗi phần duyệt và commit riêng.
+
+### D-032 · 08-10-2026 · Bước 6 · Duyệt mock-up C1 (xu)
+Quyết định (người chốt: Phat, "ok duyệt"): duyệt 5 mock-up `gameplay-coins-v02`, `home-coins-v02`, `win-coins-v02` ("▶ Claim ×2" là nút chính, "Next" nhận thưởng thường), `lose-offer-coins-v02`, `lose-offer-coins-poor-v02` (Revive bằng xu hoặc quảng cáo, giá xu tăng ×2 mỗi lần trong lượt). Bắt đầu code C1.
+
+### D-033 · 08-10-2026 · Bước 6 · Duyệt + commit CR-012 giai đoạn C1 (xu)
+Quyết định (người chốt: Phat, "ok làm 2 commit"): duyệt code C1 — ví xu (100 khởi đầu), thưởng thắng +20 và "▶ Claim ×2", Revive bằng xu 100 → 200 → 400 trong lượt, ô xu ở HUD / Home / dialog Thắng-Thua. Commit riêng, tách khỏi bản bố cục level (D-034). Ảnh: `docs/captures/cr12c1/`.

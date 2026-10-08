@@ -10,7 +10,7 @@ Người duyệt: Thiết kế Phat · Hình ảnh Phat · Art Phat · Kỹ thu�
 | 3 Art | xong | art v1: 71 sprite (`art/export/`), báo cáo xuất 0 lỗi chặn | Phat, 06-10-2026 | |
 | 4 Animation | xong (gắn Unity ở Bước 6) | animation-list v1.0 (21 animation), `art/motion/preview.html` | Phat, 06-10-2026 | |
 | 5 Logic | xong | GDD v1.2, code Board/Meta, 30 level, level-report, architecture-notes, 135 test | Phat, 06-10-2026 | |
-| 6 Ráp | 6b đã duyệt + commit (D-026); CR-004…CR-011 + D-027 đã duyệt + commit (D-028, b6c218a) · **CR-012 (theo GDD anh Tánh) đã chốt: làm theo GDD, mục 4 = tràn là thua; giai đoạn A đã duyệt + commit (D-029); giai đoạn B đã duyệt + commit (D-030); **đang làm giai đoạn C (xu + booster)**** | | |
+| 6 Ráp | 6b đã duyệt + commit (D-026); CR-004…CR-011 + D-027 đã duyệt + commit (D-028, b6c218a) · **CR-012 (theo GDD anh Tánh) đã chốt: làm theo GDD, mục 4 = tràn là thua; giai đoạn A đã duyệt + commit (D-029); giai đoạn B đã duyệt + commit (D-030); giai đoạn C1 (xu) đã duyệt + commit (D-033) · **tiếp theo: C2 (booster)**** | | |
 | 7 AI test | chưa bắt đầu | | |
 | 8 Máy thật/Chơi thử/Phát hành | chưa bắt đầu | | |
 
@@ -51,6 +51,13 @@ Người duyệt: Thiết kế Phat · Hình ảnh Phat · Art Phat · Kỹ thu�
 - Boot báo `[Localization] no bundled JSON for locale 'en'` và `no bundled products.json` — đúng với SKU mới chưa có nội dung; xử lý khi thêm LocKey / catalog đầu tiên.
 
 ## Phiên gần nhất
+
+08-10-2026 (28) · Phat duyệt C1 và bản bố cục level (D-033, D-034); tách làm 2 commit. `dotnet test` 115 pass, 1 skip. Chỉ commit ảnh `cr12c1`, `video-layouts-1-5`, `automatic-stack-layout`; các thư mục ảnh thử trung gian nhắc trong log Codex bên dưới không vào repo. Ảnh render `.working/c1/` trùng `docs/mockups/*-coins-v02.png` nên bỏ qua (`.working/.gitignore`). `level-design.md` trỏ ảnh sang `video-layouts-1-5`.
+Bỏ qua: Unity compile / play mode sau khi tách commit (không đổi code); commit C1 đứng riêng chưa được compile thử trong Unity.
+
+08-10-2026 (27) · Phat duyệt mock-up C1 (D-032). **Code C1 (xu):** `CardSlotResources.Coin` qua `IWalletService`; 100 xu khởi đầu (một lần, cờ `StartCoinsGranted`); thắng +20 (lưu trước khi hiện, G19); "▶ Claim ×2" (quảng cáo `rewarded_win_double`) cộng thêm 20; Revive bằng xu 100 → 200 → 400 trong lượt (`RevivePriceAfter`), hoàn xu nếu lưu lỗi; ô xu (UiKit.CoinPill) ở HUD, Home và trên lớp mờ của dialog Thắng / Thua; text `hud.coins`, `win.reward`, `win.claim`, `lose.revive_price` · bằng chứng: `dotnet test` 108 pass, 1 skip (5 test xu mới); Codegen + Content Build; compile 0 lỗi; play mode 1 lần: Home 100 → level 1 HUD 100 → thắng: dialog 120 + Claim ×2 → 140, sang level 2 → level 13 thua: Revive 100 (còn 40) → thua lại: nút xu 200 bị khoá; 0 lỗi / exception; ảnh `docs/captures/cr12c1/` khớp 5 mock-up; save máy dev đã khôi phục · chưa làm: xu đếm lên (chuyển động), giới hạn quảng cáo mỗi ngày (mặc định 0 = không giới hạn nên chưa cần lưu bộ đếm), sự kiện analytics xu · đã duyệt + commit (D-033).
+
+08-10-2026 (26) · Commit giai đoạn B (D-030, 8e242e4). Phat chốt cách làm C (D-031): mock-up trước, số kinh tế §7 duyệt, chia C1 (xu) / C2 (booster). Mock-up C1 (5 ảnh `docs/mockups/*-coins*-v02.png`, nguồn `.working/c1.html`) — chờ duyệt.
 
 08-10-2026 (25) · Commit giai đoạn A (D-029, 84f00db). **CR-012 giai đoạn B:** model R-19 Remove (lá dở → ô chờ FIFO → chồng mở → chồng bị che, tầng cao trước), R-22 Revive (2 Remove miễn phí lên cọc ít lá nhất, còn kẹt thì thêm từng cọc, chỉ báo kết quả cuối), R-23 RV Slot (+8, 2 lần / lượt, lúc chơi hoặc sau khi thua); bỏ Continue; `EconomyTuning` + `BoardRules` mới; quảng cáo `rewarded_revive`, `rewarded_rv_slot` (bỏ `rewarded_continue`); text mới (`lose.title_stuck`, `lose.revive`, `lose.revive_note`, `lose.rv_slot`, `gameplay.rv_slot`); `LoseDialog` 2 lựa chọn + nút "▶ +8 slots" trên ô chờ; spec `features/revive.md` · bằng chứng: `dotnet test` 103 pass, 1 skip; Codegen Generate + Content Build; compile 0 lỗi; play mode 1 lần (level 12 → 13): nút +8 → 0/34, ép thua level 13 → màn thua đúng, Revive → chơi tiếp (cọc đỏ 6/18, ô chờ 18/26); 0 exception; ảnh `docs/captures/cr12b/`; save máy dev đã khôi phục · chưa xem: màn thua do kẹt ("No moves left!"), Revive lặp nhiều vòng trong Unity (chỉ test headless) · đã duyệt + commit (D-030).
 

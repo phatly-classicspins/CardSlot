@@ -189,7 +189,7 @@ Theo GDD anh Tánh §2 (chi tiết ở `features/ftue.md` v2, giai đoạn F):
 
 ## 7. Kinh tế
 
-Có lại xu và booster (đảo CR-005). Mọi số là `ConfigKey` (remote config, rule: `pf-add-key`). Bảng đầy đủ ở `economy-sheet.md` v2 (giai đoạn C). Giá trị mặc định đề xuất **[XÁC NHẬN]**:
+Có lại xu và booster (đảo CR-005). Mọi số là `ConfigKey` (remote config, rule: `pf-add-key`). Bảng đầy đủ ở `economy-sheet.md` v2 (giai đoạn C). Giá trị mặc định **đã duyệt (D-031)**; C1 đã code phần xu (khởi đầu, thưởng thắng, ×2, giá Revive), C2 làm phần booster:
 
 | Key | Mặc định | Ý nghĩa (GDD anh Tánh §5) |
 |---|---|---|

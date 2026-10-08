@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using ClassicSpins.PrototypeFramework.Application;
 using Game.Application;
+using ClassicSpins.PrototypeFramework.Domain;
 using Game.Domain;
 using NUnit.Framework;
 
@@ -16,15 +18,26 @@ namespace CardSlot.SkuHeadlessTests.Meta
         public void Save() { if (Fail) throw new System.IO.IOException("disk full"); Saves++; }
     }
 
+    /// <summary>In-memory wallet: the framework port without its save / publish side effects.</summary>
+    sealed class TestWallet : IWalletService
+    {
+        readonly System.Collections.Generic.Dictionary<ResourceKey, long> _b = new System.Collections.Generic.Dictionary<ResourceKey, long>();
+        public long Balance(ResourceKey res) => _b.TryGetValue(res, out var v) ? v : 0;
+        public bool CanAfford(ResourceKey res, long amount) => Balance(res) >= amount;
+        public bool TrySpend(ResourceKey res, long amount, GrantSource sink) { if (!CanAfford(res, amount)) return false; _b[res] = Balance(res) - amount; return true; }
+        public void Grant(ResourceKey res, long amount, GrantSource source) => _b[res] = Balance(res) + amount;
+        public bool TryExchange(ResourceKey spend, long cost, Action<IWalletGrant> grant, GrantSource source) => throw new NotSupportedException();
+    }
+
     public class LevelProgressTests
     {
-        TestStore store; EconomyTuning tuning; LevelProgressService svc;
+        TestStore store; TestWallet wallet; EconomyTuning tuning; LevelProgressService svc;
 
         [SetUp]
         public void SetUp()
         {
-            store = new TestStore(); tuning = new EconomyTuning();
-            svc = new LevelProgressService(store, tuning);
+            store = new TestStore(); wallet = new TestWallet(); tuning = new EconomyTuning();
+            svc = new LevelProgressService(store, wallet, tuning);
         }
 
         [Test]
@@ -66,6 +79,50 @@ namespace CardSlot.SkuHeadlessTests.Meta
             Assert.That(w.NextLevel, Is.EqualTo(1), "the dialog must not show unsaved progress (G19)");
             Assert.That(store.Progress.CurrentLevel, Is.EqualTo(1));
             Assert.That(store.Progress.HighestCleared, Is.EqualTo(0));
+        }
+
+        // ── coins (CR-012 C1, GDD v2.0 §7) ──────────────────────────────────────────────────────────────
+        [Test]
+        public void Start_coins_are_granted_once_per_install()
+        {
+            svc.EnsureStartCoins(); svc.EnsureStartCoins();
+            Assert.That((svc.Coins, store.Progress.StartCoinsGranted), Is.EqualTo((100L, true)));
+        }
+
+        [Test]
+        public void A_win_pays_the_reward_and_claim_x2_pays_it_once_more()
+        {
+            var w = svc.CompleteLevel(1);
+            Assert.That((w.Reward, svc.Coins), Is.EqualTo((20, 20L)));
+            Assert.That(svc.GrantWinBonus(w.Reward), Is.True);
+            Assert.That(svc.Coins, Is.EqualTo(40L), "×2 = the reward once more");
+        }
+
+        [Test]
+        public void G18_a_failed_save_takes_the_win_reward_back()
+        {
+            store.Fail = true;
+            var w = svc.CompleteLevel(1);
+            Assert.That((w.Saved, w.Reward, svc.Coins), Is.EqualTo((false, 0, 0L)));
+        }
+
+        [Test]
+        public void Spending_coins_needs_the_balance_and_refunds_a_failed_save()
+        {
+            svc.EnsureStartCoins();
+            Assert.That(svc.TrySpendCoins(150), Is.False, "100 coins cannot pay 150");
+            Assert.That(svc.Coins, Is.EqualTo(100L));
+            store.Fail = true;
+            Assert.That(svc.TrySpendCoins(100), Is.False);
+            Assert.That(svc.Coins, Is.EqualTo(100L), "a failed save gives the coins back");
+            store.Fail = false;
+            Assert.That((svc.TrySpendCoins(100), svc.Coins), Is.EqualTo((true, 0L)));
+        }
+
+        [Test]
+        public void Revive_price_doubles_with_each_paid_revive_of_the_attempt()
+        {
+            Assert.That(new[] { 0, 1, 2 }.Select(tuning.RevivePriceAfter), Is.EqualTo(new long[] { 100, 200, 400 }));
         }
 
         [Test]
