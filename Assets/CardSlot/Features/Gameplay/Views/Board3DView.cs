@@ -55,6 +55,7 @@ namespace Game.Views
 
         public float Tilt { get => _tilt; set { _tilt = value; if (_board != null) { ApplyTilt(); if (_last != null) Render(_last); } } }
         private BoardVisual _last;
+        private float _trayScale = 1f;
 
         private float Cos => Mathf.Cos(_tilt * Mathf.Deg2Rad);
 
@@ -226,6 +227,7 @@ namespace Game.Views
                     if (f.FromStack >= 0) { var p = StackCardPose(f.FromStack, f.FromDepth); from.Add((p.pos, p.rot)); }
                     else from.Add(HeldPose(f.FromHeld, v.BufferCapacity));
                 }
+            float sourceTrayScale = _trayScale;
             _last = v;
             // per slot, how many times its peg fills up in this change (a column can fill twice in one tap)
             var fills = new Dictionary<int, int>();
@@ -253,7 +255,7 @@ namespace Game.Views
             var chains = new Dictionary<int, List<PegExit>>();
             foreach (var kv in fills)
                 if (leaving.TryGetValue(kv.Key, out var first)) chains[kv.Key] = Chain(v, kv.Key, kv.Value, first, flights);
-            if (flights != null) Launch(v, flights, from, chains);
+            if (flights != null) Launch(v, flights, from, chains, sourceTrayScale);
         }
 
         // ── card flights and peg swaps (CR-007, CR-009) ───────────────────────────────────────────────
@@ -379,7 +381,7 @@ namespace Game.Views
             return null;
         }
 
-        private void Launch(BoardVisual v, IReadOnlyList<CardFlight> flights, List<(Vector3 pos, Quaternion rot)> from, Dictionary<int, List<PegExit>> chains)
+        private void Launch(BoardVisual v, IReadOnlyList<CardFlight> flights, List<(Vector3 pos, Quaternion rot)> from, Dictionary<int, List<PegExit>> chains, float sourceTrayScale)
         {
             float now = Time.time;
             var starts = new float[flights.Count];
@@ -398,7 +400,7 @@ namespace Game.Views
                     start = Mathf.Max(start, chain[f.SwapGen - 1].Arrive + k * FlightInterval);
                 }
                 starts[i] = start;
-                var g = new Ghost { Start = start, S0 = Vector3.one };
+                var g = new Ghost { Start = start, S0 = Vector3.one * (f.FromStack >= 0 ? sourceTrayScale : 1f) };
                 if (f.Completes && chain != null && f.SwapGen < chain.Count)
                 {
                     g.Ride = chain[f.SwapGen];
@@ -569,22 +571,114 @@ namespace Game.Views
             }
         }
 
+        // Presentation packing uses authored counts, so neither clusters nor tray move when cards leave.
+        private StackVisual[] PackStacks(StackVisual[] source)
+        {
+            var stacks = (StackVisual[])source.Clone();
+            var boxes = new Dictionary<int, Rect>();
+            foreach (var st in stacks)
+            {
+                for (int b = 0; b < st.AuthoredCount; b++)
+                {
+                    float x, y, hw = CardFaceW / 2f, hh = CardFaceH / 2f;
+                    int card = st.PoseOffset + b;
+                    if (st.Fan)
+                    {
+                        float step = Mathf.Min(st.Spread ? DesignTokens.ReferenceFanStep : FanMaxStep,
+                            (st.Spread ? DesignTokens.ReferenceFanSpread : FanMaxSpread) / Mathf.Max(1, st.PoseCount - 1));
+                        float a = (-0.5f * step * (st.PoseCount - 1) + card * step) * (st.SpreadDirection < 0 ? -1f : 1f) * Mathf.Deg2Rad;
+                        float r = CardFaceH / 2f + 20f;
+                        x = st.X + st.W / 2f + r * Mathf.Sin(a); y = st.Y + st.H - 30f - r * Mathf.Cos(a);
+                        hw = (Mathf.Abs(Mathf.Cos(a)) * CardFaceW + Mathf.Abs(Mathf.Sin(a)) * CardFaceH) / 2f;
+                        hh = (Mathf.Abs(Mathf.Sin(a)) * CardFaceW + Mathf.Abs(Mathf.Cos(a)) * CardFaceH) / 2f;
+                    }
+                    else
+                    {
+                        float shift = card * (st.Spread ? DesignTokens.ReferencePileSpacing : PileLean) * (st.SpreadDirection < 0 ? -1f : 1f);
+                        x = st.X + CardW / 2f + shift * Mathf.Cos(st.SpreadAngle * Mathf.Deg2Rad);
+                        y = st.Y + CardL / 2f + shift * Mathf.Sin(st.SpreadAngle * Mathf.Deg2Rad);
+                    }
+                    y -= (22f + st.PoseLayer * 60f + card * (ThinT + ThinGap)) * Mathf.Sin(_tilt * Mathf.Deg2Rad);
+                    var box = Rect.MinMaxRect(x - hw - 11f, y - hh - 11f, x + hw + 11f, y + hh + 11f);
+                    if (boxes.TryGetValue(st.PoseRoot, out var old))
+                        box = Rect.MinMaxRect(Mathf.Min(box.xMin, old.xMin), Mathf.Min(box.yMin, old.yMin), Mathf.Max(box.xMax, old.xMax), Mathf.Max(box.yMax, old.yMax));
+                    boxes[st.PoseRoot] = box;
+                }
+            }
+            var roots = new List<int>(boxes.Keys);
+            roots.Sort((a, b) => source[a].Y != source[b].Y ? source[a].Y.CompareTo(source[b].Y)
+                : source[a].X != source[b].X ? source[a].X.CompareTo(source[b].X) : a.CompareTo(b));
+            var placed = new List<(int root, Rect box)>();
+            foreach (int root in roots)
+            {
+                var original = boxes[root]; var box = original;
+                bool moved;
+                do
+                {
+                    moved = false;
+                    foreach (var other in placed)
+                    {
+                        // Cross-axis bridges deliberately overlay the horizontal piles on a different layer.
+                        if (source[root].SpreadAngle != source[other.root].SpreadAngle && source[root].PoseLayer != source[other.root].PoseLayer) continue;
+                        var expanded = Rect.MinMaxRect(other.box.xMin - 12f, other.box.yMin - 12f, other.box.xMax + 12f, other.box.yMax + 12f);
+                        if (!box.Overlaps(expanded)) continue;
+                        float pushX = expanded.xMax - box.xMin, pushY = expanded.yMax - box.yMin;
+                        if (pushY < pushX) box.y += pushY; else box.x += pushX;
+                        moved = true;
+                    }
+                } while (moved);
+                int dx = Mathf.CeilToInt(box.x - original.x), dy = Mathf.CeilToInt(box.y - original.y);
+                for (int i = 0; i < stacks.Length; i++) if (stacks[i].PoseRoot == root)
+                {
+                    stacks[i].X += dx; stacks[i].Y += dy;
+                }
+                placed.Add((root, box));
+            }
+            return stacks;
+        }
+
         private void DrawTray(BoardVisual v)
         {
+            var stacks = PackStacks(v.Stacks);
             float inset = DesignTokens.TrayRimInset, pad = DesignTokens.TrayPadding;
             // CR-011: the tray fits the level's layout, centred under the holding area (the reference, video IMG_3750)
             float left = float.MaxValue, topY = float.MaxValue, right = 0f, bottom = 0f;
-            foreach (var st in v.Stacks)
+            foreach (var st in stacks)
             {
                 int cards = st.Colors != null ? st.Colors.Length : 0;
                 left = Mathf.Min(left, st.X); topY = Mathf.Min(topY, st.Y);
-                right = Mathf.Max(right, st.X + st.W + Mathf.Max(0, cards - 1) * PileLean);   // cards lean to the right
-                bottom = Mathf.Max(bottom, st.Y + st.H);
+                float spacing = st.Spread ? DesignTokens.ReferencePileSpacing : PileLean;
+                float endShift = Mathf.Max(0, st.PoseOffset + st.AuthoredCount - 1) * spacing * (st.SpreadDirection < 0 ? -1f : 1f);
+                float endX = endShift * Mathf.Cos(st.SpreadAngle * Mathf.Deg2Rad), endY = endShift * Mathf.Sin(st.SpreadAngle * Mathf.Deg2Rad);
+                left = Mathf.Min(left, st.X + Mathf.Min(0f, endX));
+                right = Mathf.Max(right, st.X + CardW + Mathf.Max(0f, endX));
+                topY = Mathf.Min(topY, st.Y + Mathf.Min(0f, endY));
+                bottom = Mathf.Max(bottom, st.Y + CardL + Mathf.Max(0f, endY));
+                if (st.Fan)
+                {
+                    float fanStep = st.Spread ? DesignTokens.ReferenceFanStep : FanMaxStep;
+                    float fanSpread = st.Spread ? DesignTokens.ReferenceFanSpread : FanMaxSpread;
+                    int poseCount = Mathf.Max(1, st.PoseCount);
+                    float angleStep = Mathf.Min(fanStep, fanSpread / Mathf.Max(1, poseCount - 1));
+                    // Include every rotated card corner so a wide fan stays inside the tray.
+                    for (int card = 0; card < st.AuthoredCount; card++)
+                    {
+                        float a = (-0.5f * angleStep * (poseCount - 1) + (st.PoseOffset + card) * angleStep) * (st.SpreadDirection < 0 ? -1f : 1f) * Mathf.Deg2Rad;
+                        float radius = CardFaceH / 2f + 20f;
+                        float cx = st.X + st.W / 2f + radius * Mathf.Sin(a);
+                        float cy = st.Y + st.H - 30f - radius * Mathf.Cos(a);
+                        float halfW = (Mathf.Abs(Mathf.Cos(a)) * CardFaceW + Mathf.Abs(Mathf.Sin(a)) * CardFaceH) / 2f;
+                        float halfH = (Mathf.Abs(Mathf.Sin(a)) * CardFaceW + Mathf.Abs(Mathf.Cos(a)) * CardFaceH) / 2f;
+                        left = Mathf.Min(left, cx - halfW); right = Mathf.Max(right, cx + halfW);
+                        topY = Mathf.Min(topY, cy - halfH); bottom = Mathf.Max(bottom, cy + halfH);
+                    }
+                }
+                bottom = Mathf.Max(bottom, st.Y + CardL);
             }
-            if (v.Stacks.Length == 0) { left = topY = 0f; right = CardW; bottom = CardL; }
+            if (stacks.Length == 0) { left = topY = 0f; right = CardW; bottom = CardL; }
             // a tall stack reads higher on screen (the board is tilted toward the camera): keep room above for it
             float tallest = 0f;
-            foreach (var st in v.Stacks) tallest = Mathf.Max(tallest, 22f + st.Layer * 60f + (st.Colors != null ? st.Colors.Length : 0) * (ThinT + ThinGap));
+            foreach (var st in stacks) tallest = Mathf.Max(tallest, 22f + st.PoseLayer * 60f + (st.PoseOffset + st.AuthoredCount) * (ThinT + ThinGap));
             float lift = tallest * Mathf.Sin(_tilt * Mathf.Deg2Rad);
             float contentW = right - left, contentH = bottom - topY;
             float trayW = Mathf.Clamp(contentW + 2f * (pad + inset), DesignTokens.TrayMinWidth, 1080f - 2f * DesignTokens.ScreenMargin);
@@ -594,14 +688,17 @@ namespace Game.Views
             Slab("TrayRim", tx, ty, trayW, trayH, 12f, 48f, _rim, 4f);
             Slab("TrayInner", tx + inset, ty + inset, trayW - 2f * inset, trayH - 2f * inset, 6f, 34f, _inner, 12f);
             float ox = Mathf.Round(540f - contentW / 2f - left), oy = Mathf.Round(ty + (trayH + lift) / 2f - contentH / 2f - topY);   // centred below the room kept for tall stacks
-            for (int i = 0; i < v.Stacks.Length; i++)
+            int firstCardObject = _dynamic.Count;
+            for (int i = 0; i < stacks.Length; i++)
             {
-                var s = v.Stacks[i];
+                var s = stacks[i];
                 if (s.Colors == null || s.Colors.Length == 0) continue;
                 int n = s.Colors.Length;                       // cards, bottom (b = 0) to top (b = n - 1)
                 float pitch = ThinT + ThinGap;
-                float baseHeight = 22f + s.Layer * 60f;     // higher layers physically sit above lower ones
-                float step = n > 1 ? Mathf.Min(FanMaxStep, FanMaxSpread / (n - 1)) : 0f;
+                float baseHeight = 22f + s.PoseLayer * 60f + s.PoseOffset * pitch;     // higher layers physically sit above lower ones
+                float maxStep = s.Spread ? DesignTokens.ReferenceFanStep : FanMaxStep;
+                float maxSpread = s.Spread ? DesignTokens.ReferenceFanSpread : FanMaxSpread;
+                float step = Mathf.Min(maxStep, maxSpread / Mathf.Max(1, s.PoseCount - 1));
                 var list = new List<Renderer>();
                 _stackRenderers[i] = list;
                 for (int b = 0; b < n; b++)
@@ -613,7 +710,7 @@ namespace Game.Views
                     {
                         // a hand of cards: each turns around a pivot at the bottom-centre of the stack's rect,
                         // the top card at the right end of the arc
-                        float a = (-0.5f * step * (n - 1) + b * step) * Mathf.Deg2Rad;
+                        float a = (-0.5f * step * (s.PoseCount - 1) + (s.PoseOffset + b) * step) * (s.SpreadDirection < 0 ? -1f : 1f) * Mathf.Deg2Rad;
                         float px = ox + s.X + s.W / 2f, py = oy + s.Y + s.H - 30f;
                         float r = CardFaceH / 2f + 20f;
                         card = Piece($"Stack{i}Card{d}", _thinMesh, _cardTop[k], _cardSide[k],
@@ -622,8 +719,8 @@ namespace Game.Views
                     else
                     {
                         // each card a little to the right of the one below (the reference)
-                        float shift = b * PileLean;
-                        card = Piece($"Stack{i}Card{d}", _thinMesh, _cardTop[k], _cardSide[k], P(ox + s.X + CardW / 2f + shift, oy + s.Y + CardL / 2f, baseHeight + b * pitch));
+                        float shift = (s.PoseOffset + b) * (s.Spread ? DesignTokens.ReferencePileSpacing : PileLean) * (s.SpreadDirection < 0 ? -1f : 1f);
+                        card = Piece($"Stack{i}Card{d}", _thinMesh, _cardTop[k], _cardSide[k], P(ox + s.X + CardW / 2f + shift * Mathf.Cos(s.SpreadAngle * Mathf.Deg2Rad), oy + s.Y + CardL / 2f + shift * Mathf.Sin(s.SpreadAngle * Mathf.Deg2Rad), baseHeight + b * pitch));
                     }
                     list.Add(card.GetComponent<Renderer>());
                     if (s.Hint && b == n - 1)
@@ -632,6 +729,19 @@ namespace Game.Views
                         var rim = Piece($"Stack{i}Hint", _hintMesh, _hint, _hint, card.transform.localPosition + new Vector3(0f, 0f, -ThinT + 4.5f)   /* its face 1.5 under the card face */, card.transform.localEulerAngles.z);
                         _hints.Add(rim.GetComponent<Renderer>());
                     }
+                }
+            }
+            float fit = Mathf.Min(1f, (trayW - 2f * (pad + inset)) / Mathf.Max(1f, contentW),
+                (trayH - 2f * (pad + inset)) / Mathf.Max(1f, contentH + lift));
+            _trayScale = fit;
+            if (fit < 1f)
+            {
+                var centre = P(540f, ty + trayH / 2f);
+                for (int i = firstCardObject; i < _dynamic.Count; i++)
+                {
+                    var tr = _dynamic[i].transform;
+                    tr.localPosition = centre + (tr.localPosition - centre) * fit;
+                    tr.localScale *= fit;
                 }
             }
         }

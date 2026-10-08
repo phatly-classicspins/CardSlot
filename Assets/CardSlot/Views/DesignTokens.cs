@@ -57,6 +57,8 @@ namespace Game.Views
 
         // ── Spacing / layout (§4, §5) ────────────────────────────────────────────────────────────────
         public const float ScreenMargin = 40f;
+        // Reference layouts: expose each card edge, and open a six-card fan through 60 degrees.
+        public const float ReferencePileSpacing = 18f, ReferenceFanStep = 12f, ReferenceFanSpread = 60f;
         public const float HudTop = 66f, HudHeight = 104f, RoundButton = 104f;
         public const float TargetsTop = 200f, TargetsHeight = 400f, TargetSlotWidth = 300f, TargetSlotGap = 40f,
             TargetSlotWidthTwo = 470f, TargetSlotGapTwo = 60f, TargetCardTop = 120f, TargetCardStep = 34f;

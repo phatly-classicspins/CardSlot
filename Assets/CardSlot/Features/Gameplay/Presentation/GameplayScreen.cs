@@ -46,6 +46,7 @@ namespace Game.Presentation
         private Board3DView _board3D;
         private int _level, _levelCount;
         private LevelData _data;
+        private StackPlacement[] _placements;
         private BoardModel _board;
         private int _paidRevives;                 // revives paid with coins this attempt: the next costs more (GDD v2.0 §7)
         private bool _busy;                       // a dialog or ad is up: board taps are ignored
@@ -123,6 +124,7 @@ namespace Game.Presentation
         {
             _level = level;
             _data = await _levels.LoadAsync(level, ct);
+            _placements = StackPlacementRules.Resolve(_data);
             _board = new BoardModel(_data, _tuning.BoardRules());
             _paidRevives = 0;
             _grooves.Clear();
@@ -471,7 +473,11 @@ namespace Game.Presentation
                 int n = _board.Remaining(i);
                 var colors = new int[n];
                 for (int d = 0; d < n; d++) colors[d] = _board.CardAt(i, d);
-                v.Stacks[i] = new StackVisual { X = spec.X, Y = spec.Y, W = spec.W, H = spec.H, Layer = spec.Layer, Colors = colors, Covered = n > 0 && _board.IsCovered(i), Hint = _board.CanTap(i) };   // Phat: every stack a tap can take from
+                // Every level uses the same automatic placement rule; poses stay fixed during the attempt.
+                var placement = _placements[i];
+                var origin = _data.Stacks[placement.Root];
+                int offset = placement.Offset;
+                v.Stacks[i] = new StackVisual { X = origin.X, Y = origin.Y, W = origin.W, H = origin.H, Layer = spec.Layer, PoseLayer = origin.Layer, AuthoredCount = spec.Count, Fan = origin.Fan, Spread = true, SpreadDirection = placement.Direction, SpreadAngle = origin.SpreadAngle, PoseRoot = placement.Root, PoseOffset = offset, PoseCount = origin.Count, Colors = colors, Covered = n > 0 && _board.IsCovered(i), Hint = _board.CanTap(i) };   // Phat: every stack a tap can take from
             }
             for (int s = 0; s < _board.SlotCount; s++)
             {

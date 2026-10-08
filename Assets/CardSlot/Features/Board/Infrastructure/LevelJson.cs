@@ -33,7 +33,7 @@ namespace Game.Infrastructure
                     l.Targets.Add(new TargetSpec(Color((string)t["color"]), (int)t["capacity"]));
                 foreach (var s in (JArray)o["stacks"] ?? new JArray())
                     l.Stacks.Add(new StackSpec((string)s["id"], (int)s["x"], (int)s["y"], (int)s["w"], (int)s["h"], (int)s["layer"],
-                        Color((string)s["color"]), (int)s["count"]));
+                        Color((string)s["color"]), (int)s["count"]) { Fan = (bool?)s["fan"] ?? false, Spread = (bool?)s["spread"] ?? false, OnStack = (string)s["on_stack"], SpreadDirection = (int?)s["spread_direction"] ?? 0, SpreadAngle = (int?)s["spread_angle"] ?? 0 });
                 var problems = LevelValidator.Validate(l);
                 if (problems.Count > 0) { error = string.Join("; ", problems); return false; }
                 level = l;
@@ -65,7 +65,7 @@ namespace Game.Infrastructure
                 stacks.Add(new JObject
                 {
                     ["id"] = s.Id, ["x"] = s.X, ["y"] = s.Y, ["w"] = s.W, ["h"] = s.H, ["layer"] = s.Layer,
-                    ["color"] = ColorId(s.Color), ["count"] = s.Count,
+                    ["color"] = ColorId(s.Color), ["count"] = s.Count, ["fan"] = s.Fan, ["spread"] = s.Spread, ["on_stack"] = s.OnStack, ["spread_direction"] = s.SpreadDirection, ["spread_angle"] = s.SpreadAngle,
                 });
             o["stacks"] = stacks;
             o["ftue"] = l.Ftue;

@@ -121,7 +121,8 @@ namespace Game.Domain
             };
             foreach (var t in groups.Targets) level.Targets.Add(new TargetSpec(t.Color, t.Capacity * cardsPerGroup));
             foreach (var s in groups.Stacks)
-                level.Stacks.Add(new StackSpec(s.Id, s.X, s.Y, s.W, s.H, s.Layer, s.Color, s.Count * cardsPerGroup));
+                level.Stacks.Add(new StackSpec(s.Id, s.X, s.Y, s.W, s.H, s.Layer, s.Color, s.Count * cardsPerGroup)
+                    { Fan = s.Fan, Spread = s.Spread, SpreadDirection = s.SpreadDirection, SpreadAngle = s.SpreadAngle, OnStack = s.OnStack });
             return level;
         }
 

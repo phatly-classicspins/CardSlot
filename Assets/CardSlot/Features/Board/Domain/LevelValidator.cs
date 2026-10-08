@@ -35,10 +35,19 @@ namespace Game.Domain
             {
                 if (string.IsNullOrEmpty(s.Id) || !ids.Add(s.Id)) errors.Add($"stack id '{s.Id}' empty or duplicated");
                 Range(errors, $"stack {s.Id} count", s.Count, 1, 48);
+                Range(errors, $"stack {s.Id} spread_direction", s.SpreadDirection, -1, 1);
+                Range(errors, $"stack {s.Id} spread_angle", s.SpreadAngle, -180, 180);
                 Range(errors, $"stack {s.Id} layer", s.Layer, 0, 4);
                 if (s.W <= 0 || s.H <= 0) errors.Add($"stack {s.Id} has an empty rectangle");
                 if (s.Color < 0 || s.Color >= LevelData.ColorCount) errors.Add($"stack {s.Id} colour {s.Color} out of range");
                 else if (s.Count > 0) cardsPerColor[s.Color] += s.Count;
+            }
+            foreach (var s in level.Stacks)
+            {
+                if (string.IsNullOrEmpty(s.OnStack)) continue;
+                var parent = level.Stacks.Find(p => p.Id == s.OnStack);
+                if (parent == null || parent.Layer >= s.Layer || !parent.Overlaps(s) || parent.SpreadAngle != s.SpreadAngle)
+                    errors.Add($"stack {s.Id} on_stack must name an overlapping lower layer stack");
             }
             int colours = 0;
             for (int c = 0; c < LevelData.ColorCount; c++)

@@ -1,20 +1,20 @@
 {
   "id": "level_002",
-  "revision": 3,
-  "seed": 200000,
+  "revision": 6,
+  "seed": 0,
   "n_slots": 3,
   "buffer_capacity": 26,
   "targets": [
+    {
+      "color": "color_2",
+      "capacity": 18
+    },
     {
       "color": "color_0",
       "capacity": 18
     },
     {
-      "color": "color_3",
-      "capacity": 18
-    },
-    {
-      "color": "color_7",
+      "color": "color_1",
       "capacity": 18
     }
   ],
@@ -26,45 +26,90 @@
       "w": 150,
       "h": 206,
       "layer": 0,
-      "color": "color_3",
-      "count": 12
+      "color": "color_2",
+      "count": 9,
+      "spread": true,
+      "spread_direction": 1,
+      "spread_angle": 0,
+      "fan": false
     },
     {
       "id": "s1",
-      "x": 176,
+      "x": 620,
       "y": 0,
       "w": 150,
       "h": 206,
       "layer": 0,
       "color": "color_0",
-      "count": 18
+      "count": 9,
+      "spread": true,
+      "spread_direction": -1,
+      "spread_angle": 0,
+      "fan": false
     },
     {
       "id": "s2",
       "x": 0,
-      "y": 232,
+      "y": 250,
       "w": 150,
       "h": 206,
       "layer": 0,
-      "color": "color_7",
-      "count": 18
+      "color": "color_0",
+      "count": 9,
+      "spread": true,
+      "spread_direction": 1,
+      "spread_angle": 0,
+      "fan": false
     },
     {
       "id": "s3",
-      "x": 176,
-      "y": 232,
+      "x": 620,
+      "y": 250,
       "w": 150,
       "h": 206,
       "layer": 0,
-      "color": "color_3",
-      "count": 6
+      "color": "color_1",
+      "count": 9,
+      "spread": true,
+      "spread_direction": -1,
+      "spread_angle": 0,
+      "fan": false
+    },
+    {
+      "id": "s4",
+      "x": 0,
+      "y": 500,
+      "w": 150,
+      "h": 206,
+      "layer": 0,
+      "color": "color_1",
+      "count": 9,
+      "spread": true,
+      "spread_direction": 1,
+      "spread_angle": 0,
+      "fan": false
+    },
+    {
+      "id": "s5",
+      "x": 620,
+      "y": 500,
+      "w": 150,
+      "h": 206,
+      "layer": 0,
+      "color": "color_2",
+      "count": 9,
+      "spread": true,
+      "spread_direction": -1,
+      "spread_angle": 0,
+      "fan": false
     }
   ],
-  "ftue": "ftue.l2",
   "solution": [
     "s0",
+    "s5",
     "s1",
     "s2",
-    "s3"
+    "s3",
+    "s4"
   ]
 }

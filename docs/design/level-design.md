@@ -60,9 +60,9 @@ Răng cưa: tăng dần trong mỗi nhóm 5 level, level ngay sau là level ngh�
 
 | Level | Vai trò | Màu | Layer tối đa | Cọc / màu | Ghi chú |
 |---|---|---|---|---|---|
-| 1 | mở đầu (FTUE) | 3 | 0 | 1 | **3 chồng 18 lá**, mỗi chồng một cọc; FTUE chạm 3 chồng (GDD §6) |
-| 2–4 | dễ | 3 | 0–1 | 1 | mọi cọc đều thấy, chưa có hàng cọc chờ |
-| 5 | hàng cọc chờ | 4 | 1 | 1 | 2 cột ⇒ cọc chờ phía sau bắt đầu xuất hiện |
+| 1 | mở đầu | 2 | 0 | 1 | Bản thử theo IMG_3750: 4 chồng × 9 lá, lưới 2×2, 2 cọc; FTUE vẫn đang tắt |
+| 2–4 | dễ | 3 | 0–2 | 1 | L2: lưới 2×3; L3: lưới + chồng lệch tầng; L4: chữ I; mọi cọc đều thấy |
+| 5 | hàng cọc chờ | 4 | 1 | 1 | 2 cột, cụm bài giữa + 2 cụm xoè quạt phía dưới |
 | 6 | nghỉ | 4 | 1 | 2 | |
 | 7–9 | trung bình | 4–5 | 2 | 2 | (element Hidden Card Stack từ 7 — giai đoạn D) |
 | 10 | khó | 5 | 2 | 2 | |
@@ -91,3 +91,39 @@ Răng cưa: tăng dần trong mỗi nhóm 5 level, level ngay sau là level ngh�
 
 - Level 1: 3 màu, 3 cột, 3 chồng 18 lá không che nhau, mỗi chồng khớp một cọc đang hiện ⇒ mọi thứ tự chạm đều thắng; FTUE (giai đoạn F) chỉ định thứ tự chạm.
 - Level 2: giữ cờ `ftue.l2` (giới thiệu ô chờ) — FTUE đang tắt (`GameplayScreen.FtueEnabled = false`), nội dung làm lại ở giai đoạn F.
+
+## Bản thử bố cục level 1–5 (08-10-2026)
+
+Theo yêu cầu trực tiếp của Phat: bám cách đặt bài trong IMG_3750. Level 1–5 được dựng thủ công, revision nội dung 4, seed 0 (không phải đầu ra generator). Giữ cọc 18 lá và ô chờ 26 rãnh; màu sắc, camera và kích thước lá theo CardSlot hiện tại. Số lá và các chồng bị che được cân bằng theo luật hiện tại, không khẳng định khớp từng lá trong video.
+
+Trường tuỳ chọn `fan` trên một stack chỉ chọn cách vẽ xoè quạt; thiếu trường = false. Không đổi luật che phủ bằng hình chữ nhật. Codec giữ trường khi xuất lại. Level 6–30 giữ nguyên. Không chạy lại generator ghi đè 5 level thủ công này nếu chưa chủ động chọn thay thế.
+
+Bằng chứng ảnh: `docs/captures/video-layouts-1-5/`. Lời giải lưu trong từng JSON được gate headless chạy lại. FTUE vẫn tắt; cần kiểm tra lại kịch bản FTUE khi bật về sau.
+
+### Tăng độ xoè theo phản hồi Phat (08-10-2026)
+Level 1–5 revision 5: trường tuỳ chọn `spread: true` chọn khoảng lệch 10 đơn vị mỗi lá (mặc định cũ 1.5); quạt 6 lá mở 60° thay vì 20°. Các giá trị nằm trong DesignTokens. Hình chữ nhật chồng thẳng mở rộng theo toàn bộ dải bài, dời cột L1/L2 và L5 để không chồng sai tầng. Khay tính cả góc lá xoay để chứa quạt mở rộng. `spread` thiếu/false giữ cách vẽ cũ cho level 6–30.
+
+
+### Quy tắc nối chồng bài · 08-10-2026
+`on_stack` (string, tùy chọn) xác định chồng dưới mà chồng này nối tiếp. Chồng dưới phải tồn tại, giao rectangle và có layer nhỏ hơn; chuỗi layer giảm nên không thể tạo vòng. Controller truy về chồng gốc và cộng số lá ban đầu của các chồng dưới thành PoseOffset. View dùng tâm, kiểu xoè, spacing và layer hình học của gốc. Chồng vàng s10 nối s8, s11 nối s9 ở level 5 revision 6.
+
+Với quạt gốc N lá, bước góc d=min(maxStep,maxSpread/max(1,N-1)); lá thứ b của chồng nối có góc -d(N-1)/2+(PoseOffset+b)d, cùng tâm với gốc. Cao độ =22+rootLayer*60+(PoseOffset+b)*(9+1.2). Do đó lá vàng đầu tiên tiếp tục ngay sau lá đỏ trên cùng một bước góc và một bước cao độ. Quạt gốc 6 lá hiện dùng 12 độ/lá; giới hạn spread áp dụng cho chồng gốc, chuỗi nối tiếp không mở lại một quạt riêng. Chồng thẳng nối cùng bước dịch X của gốc. Chỉ số dùng số lá authored, không co quạt hoặc đổi vị trí khay khi lấy bài; layer tương tác vẫn là layer authored của từng chồng. Rectangle tiếp tục quyết định che phủ như trước.
+
+
+### Rule tự động toàn game · 08-10-2026 (thay phần gán on_stack bằng tay)
+Mọi lần StartLevel gọi StackPlacementRules.Resolve trên LevelData, gồm level authored và level sinh mới/ExpandToCards. Tự tìm support trong các rectangle giao nhau ở layer thấp hơn: layer cao nhất → diện tích giao lớn nhất → tâm gần nhất → id ordinal. on_stack chỉ còn là tương thích dữ liệu cũ tùy chọn, không bắt buộc. L5 revision8 đã bỏ toàn bộ on_stack và bỏ giãn tay x600 ở cột phải.
+
+Resolver trả Root/Support/Offset; đi theo thứ tự layer rồi id, cấp dải chỉ số lá nối tiếp theo root, tránh hai nhánh cùng gốc dùng chung pose. Controller truyền tâm/kiểu xoè/bước của root; view dựng quạt hoặc chồng thẳng bằng chỉ số tuyệt đối. Root dùng style Fan/Spread của chính nó. Count authored giữ nguyên toàn bộ vị trí khi lấy bài/revive; layer tương tác từng chồng vẫn là layer authored. Renderer tự tính envelope các cụm gồm góc xoay, tilt, cao độ và viền, giãn cụm theo hướng ngắn nhất để không giao nhau, co đồng nhất phần bài để vừa khay khi cần. Bay bài bắt đầu bằng scale thực của khay. Tất cả chỉ đổi bố cục trình bày; rectangle che phủ/lời giải hiện có giữ nguyên.
+
+
+Spacing toàn game cập nhật theo Phat: bước ngang18 đơn vị cho mọi level, không còn phụ thuộc spread trong JSON khi chơi. Root vẫn quyết định kiểu quạt/thẳng; chuỗi cùng root kế thừa bước. Pack/fit giữ bài trong khay.
+
+
+### Chiều xoè hai hướng · 08-10-2026
+spread_direction: -1 đảo chiều (chồng thẳng sang trái / quạt đảo thứ tự góc), +1 chiều thuận, 0 hoặc thiếu = tự chọn hướng ra ngoài theo tâm cụm gốc so với trung điểm hai tâm gốc ngoài cùng. Gốc nằm đúng giữa mặc định+1. Mọi chồng nối kế thừa hướng của gốc, không đổi chiều giữa chuỗi. Quy tắc xác định một lần theo dữ liệu authored nên không đổi hướng khi lấy bài. Codec validator giới hạn -1..1, ExpandToCards giữ direction. Render/pack/fit cùng áp dụng dấu, gồm bounds phía trái; layout không thay rectangle luật che phủ.
+
+
+### Bố cục 5 màn đầu đối chiếu IMG_3750 · 08-10-2026
+Dựa các frame t002/t016/t034/t062/t082 trong docs/reference/video-3750. L1 2×2 đỏ/xanh, xoè vào giữa; L2 2×3 vàng/đỏ/xanh; L3 sáu cặp: đỏ→vàng, vàng→đỏ, xanh→đỏ, đỏ→xanh, vàng→xanh, xanh→vàng. L4 bốn cặp ở góc nối bằng dải dọc đỏ→xanh→xanh lá (chữ I). L5 bốn cặp ở cụm trên, dải dọc vàng→xanh lá, quạt trái đỏ→vàng và phải xanh→vàng hướng vào nhau. Dùng 9 lá/chồng ở L1/2, 6 ở L3–5; cân lại mục tiêu theo tổng lá trong bố cục. Đây là lựa chọn nội dung để dựng màu/bố cục từ video, không khẳng định đếm chính xác từng lá nhỏ trong clip.
+
+Thêm spread_angle [-180,180] vào rule chung: 0 xoè ngang, 90 xoè dọc xuống, hướng âm/dương được nhân spread_direction; mặt lá vẫn thẳng đứng. Resolver chỉ nối các chồng cùng trục; dải khác trục bắt đầu root riêng. View pack giữ giao cắt có chủ ý giữa các root khác trục/khác tầng, còn cụm song song vẫn tránh giao nhau. Frame bounds tính theo dx/dy thực tế; H/W dữ liệu che phủ không kéo dài khay. Codec, ExpandToCards bảo toàn trục. Không cần on_stack thủ công.

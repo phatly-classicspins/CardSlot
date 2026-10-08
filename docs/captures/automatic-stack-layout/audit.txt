@@ -1,0 +1,10 @@
+Distinct root cluster overlaps=0
+Requested=3 Loaded=level_003 automatic links=3 stacks=9
+Distinct root cluster overlaps=0
+Requested=4 Loaded=level_004 automatic links=4 stacks=9
+Distinct root cluster overlaps=0
+Requested=15 Loaded=level_015 automatic links=8 stacks=18
+Distinct root cluster overlaps=0
+Requested=30 Loaded=level_030 automatic links=9 stacks=20
+Distinct root cluster overlaps=0
+Requested=5 Loaded=level_005 automatic links=4 stacks=12

@@ -10,7 +10,7 @@ Người duyệt: Thiết kế Phat · Hình ảnh Phat · Art Phat · Kỹ thu�
 | 3 Art | xong | art v1: 71 sprite (`art/export/`), báo cáo xuất 0 lỗi chặn | Phat, 06-10-2026 | |
 | 4 Animation | xong (gắn Unity ở Bước 6) | animation-list v1.0 (21 animation), `art/motion/preview.html` | Phat, 06-10-2026 | |
 | 5 Logic | xong | GDD v1.2, code Board/Meta, 30 level, level-report, architecture-notes, 135 test | Phat, 06-10-2026 | |
-| 6 Ráp | 6b đã duyệt + commit (D-026); CR-004…CR-011 + D-027 đã duyệt + commit (D-028, b6c218a) · **CR-012 (theo GDD anh Tánh) đã chốt: làm theo GDD, mục 4 = tràn là thua; giai đoạn A đã duyệt + commit (D-029); giai đoạn B đã duyệt + commit (D-030); giai đoạn C1 (xu) đã duyệt + commit (D-033) · **tiếp theo: C2 (booster)**** | | |
+| 6 Ráp | 6b đã duyệt + commit (D-026); CR-004…CR-011 + D-027 đã duyệt + commit (D-028, b6c218a) · **CR-012 (theo GDD anh Tánh) đã chốt: làm theo GDD, mục 4 = tràn là thua; giai đoạn A đã duyệt + commit (D-029); giai đoạn B đã duyệt + commit (D-030); giai đoạn C1 (xu) đã duyệt + commit (D-033) · bố cục level 1–5 + rule đặt thẻ tự động đã duyệt + commit (D-034) · **tiếp theo: C2 (booster)**** | | |
 | 7 AI test | chưa bắt đầu | | |
 | 8 Máy thật/Chơi thử/Phát hành | chưa bắt đầu | | |
 
@@ -108,3 +108,42 @@ Bỏ qua: Unity compile / play mode sau khi tách commit (không đổi code); c
 06-10-2026 (2) · MCP `ai-game-developer` (localhost:28410) nối vào editor CardSlot; mở `Master.unity`; `Framework/Doctor` lần 1 đỏ check #10 (`.mcp.json` thiếu `timeout`) → chạy `Framework/Agent Docs/Sync` (ghi `"timeout": 900000`) → Doctor lần 2 xanh 10/10; Play một lần (boot smoke) · bằng chứng: console có `[MainScreen] entered.`, không có error/exception · chưa kiểm tra: EditMode tests (không có thay đổi Editor-side), PlayMode suite (của CI) · đã commit `.mcp.json`.
 
 06-10-2026 (1) · manifest: OpenUPM + framework (HTTPS, commit 17912d9) + Unity-MCP 0.93.2; Setup Wizard compose xong (log `[Wizard] Compose complete for sku 'CardSlot'`, agent docs đã sync); sửa `SkuHeadlessTests/SkuEngineFree.props` (probe PackageCache không chạy ở chế độ git) · bằng chứng: `dotnet test SkuHeadlessTests` 31/31 pass; Editor.log không có `error CS` · chưa kiểm tra: Doctor, Play boot, EditMode tests (cần MCP nối vào CardSlot) · đã duyệt, đã commit.
+
+## Phiên Codex · bản thử level 1–5 · 08-10-2026
+
+Theo yêu cầu Phat: dựng thủ công 5 bố cục theo IMG_3750, revision 4; L1 4 chồng / 2 cọc, L2 lưới 2×3, L3 lệch tầng, L4 chữ I, L5 hai cụm xoè quạt + hàng cọc chờ. Nối trường fan qua dữ liệu → controller → View có sẵn, cập nhật test L1 và kiểm tra round-trip fan. Không sửa level 6–30 hay thay đổi kinh tế C1.
+
+Kiểm chứng: 108 test headless pass, source greps pass; gate tổng FAIL ở tool type-check đọc XML project (BOM / encoding trên Windows), không báo gate xanh. Unity refresh/compile hoàn tất; 1 phiên Play, xem 5 trạng thái level 1–5 ở 1080×1920, ảnh trong docs/captures/reference-levels-1-5/. Level 5: lấy chồng vàng trái mở chồng đỏ (ô chờ 6), pointer raycast + click Hit11 lấy chồng vàng phải mở chồng xanh (ô chờ 12). Save trước thử được sao lưu để khôi phục khi thoát Play. Bản thử chưa được Phat duyệt, chưa commit.
+
+Bỏ qua: Unity EditMode suite (không đổi code Editor).
+Bỏ qua: Unity PlayMode suite, build thiết bị và CI (chưa chạy).
+
+## Codex · tăng độ xoè level 1–5 · 08-10-2026
+Phat phản hồi bài còn xoè quá sát so với video. Đã thêm cờ trình bày spread (codec + controller + StackVisual); token lệch mỗi lá 10 thay 1.5, quạt 6 lá 60° thay 20°; mở rộng footprint chồng thẳng, dời cột L1/L2/L5, khay tính cả góc lá xoay; revision nội dung 5. Level 6–30 giữ spacing cũ. 108 test headless pass, gồm 30 lời giải và round-trip fan/spread. Unity refresh/compile hoàn tất; xem lại ảnh 1080×1920 của 5 level, kiểm tra lấy quạt trái và pointer click quạt phải L5: mở chồng dưới đúng, ô chờ 6 → 12. Ảnh docs/captures/reference-levels-1-5-spread/. Lượt Play kiểm tra đầu bị lỗi tải Main do lệnh của Codex chuyển Gameplay khi boot chưa xong; lượt kiểm tra lại chờ Home xong rồi mới chuyển level. Save trước thao tác được khôi phục, SHA-256 trùng; Unity dừng Play. Chưa commit.
+Bỏ qua: Unity EditMode suite (không đổi code Editor).
+Bỏ qua: Unity PlayMode suite / build thiết bị / CI. Gate type-check XML Windows vẫn chưa được xác minh lại.
+
+
+## Codex · nối rule đặt thẻ trên chồng dưới · 08-10-2026
+Yêu cầu trực tiếp của Phat: vàng đặt theo lá đỏ cao nhất và kế thừa rule xoè. Thêm on_stack vào StackSpec/codec/validator, controller giải chuỗi hỗ trợ thành gốc + số lá bên dưới; renderer nối góc/cao độ, dùng count authored để giữ vị trí khi lấy bài. Gán s10→s8 và s11→s9 L5 revision6. Layer hit areas vẫn authored. 109 test headless pass; Unity refresh compile xong, Console Error/Exception trống trong khoảng kiểm tra. 1 lượt Play: kiểm tra L5, lấy vàng trái và pointer click vàng phải mở đúng đỏ/xanh, buffer6→12. Đo trực tiếp seam đỏ-vàng: bước góc12°, cao độ10.2; đỏ dịch0 sau khi lấy vàng. Ảnh support-level-5.png. Save trước kiểm tra khôi phục SHA256 trùng; Unity dừng Play. Gate tổng Windows XML/toolchain chưa chạy lại; không báo toàn gate xanh.
+Bỏ qua: Unity EditMode/PlayMode suite, build thiết bị/CI. Chưa commit.
+
+
+## Codex · áp dụng nối chồng cho cọc thẳng · 08-10-2026
+Theo ảnh Phat gửi: L5 revision7 thêm s6→s1 (vàng trên xanh dương) và s7→s4 (xanh lá trên xanh dương). Giãn cột phải s2/s5 x540→600 để đủ chỗ cho chuỗi 12 lá, tránh hình học chồng lên cọc bên cạnh. Dùng nguyên rule on_stack; không đổi code runtime. 109 test headless pass. Unity đo cả hai seam: delta local (10,0,-10.2), đúng bước lệch ngang/cao. Ảnh level-5-straight.png. Save trước kiểm tra khôi phục hash trùng; Unity dừng Play. Không chạy full gate/Unity suites/build thiết bị.
+
+
+## Codex · rule đặt thẻ tự động toàn game · 08-10-2026
+Sửa theo Phat: không chỉ gắn on_stack xếp tay. StackPlacementRules engine-free tự chọn support theo layer/overlap/tâm/id; cấp root và khoảng chỉ số lá cho tất cả level, kể cả generator/expanded. Cache placements một lần khi StartLevel; view kế thừa pose root, tự pack root clusters tránh giao hình học và fit khay; flight giữ scale nguồn. ExpandToCards bảo toàn style. L5 revision8 bỏ toàn bộ on_stack và giãn cột tay. Source greps sạch. L5 pointer click mở chồng xanh đúng, root đỏ dịch0 sau khi lấy vàng; bước góc12°, bước cao9.847893 sau fit đồng nhất. 113 headless test pass, có kiểm tra tự động trên 30 level, chuỗi nhiều tầng/nhánh, reorder và 40 seed generator. Unity compile/refresh thành công; audit L3,4,5,15,30 links lần lượt3,4,4,8,9, mỗi state0 overlap giữa bounds các root cluster. Ảnh/docs kiểm chứng trong docs/captures/automatic-stack-layout. Save trước kiểm tra khôi phục hash trùng, Unity dừng Play. Không chạy full gate Windows XML đang lỗi toolchain, Unity suites, build thiết bị/CI. Chưa commit.
+
+
+## Codex · xoè bài rộng hơn toàn game · 08-10-2026
+Phat yêu cầu bài xoè rõ hơn qua ảnh L2. ReferencePileSpacing10→18; GameplayScreen dùng Spread=true cho tất cả level (bỏ spacing legacy sát ở level6–30). Giữ rule nối vị trí, pack/fit tự động và giữ vị trí khi lấy bài. Unity compile/refresh thành công; xem L2,5,30, audit bounds các root cluster0 overlap cả3. Ảnh docs/captures/wider-global-spacing. Save khôi phục hash trùng; Unity dừng Play. Không thêm/chạy lại headless test vì chỉ chỉnh spacing trình bày; baseline113pass từ lượt trước. Không chạy full gate/Unity suites/build.
+
+
+## Codex · chiều xoè trái/phải và quạt thuận/ngược · 08-10-2026
+Theo Phat: thêm SpreadDirection/domain/codec/validator/generator/StackVisual; root tự hướng ra ngoài (-1 trái,+1 phải), có thể override bằng spread_direction. Chồng trên kế thừa direction của root. Renderer/pack/bounds đồng bộ dấu cho thẳng/quạt. 114 headless test pass gồm auto/override/kế thừa/codec/expand. Unity ban đầu báo ctor struct Direction chưa gán (C# Unity cũ hơn .NET); đã gán Direction=1, refresh/compile thành công. Audit L2,5,30: mỗi state0 overlap root clusters; L5 seam góc trái+12°, phải-12°. Pointer click Hit10 trên quạt đảo chiều lấy vàng và mở đỏ đúng; source greps sạch. Ảnh docs/captures/bidirectional-spread. Save trước thử khôi phục SHA256 trùng, Unity dừng Play. Không chạy full gate/Unity suites/build thiết bị.
+
+
+## Codex · dựng lại 5 màn đầu theo video · 08-10-2026
+Theo Phat, đối chiếu lại IMG_3750 t002/t016/t034/t062/t082, sửa hướng vào giữa và cấu trúc màu/chồng: L1 4chồng, L2 6, L3 12, L4 11 (chữ I), L5 14 (cầu giữa và hai quạt). Mục tiêu cân theo số lá mới; solution mọi level vẫn thắng. Thêm spread_angle chung cho trục dọc; support cùng trục, root giao khác trục/khác tầng giữ bridge overlay; pack song song vẫn tránh giao. 115 headless test pass, source greps sạch. Unity compile/refresh thành công, xem đủ5 màn1080×1920; audit0 giao không chủ ý giữa các root song song. Pointer Hit9 L5 lấy xanh lá giữa, mở vàng bên dưới, buffer0. Error/Exception trống trong khoảng kiểm tra. Ảnh docs/captures/video-layouts-1-5 và comparison.jpg. Save khôi phục SHA256 trùng, Unity dừng Play. Không chạy full gate/Unity suites/buildthiếtbị/CI. Chưa commit.

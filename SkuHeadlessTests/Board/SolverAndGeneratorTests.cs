@@ -85,11 +85,40 @@ namespace CardSlot.SkuHeadlessTests.Board
         }
 
         [Test]
+        public void Support_chain_round_trips_and_rejects_missing_upward_and_disjoint_parents()
+        {
+            var sample = Small();
+            var child = sample.Stacks[1];
+            child.X = 10; child.Layer = 1; child.OnStack = "y";
+            Assert.That(LevelJson.TryRead(LevelJson.Write(sample), out var back, out var error), Is.True, error);
+            Assert.That(back.Stacks[1].OnStack, Is.EqualTo("y"));
+            child.OnStack = "missing";
+            Assert.That(LevelValidator.Validate(sample), Has.Some.Contains("on_stack"));
+            child.OnStack = "r";
+            Assert.That(LevelValidator.Validate(sample), Has.Some.Contains("on_stack"));
+            child.OnStack = "y"; child.X = 220;
+            Assert.That(LevelValidator.Validate(sample), Has.Some.Contains("on_stack"));
+        }
+
+        [Test]
         public void Level_json_round_trips_and_rejects_bad_data()
         {
-            var json = LevelJson.Write(Small(), new[] { "r", "b", "y" });
+            var sample = Small();
+            sample.Stacks[0].Fan = true;
+            sample.Stacks[0].Spread = true;
+            sample.Stacks[0].SpreadDirection = -1;
+            sample.Stacks[0].SpreadAngle = 90;
+            var json = LevelJson.Write(sample, new[] { "r", "b", "y" });
             Assert.That(json, Does.Contain("\"count\": 3").And.Not.Contain("\"cards\""), "level format v3: a stack is a colour and a count");
             Assert.That(LevelJson.TryRead(json, out var back, out var error), Is.True, error);
+            Assert.That(back.Stacks[0].SpreadDirection, Is.EqualTo(-1));
+            Assert.That(back.Stacks[0].SpreadAngle, Is.EqualTo(90));
+            Assert.That(back.Stacks[1].SpreadDirection, Is.EqualTo(0));
+            Assert.That(LevelJson.TryRead(json.Replace("\"spread_direction\": -1", "\"spread_direction\": 2"), out _, out _), Is.False);
+            Assert.That(back.Stacks[0].Fan, Is.True, "fan layout survives export and reload");
+            Assert.That(back.Stacks[0].Spread, Is.True, "wide card spacing survives export and reload");
+            Assert.That(back.Stacks[1].Spread, Is.False, "older levels retain their original spacing");
+            Assert.That(back.Stacks[1].Fan, Is.False, "ordinary stacks remain straight");
             Assert.That(LevelJson.Write(back, new[] { "r", "b", "y" }), Is.EqualTo(json));
             Assert.That(LevelJson.ReadSolution(json), Is.EqualTo(new[] { "r", "b", "y" }));
             Assert.That(LevelJson.TryRead(json.Replace("\"color_2\"", "\"purple\""), out _, out error), Is.False);

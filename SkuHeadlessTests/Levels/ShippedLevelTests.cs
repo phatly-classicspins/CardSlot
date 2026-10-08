@@ -29,6 +29,19 @@ namespace CardSlot.SkuHeadlessTests.Levels
             var json = File.ReadAllText(file);
             Assert.That(LevelJson.TryRead(json, out var level, out var error), Is.True, error);
             Assert.That(level.Id, Is.EqualTo(Path.GetFileNameWithoutExtension(file)));
+            var placements = StackPlacementRules.Resolve(level);
+            for (int i = 0; i < placements.Length; i++)
+            {
+                var placement = placements[i];
+                bool hasLower = level.Stacks.Any(s => s.Layer < level.Stacks[i].Layer && s.Overlaps(level.Stacks[i]) && s.SpreadAngle == level.Stacks[i].SpreadAngle);
+                Assert.That(placement.Support >= 0, Is.EqualTo(hasLower), $"{level.Id}/{level.Stacks[i].Id}: automatic support");
+                if (placement.Support >= 0)
+                    Assert.That(placement.Offset, Is.GreaterThanOrEqualTo(level.Stacks[placement.Root].Count));
+                for (int j = 0; j < i; j++)
+                    if (placements[j].Root == placement.Root)
+                        Assert.That(placement.Offset >= placements[j].Offset + level.Stacks[j].Count
+                            || placements[j].Offset >= placement.Offset + level.Stacks[i].Count, Is.True, "card intervals cannot overlap");
+            }
             var solution = LevelJson.ReadSolution(json);
             Assert.That(solution, Is.Not.Empty, "a shipped level carries its verified solution");
             Assert.That(LevelSolver.Replay(level, solution), Is.True, "stored solution no longer wins");
@@ -46,8 +59,8 @@ namespace CardSlot.SkuHeadlessTests.Levels
                 Assert.That(l.Targets.Count > l.Slots, Is.EqualTo(n == 5), $"level {n}: waiting pegs only from level 5");
             }
             LevelJson.TryRead(File.ReadAllText(Path.Combine(Dir, "level_001.json")), out var l1, out _);
-            Assert.That((l1.Slots, l1.Stacks.Count, l1.Stacks.All(s => s.Layer == 0)), Is.EqualTo((3, 3, true)),
-                "level 1: three pegs, three whole stacks, nothing covered (CR-012: the FTUE taps three stacks)");
+            Assert.That((l1.Slots, l1.Stacks.Count, l1.Stacks.All(s => s.Layer == 0)), Is.EqualTo((2, 4, true)),
+                "level 1: two pegs and four uncovered stacks in a 2x2 grid (IMG_3750 reference)");
         }
     }
 }

@@ -10,10 +10,13 @@ namespace Game.Views
     public struct StackVisual
     {
         public int X, Y, W, H, Layer;
+        public int PoseOffset, PoseCount, PoseLayer, AuthoredCount, PoseRoot, SpreadDirection, SpreadAngle;
         public int[] Colors;
         public bool Covered;
         /// <summary>Drawn as a fan around a pivot below the stack (CR-004) instead of a straight pile.</summary>
         public bool Fan;
+        /// <summary>Draw the wider card spacing of the reference layouts.</summary>
+        public bool Spread;
         /// <summary>The stack can be tapped right now (not covered, not empty): draw the hint outline (decided by the controller).</summary>
         public bool Hint;
     }

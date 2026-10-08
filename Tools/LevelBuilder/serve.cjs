@@ -1,0 +1,4 @@
+// Optional localhost preview. The builder also opens directly from index.html.
+const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
+const allowed=new Set(['index.html','style.css','app.js','core.js','presets.js']);
+http.createServer((req,res)=>{let file=new URL(req.url,'http://localhost').pathname.slice(1)||'index.html';if(!allowed.has(file)){res.writeHead(404);res.end();return;}fs.readFile(path.join(__dirname,file),(err,data)=>{if(err){res.writeHead(404);res.end();return;}res.setHeader('Content-Type',file.endsWith('.html')?'text/html; charset=utf-8':file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8');res.setHeader('Cache-Control','no-store');res.end(data);});}).listen(8767,'127.0.0.1',()=>console.log('CardSlot Level Builder: http://127.0.0.1:8767'));

@@ -261,3 +261,13 @@ Quyết định (người chốt: Phat, "ok duyệt"): duyệt 5 mock-up `gamepl
 
 ### D-033 · 08-10-2026 · Bước 6 · Duyệt + commit CR-012 giai đoạn C1 (xu)
 Quyết định (người chốt: Phat, "ok làm 2 commit"): duyệt code C1 — ví xu (100 khởi đầu), thưởng thắng +20 và "▶ Claim ×2", Revive bằng xu 100 → 200 → 400 trong lượt, ô xu ở HUD / Home / dialog Thắng-Thua. Commit riêng, tách khỏi bản bố cục level (D-034). Ảnh: `docs/captures/cr12c1/`.
+
+### Bản thử bố cục level 1–5 · 08-10-2026 · yêu cầu trực tiếp của Phat
+Phat yêu cầu xem cách đặt bài như game mẫu và thử làm level 1–5, cho phép kết nối Unity. Dựng thủ công theo IMG_3750: 2×2, 2×3, chồng lệch tầng, chữ I, cụm giữa + hai cụm xoè quạt. Đây là bản thử để Phat xem, chưa ghi nhận duyệt kết quả hay commit. Giữ luật và phần C1 xu; level 6–30 giữ nguyên. Level 1 thay bố cục 3 chồng của CR-012 bằng 4 chồng theo video; FTUE vẫn tắt.
+
+
+### Rule đặt thẻ toàn game · 08-10-2026 · yêu cầu trực tiếp của Phat
+Phat xác nhận các rule nối vị trí/xoè áp dụng toàn game, không chỉ xếp tay level mẫu. Đưa giải support tự động vào luồng StartLevel chung cho level có sẵn/sinh mới; dùng đóng gói cụm và fit khay tự động, bỏ liên kết/giãn cột thủ công L5.
+
+### D-034 · 08-10-2026 · Bước 6 · Duyệt + commit bố cục level 1–5, rule đặt thẻ tự động, LevelBuilder
+Quyết định (người chốt: Phat, "ok làm 2 commit"): duyệt bản Codex — level 1–5 dựng lại theo video IMG_3750; `StackPlacementRules` (support tự động, hướng / góc xoè) cho mọi level; xoè rộng (`ReferencePileSpacing` 18) cho toàn game; tool `Tools/LevelBuilder/`. Chỉ commit ảnh lượt cuối (`docs/captures/video-layouts-1-5/`) và audit rule tự động (`docs/captures/automatic-stack-layout/`); ảnh các lượt thử trung gian không đưa vào repo.
