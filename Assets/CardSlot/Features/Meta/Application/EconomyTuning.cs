@@ -19,6 +19,12 @@ namespace Game.Application
         public int ReviveMaxPerAttempt = 3;     // GDD v2.0 §7 revive.max_per_level [XÁC NHẬN]
         public int RvSlotAmount = 8;            // R-23
         public int RvSlotMaxPerAttempt = 2;
+        // C2 boosters (GDD v2.0 §4.1, §7, D-031): unlock level, coin price, how many one purchase gives, unlock gift
+        public int HandUnlockLevel = 5, ShuffleUnlockLevel = 8, RemoveUnlockLevel = 10;
+        public int HandPrice = 100, ShufflePrice = 80, RemovePrice = 120;
+        public int BoosterBuyAmount = 1;
+        public int BoosterAdAmount = 1;          // "▶ Free" in the buy dialog
+        public int BoosterUnlockGift = 3;
         public int InterstitialFirstLevel = 5;
         public int InterstitialEveryNWins = 2;
         public double InterstitialMinIntervalSeconds = 60;
@@ -31,6 +37,9 @@ namespace Game.Application
             for (int i = 0; i < paidBefore; i++) price *= RevivePriceMultiplier;
             return price;
         }
+
+        public int UnlockLevel(BoosterId id) => id == BoosterId.Hand ? HandUnlockLevel : id == BoosterId.Shuffle ? ShuffleUnlockLevel : RemoveUnlockLevel;
+        public int Price(BoosterId id) => id == BoosterId.Hand ? HandPrice : id == BoosterId.Shuffle ? ShufflePrice : RemovePrice;
 
         public BoardRules BoardRules() => new BoardRules
         {

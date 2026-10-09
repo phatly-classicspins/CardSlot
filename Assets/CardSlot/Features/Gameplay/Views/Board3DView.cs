@@ -206,19 +206,51 @@ namespace Game.Views
             return rects;
         }
 
+        /// <summary>CR-012 C2 pick mode: the world-space XY rectangle of the tray (Hand: the band left lit).</summary>
+        public Rect TrayWorldRect()
+        {
+            var rim = Find("TrayRim", null);
+            if (rim == null) return default;
+            var b = rim.bounds;
+            return Rect.MinMaxRect(b.min.x, b.min.y, b.max.x, b.max.y);
+        }
+
+        /// <summary>CR-012 C2 pick mode (Remove): the world-space XY rectangle of the front pole of each slot, and of the pole
+        /// waiting behind it; an empty rect where there is none.</summary>
+        public (Rect[] front, Rect[] back) PoleWorldRects(int slots)
+        {
+            var front = new Rect[slots];
+            var back = new Rect[slots];
+            for (int i = 0; i < slots; i++)
+            {
+                front[i] = Bounds($"Peg{i}");
+                back[i] = Bounds($"NextPeg{i}");
+            }
+            return (front, back);
+        }
+
+        private Rect Bounds(string name)
+        {
+            var go = _dynamic.Find(o => o != null && o.name == name);
+            if (go == null || !go.activeInHierarchy) return default;
+            var rs = go.GetComponentsInChildren<Renderer>();
+            if (rs.Length == 0) return default;
+            var b = rs[0].bounds;
+            foreach (var r in rs) b.Encapsulate(r.bounds);
+            return Rect.MinMaxRect(b.min.x, b.min.y, b.max.x, b.max.y);
+        }
+
         /// <summary>True while cards are flying or a full peg is leaving (the controller waits on it before a result dialog).</summary>
         public bool IsAnimating => _ghosts.Count > 0 || _exits.Count > 0;
 
         /// <summary>Redraw the board from scratch.</summary>
         public void Render(BoardVisual v) => Render(v, null);
 
-        /// <summary>Redraw the final state, then fly <paramref name="flights"/> into it card by card (CR-007):
-        /// each landing card stays hidden in the new state until its ghost arrives. Whatever the previous
-        /// change was still animating is finished first, so a quick next tap never leaves stale cards behind.</summary>
+        /// <summary>Redraw the settled model while retaining every live flight. Waiting source cards keep
+        /// their captured world pose until departure; newly tapped stacks join the existing animation.</summary>
         public void Render(BoardVisual v, IReadOnlyList<CardFlight> flights)
         {
             EnsureBuilt();
-            FinishAnimations();
             // sources are read from the state drawn before this change
             var from = new List<(Vector3 pos, Quaternion rot)>();
             if (flights != null)
@@ -244,6 +276,23 @@ namespace Game.Views
                 old.name = $"LeavingPeg{slot}";
                 leaving[slot] = old.transform;
             }
+            // CR-012 C2: a waiting pole filled by Remove stays in the back row until its cards land, then leaves the same way
+            var backLeaving = new Dictionary<int, Transform>();
+            if (flights != null)
+                foreach (var f in flights)
+                {
+                    if (!f.ToQueued || backLeaving.ContainsKey(f.ToSlot)) continue;
+                    var old = _dynamic.Find(go => go != null && go.name == $"NextPeg{f.ToSlot}");
+                    if (old == null) continue;
+                    _dynamic.RemoveAll(go => go != null && go.transform.IsChildOf(old.transform));
+                    old.name = $"LeavingBack{f.ToSlot}";
+                    backLeaving[f.ToSlot] = old.transform;
+                }
+            // Outgoing pegs own their landed cards. Preserve them, and snapshot moving successors
+            // before replacing the settled renderers underneath the running animation.
+            foreach (var exit in _exits)
+                if (exit.Old != null) Keep(exit.Old);
+            var moving = CaptureSuccessors();
             foreach (var go in _dynamic) Destroy(go);
             _dynamic.Clear();
             _hints.Clear();
@@ -252,10 +301,31 @@ namespace Game.Views
             DrawTargets(v);
             DrawBuffer(v);
             DrawTray(v);
+            RebindSuccessors(moving);
+            var batchGeneration = new Dictionary<int, int>(_slotGenerations);
             var chains = new Dictionary<int, List<PegExit>>();
             foreach (var kv in fills)
-                if (leaving.TryGetValue(kv.Key, out var first)) chains[kv.Key] = Chain(v, kv.Key, kv.Value, first, flights);
-            if (flights != null) Launch(v, flights, from, chains, sourceTrayScale);
+                if (leaving.TryGetValue(kv.Key, out var first))
+                {
+                    var chain = Chain(v, kv.Key, kv.Value, first, flights);
+                    chains[kv.Key] = chain;
+                    // A successor that was still moving up can itself fill on a quick next tap.
+                    foreach (var previous in _exits)
+                        if (previous.New != null && previous.New.transform == first)
+                            previous.AfterNew = chain[0].New;
+                    _slotGenerations[kv.Key] = Generation(kv.Key) + kv.Value;
+                }
+            var backExits = new Dictionary<int, PegExit>();
+            foreach (var kv in backLeaving)
+            {
+                var after = _dynamic.Find(go => go != null && go.name == $"NextPeg{kv.Key}");   // the pole now waiting there
+                if (after != null) after.SetActive(false);
+                var exit = new PegExit { Old = kv.Value, AfterNew = after, OldScale = BackRowScale };
+                _exits.Add(exit);
+                backExits[kv.Key] = exit;
+            }
+            RebindFlights();
+            if (flights != null) Launch(v, flights, from, chains, sourceTrayScale, backExits, batchGeneration);
         }
 
         // ── card flights and peg swaps (CR-007, CR-009) ───────────────────────────────────────────────
@@ -271,22 +341,104 @@ namespace Game.Views
             public float Start;
             public Renderer Reveal;
             public PegExit Ride;            // a card of a peg that fills up: it stays on that peg and leaves with it
-            public bool ShowWhileWaiting;   // a card leaving a holding groove stays in it until it flies
+            public float VisibleAfter;
+            public int ToSlot = -1, ToIndex, Generation, DestinationHeld = -1, RevealHeld = -1;
+            public bool Consumed;           // a later batch already claimed this incoming buffer card
         }
 
         // one full peg leaving and the peg behind it moving up; a column that fills twice has two in a row
         private sealed class PegExit
         {
             public Transform Old;
+            public int Slot = -1, Generation;
             public GameObject New, AfterNew;     // the peg moving up, and what then appears behind it
             public Vector3 Front, Back;
             public float Leave = float.MaxValue; // set from the landing time of the last card that fills Old
             public float Enter = -1f;
+            public float OldScale = 1f;          // a waiting pole (C2 Remove) leaves from the back-row scale
             public float Arrive => Leave + PegLeaveTime + PegEnterTime;
         }
 
         private readonly List<PegExit> _exits = new List<PegExit>();
         private readonly List<Ghost> _ghosts = new List<Ghost>();
+        private readonly Dictionary<int, int> _slotGenerations = new Dictionary<int, int>();
+        private readonly Dictionary<int, float> _sourceReady = new Dictionary<int, float>();
+        private readonly Dictionary<(int slot, int generation, bool queued), float> _targetReady = new Dictionary<(int, int, bool), float>();
+
+        private int Generation(int slot) => _slotGenerations.TryGetValue(slot, out int g) ? g : 0;
+
+        private void Keep(Transform root) => _dynamic.RemoveAll(go => go != null && go.transform.IsChildOf(root));
+
+        private sealed class SuccessorPose
+        {
+            public PegExit Exit;
+            public GameObject Before;
+            public string Name, AfterName;
+            public Vector3 Position, Scale;
+            public bool Active, AfterActive;
+        }
+
+        private List<SuccessorPose> CaptureSuccessors()
+        {
+            var poses = new List<SuccessorPose>();
+            foreach (var e in _exits)
+                poses.Add(new SuccessorPose { Exit = e, Before = e.New,
+                    Name = e.New != null ? e.New.name : null,
+                    Position = e.New != null ? e.New.transform.localPosition : default,
+                    Scale = e.New != null ? e.New.transform.localScale : Vector3.one,
+                    Active = e.New != null && e.New.activeSelf,
+                    AfterName = e.AfterNew != null ? e.AfterNew.name : null,
+                    AfterActive = e.AfterNew != null && e.AfterNew.activeSelf });
+            return poses;
+        }
+
+        private void RebindSuccessors(List<SuccessorPose> poses)
+        {
+            foreach (var p in poses)
+            {
+                // An outgoing peg was removed from _dynamic and survives the redraw.
+                bool kept = p.Before != null && _exits.Exists(e => e.Old == p.Before.transform);
+                if (!kept)
+                {
+                    p.Exit.New = p.Name == null ? null : _dynamic.Find(go => go != null && go.name == p.Name);
+                    if (p.Exit.New != null)
+                    {
+                        p.Exit.New.transform.localPosition = p.Position;
+                        p.Exit.New.transform.localScale = p.Scale;
+                        p.Exit.New.SetActive(p.Active);
+                    }
+                }
+                bool afterKept = p.Exit.AfterNew != null && _exits.Exists(e => e.Old == p.Exit.AfterNew.transform);
+                if (!afterKept)
+                {
+                    p.Exit.AfterNew = p.AfterName == null ? null : _dynamic.Find(go => go != null && go.name == p.AfterName);
+                    if (p.Exit.AfterNew != null) p.Exit.AfterNew.SetActive(p.AfterActive);
+                }
+            }
+        }
+
+        private void RebindFlights()
+        {
+            foreach (var g in _ghosts)
+            {
+                g.Reveal = null;
+                if (g.Ride != null) continue;
+                if (g.ToSlot >= 0)
+                {
+                    var ride = _exits.Find(e => e.Slot == g.ToSlot && e.Generation == g.Generation);
+                    if (ride != null)
+                    {
+                        g.Ride = ride;
+                        ride.Leave = ride.Leave == float.MaxValue ? g.Start + FlightTime + PegLinger
+                            : Mathf.Max(ride.Leave, g.Start + FlightTime + PegLinger);
+                    }
+                    else if (g.Generation == Generation(g.ToSlot))
+                        g.Reveal = Find($"Peg{g.ToSlot}", $"Card{g.ToIndex}");
+                }
+                else if (g.RevealHeld >= 0 && !g.Consumed) g.Reveal = Find($"Held{g.RevealHeld}", null);
+                if (g.Reveal != null) g.Reveal.enabled = false;
+            }
+        }
 
         // the swaps of one slot: the peg on screen is replaced count times; the pegs in between are built here
         private List<PegExit> Chain(BoardVisual v, int slot, int count, Transform first, IReadOnlyList<CardFlight> flights)
@@ -305,7 +457,7 @@ namespace Game.Views
                     foreach (var f in flights) if (f.ToSlot == slot && f.SwapGen == g) { color = f.Color; break; }
                     next = Peg($"GenPeg{slot}_{g}", PegX(slot, n), PegBaseY, color, 0, capacity, 1f, 60f).gameObject;
                 }
-                var e = new PegExit { Old = cur, New = next, Back = back };
+                var e = new PegExit { Old = cur, New = next, Back = back, Slot = slot, Generation = Generation(slot) + g - 1 };
                 if (next != null)
                 {
                     e.Front = next.transform.localPosition;
@@ -323,13 +475,16 @@ namespace Game.Views
             return chain;
         }
 
-        // end whatever is still moving: the next redraw starts from a still board
-        private void FinishAnimations()
+        /// <summary>Explicit attempt boundary. Ordinary redraws and taps never cancel flights.</summary>
+        public void ResetAnimations()
         {
             foreach (var g in _ghosts) if (g.Go != null) Destroy(g.Go);
             _ghosts.Clear();
             foreach (var e in _exits) if (e.Old != null) Destroy(e.Old.gameObject);
             _exits.Clear();
+            _slotGenerations.Clear();
+            _sourceReady.Clear();
+            _targetReady.Clear();
         }
 
         private (Vector3 pos, Quaternion rot) StackCardPose(int stack, int depth)
@@ -381,7 +536,8 @@ namespace Game.Views
             return null;
         }
 
-        private void Launch(BoardVisual v, IReadOnlyList<CardFlight> flights, List<(Vector3 pos, Quaternion rot)> from, Dictionary<int, List<PegExit>> chains, float sourceTrayScale)
+        private void Launch(BoardVisual v, IReadOnlyList<CardFlight> flights, List<(Vector3 pos, Quaternion rot)> from, Dictionary<int, List<PegExit>> chains, float sourceTrayScale,
+            Dictionary<int, PegExit> backExits, Dictionary<int, int> batchGeneration)
         {
             float now = Time.time;
             var starts = new float[flights.Count];
@@ -400,7 +556,38 @@ namespace Game.Views
                     start = Mathf.Max(start, chain[f.SwapGen - 1].Arrive + k * FlightInterval);
                 }
                 starts[i] = start;
-                var g = new Ghost { Start = start, S0 = Vector3.one * (f.FromStack >= 0 ? sourceTrayScale : 1f) };
+                int generation = (batchGeneration.TryGetValue(f.ToSlot, out int baseGeneration) ? baseGeneration : 0) + f.SwapGen;
+                // A later tap can address the logical successor before its preceding swap has finished.
+                foreach (var exit in _exits)
+                    if (!f.ToQueued && exit.Slot == f.ToSlot && exit.Generation == generation - 1)
+                        start = Mathf.Max(start, exit.Arrive);
+                float visibleAfter = f.After >= 0 && f.After < i ? starts[f.After] + FlightTime : now;
+                if (f.FromHeld >= 0)
+                {
+                    var incoming = _ghosts.FindLast(ghost => !ghost.Consumed && ghost.DestinationHeld == f.FromHeld);
+                    if (incoming != null)
+                    {
+                        incoming.Consumed = true;
+                        incoming.RevealHeld = -1;
+                        incoming.Reveal = null;
+                        visibleAfter = Mathf.Max(visibleAfter, incoming.Start + FlightTime);
+                        start = Mathf.Max(start, visibleAfter + 0.02f);
+                    }
+                }
+                if (f.FromStack >= 0)
+                {
+                    int root = v.Stacks[f.FromStack].PoseRoot;
+                    if (_sourceReady.TryGetValue(root, out float ready)) start = Mathf.Max(start, ready);
+                }
+                var targetKey = (f.ToSlot, generation, f.ToQueued);
+                if (f.ToSlot >= 0 && _targetReady.TryGetValue(targetKey, out float targetReady)) start = Mathf.Max(start, targetReady);
+                if (f.FromStack >= 0) _sourceReady[v.Stacks[f.FromStack].PoseRoot] = start + FlightInterval;
+                if (f.ToSlot >= 0) _targetReady[targetKey] = start + FlightInterval;
+                starts[i] = start;
+                var g = new Ghost { Start = start, VisibleAfter = visibleAfter,
+                    ToSlot = f.ToSlot, ToIndex = f.ToIndex, Generation = generation,
+                    DestinationHeld = f.ToHeld, RevealHeld = f.ToHeldFinal,
+                    S0 = Vector3.one * (f.FromStack >= 0 ? sourceTrayScale : 1f) };
                 if (f.Completes && chain != null && f.SwapGen < chain.Count)
                 {
                     g.Ride = chain[f.SwapGen];
@@ -408,8 +595,22 @@ namespace Game.Views
                     g.Ride.Leave = g.Ride.Leave == float.MaxValue ? leave : Mathf.Max(g.Ride.Leave, leave);
                 }
                 g.P0 = from[i].pos; g.R0 = from[i].rot;
-                if (f.FromHeld >= 0) { g.S0 = Vector3.one * HeldScale; g.ShowWhileWaiting = true; }
-                if (f.ToSlot >= 0)
+                if (f.FromHeld >= 0) g.S0 = Vector3.one * HeldScale;
+                if (f.ToQueued)
+                {
+                    // CR-012 C2: a waiting pole filled by Remove — the card lands on the back row and leaves with that pole
+                    var rot = _board.rotation * Quaternion.Euler(PegLean, 0f, 0f);
+                    var root = _board.TransformPoint(P(PegX(f.ToSlot, v.Targets.Length), PegBaseY - BackRowRise, 30f));
+                    g.P1 = root + rot * new Vector3(0f, 0f, (-PegBaseT - f.ToIndex * (ThinT + ThinGap)) * BackRowScale);
+                    g.R1 = rot; g.S1 = Vector3.one * BackRowScale;
+                    if (backExits.TryGetValue(f.ToSlot, out var back))
+                    {
+                        g.Ride = back;                              // lands on that pole and leaves with it
+                        float leave = start + FlightTime + PegLinger;
+                        back.Leave = back.Leave == float.MaxValue ? leave : Mathf.Max(back.Leave, leave);
+                    }
+                }
+                else if (f.ToSlot >= 0)
                 {
                     var d = PegCardPose(f.ToSlot, v.Targets.Length, f.ToIndex);
                     g.P1 = d.pos; g.R1 = d.rot; g.S1 = Vector3.one;
@@ -428,7 +629,9 @@ namespace Game.Views
                 go.AddComponent<MeshFilter>().sharedMesh = _thinMesh;
                 var r = go.AddComponent<MeshRenderer>();
                 r.sharedMaterials = new[] { _cardTop[f.Color], _cardSide[f.Color] };
-                go.SetActive(false);
+                go.transform.SetPositionAndRotation(g.P0, g.R0);
+                go.transform.localScale = g.S0;
+                go.SetActive(now >= g.VisibleAfter);
                 g.Go = go;
                 _ghosts.Add(g);
             }
@@ -444,7 +647,9 @@ namespace Game.Views
                 float t = (now - g.Start) / FlightTime;
                 if (t < 0f)
                 {
-                    if (g.ShowWhileWaiting && !g.Go.activeSelf) { g.Go.SetActive(true); g.Go.transform.SetPositionAndRotation(g.P0, g.R0); g.Go.transform.localScale = g.S0; }
+                    g.Go.SetActive(now >= g.VisibleAfter);
+                    g.Go.transform.SetPositionAndRotation(g.P0, g.R0);
+                    g.Go.transform.localScale = g.S0;
                     continue;
                 }
                 g.Go.SetActive(true);
@@ -480,7 +685,7 @@ namespace Game.Views
                 if (e.Old != null)
                 {
                     float t = (now - e.Leave) / PegLeaveTime;
-                    if (t < 1f) { e.Old.localScale = Vector3.one * (1f - t * t); continue; }
+                    if (t < 1f) { e.Old.localScale = Vector3.one * (e.OldScale * (1f - t * t)); continue; }
                     Destroy(e.Old.gameObject);
                     e.Old = null;
                     e.Enter = now;

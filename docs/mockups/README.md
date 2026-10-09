@@ -47,3 +47,18 @@ Nguồn: `.working/c1.html` (sprite thật từ `art/export/ui` + ảnh chụp g
 | `lose-offer-coins-poor-v02` | LoseDialog · không đủ xu: nút xu khoá | v02 | đã duyệt (Phat, 08-10-2026) |
 
 Pill xu nằm trên lớp mờ của dialog để số xu đếm lên khi nhận thưởng (chuyển động làm khi code).
+
+## CR-012 giai đoạn C2 — booster (D-031)
+
+Nguồn: `.working/c2.html` (cùng bộ sprite với C1; ảnh nền `docs/captures/video-layouts-1-5/level-5.png`, khay thu về y 900…1600 để chừa thanh booster). Render: `render.ps1 -Page c2.html -OutDir c2 -Jobs 'b:<screen>:1920'`. Ba glyph Hand / Shuffle / Remove vẽ mới trong `c2.html`; duyệt xong thì chuyển vào `art/source/art.html` (`icon_hand`, `icon_shuffle`, `icon_remove`).
+
+| Mock-up | Màn / trạng thái | Phiên bản | Trạng thái |
+|---|---|---|---|
+| `gameplay-boosters-v02` | GameplayScreen level 5 · thanh 3 booster dưới khay: Hand (quà 3), Shuffle khoá "Lv 8", Remove khoá "Lv 10" | v02 | đã duyệt (Phat, 08-10-2026) |
+| `gameplay-boosters-all-v02` | GameplayScreen level 12 · Hand 2, Shuffle hết (giá xu 80), Remove 1 | v02 | đã duyệt (Phat, 08-10-2026) |
+| `gameplay-pick-hand-v02` | Đã bấm Hand: mờ mọi thứ trừ bàn bài · "Tap any stack" · chạm ngoài / Back thì huỷ, không trừ | v02 | đã duyệt (Phat, 08-10-2026) |
+| `gameplay-pick-remove-v02` | Đã bấm Remove: chỉ hàng cọc sáng · "Tap a pole to fill it" | v02 | đã duyệt (Phat, 08-10-2026) |
+| `booster-buy-v02` | BoosterBuyDialog · mua 1 bằng xu (nút chính) hoặc "▶ Free" (quảng cáo) | v02 | đã duyệt (Phat, 08-10-2026) |
+| `booster-buy-poor-v02` | BoosterBuyDialog · không đủ xu: nút xu khoá + "Not enough coins" | v02 | đã duyệt (Phat, 08-10-2026) |
+| `unlock-hand-v02` | BoosterUnlockDialog (đầu level 5 / 8 / 10) · quà ×3 · ô booster mới sáng lên một lần | v02 | đã duyệt (Phat, 08-10-2026) |
+| `lose-offer-boosters-v02` | LoseDialog C1 + thanh booster vẫn dùng được trên lớp mờ (R-13) | v02 | đã duyệt (Phat, 08-10-2026) |

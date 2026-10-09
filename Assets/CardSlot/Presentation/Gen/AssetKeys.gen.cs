@@ -23,6 +23,8 @@ namespace Game.Presentation
         {
             public static readonly AssetKey<GameObject> HomeView = new("Home/HomeView");
         }
+        public static readonly AssetKey<GameObject> BoosterBuyDialog     = new("BoosterBuyDialog");
+        public static readonly AssetKey<GameObject> BoosterUnlockDialog  = new("BoosterUnlockDialog");
         public static readonly AssetKey<GameObject> LoseDialog           = new("LoseDialog");
         public static readonly AssetKey<GameObject> PauseDialog          = new("PauseDialog");
         public static readonly AssetKey<GameObject> RestartConfirmDialog = new("RestartConfirmDialog");

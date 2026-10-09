@@ -70,14 +70,14 @@ Booster dùng được khi kết quả là `playing`, hoặc ở màn thua (khi 
 - ~~**R-16 Undo**~~, ~~**R-17 Extra Space**~~ (bỏ ở CR-005; v2.0 không dùng lại).
 - ~~**R-18 Continue**~~ (bỏ ở v2.0, thay bằng Revive R-22 và RV Slot R-23 — code xong ở giai đoạn B).
 - **R-19 Remove** (mở ở level 10). Người chơi chọn **bất kỳ** `target` nào — ở đáy hoặc trong hàng chờ, kể cả Hidden (lộ màu ngay). `target` đó lấy lá cùng màu cho tới đầy, theo thứ tự:
-  1. **[XÁC NHẬN]** `pending` rồi `buffer` (FIFO) — GDD chỉ nói "từ bàn"; lấy ô chờ trước vì đó là chỗ người chơi đang kẹt.
+  1. (D-035) `pending` rồi `buffer` (FIFO) — GDD chỉ nói "từ bàn"; lấy ô chờ trước vì đó là chỗ người chơi đang kẹt.
   2. Chồng thường không bị che → chồng thường bị che → chồng Hidden → chồng Locked (bị lấy thì mở khoá ngay).
   Trong cùng một bậc: `layer` cao trước, rồi `id`. Lấy một phần chồng thì chồng giữ phần còn lại. Theo R-1 luôn đủ lá để cọc đầy. Rồi `target` hoàn thành (R-9); cọc phía sau trong cùng cột dồn lên. Chọn cọc ở giữa hàng thì các cọc sau nó dồn lên một chỗ.
 - **R-20 Hand** (mở ở level 5). Người chơi chọn **bất kỳ** chồng nào còn lá, kể cả bị che, Hidden (lộ màu) hay Locked (mở khoá ngay); cả chồng được gửi lên như R-6, R-7.
 - **R-21 Shuffle** (mở ở level 8). Lần lượt:
-  1. Chọn tối đa 3 màu: theo thứ tự lá trong `buffer` (FIFO, mỗi màu tính một lần); thiếu thì lấy thêm màu từ chồng `open` (`layer` cao trước, rồi `id`) **[XÁC NHẬN thứ tự]**.
-  2. Đưa cọc của các màu đó xuống đáy hàng: mỗi `target_slot` có cọc **chưa nhận lá nào** (`filled == 0`) được thay bằng một cọc của màu đã chọn, ưu tiên cọc thường rồi mới tới cọc Hidden. **[XÁC NHẬN]** Cọc đã có lá (`filled > 0`) giữ nguyên chỗ, không bị xáo — xáo nó sẽ làm mất lá đã xếp.
-  3. Xáo ngẫu nhiên (R-15) các cọc còn lại có `filled == 0`; **[XÁC NHẬN]** mỗi cột giữ nguyên số cọc.
+  1. Chọn tối đa 3 màu: theo thứ tự lá trong `buffer` (FIFO, mỗi màu tính một lần); thiếu thì lấy thêm màu từ chồng `open` (`layer` cao trước, rồi `id`) (D-035).
+  2. Đưa cọc của các màu đó xuống đáy hàng: mỗi `target_slot` có cọc **chưa nhận lá nào** (`filled == 0`) được thay bằng một cọc của màu đã chọn, ưu tiên cọc thường rồi mới tới cọc Hidden. (D-035) Cọc đã có lá (`filled > 0`) giữ nguyên chỗ, không bị xáo — xáo nó sẽ làm mất lá đã xếp.
+  3. Xáo ngẫu nhiên (R-15) các cọc còn lại có `filled == 0`; (D-035) mỗi cột giữ nguyên số cọc.
   Sau đó `settle`.
 
 ### 2.8 Revive và RV Slot

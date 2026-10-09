@@ -9,6 +9,9 @@ namespace Game.Application
         public static readonly ResourceKey Coin = new ResourceKey("coin");
     }
 
+    /// <summary>The three boosters of GDD v2.0 §2.7 (CR-012 C2). The order is the bar order on screen.</summary>
+    public enum BoosterId { Hand = 0, Shuffle = 1, Remove = 2 }
+
     /// <summary>Level progress, FTUE and ad pacing (GDD §5, v1.2). Saved through the framework's
     /// <c>IUserData</c> envelope; shape changes need a new migrator (rule #2).</summary>
     public sealed class ProgressModel : IUserModel
@@ -23,12 +26,17 @@ namespace Game.Application
         public int WinsSinceInterstitial;
         /// <summary>CR-012 C1: the starting coins were granted (once per install).</summary>
         public bool StartCoinsGranted;
+        /// <summary>CR-012 C2: boosters owned (features/boosters.md v2) and the ones unlocked so far (gift given).</summary>
+        public int BoosterHand, BoosterShuffle, BoosterRemove;
+        public List<string> BoostersUnlocked = new List<string>();
 
         public ProgressModel Clone() => new ProgressModel
         {
             CurrentLevel = CurrentLevel, HighestCleared = HighestCleared, Attempts = Attempts,
             FtueCompleted = new List<string>(FtueCompleted),
             WinsSinceInterstitial = WinsSinceInterstitial, StartCoinsGranted = StartCoinsGranted,
+            BoosterHand = BoosterHand, BoosterShuffle = BoosterShuffle, BoosterRemove = BoosterRemove,
+            BoostersUnlocked = new List<string>(BoostersUnlocked),
         };
 
         public void CopyFrom(ProgressModel o)
@@ -36,6 +44,8 @@ namespace Game.Application
             CurrentLevel = o.CurrentLevel; HighestCleared = o.HighestCleared; Attempts = o.Attempts;
             FtueCompleted = new List<string>(o.FtueCompleted);
             WinsSinceInterstitial = o.WinsSinceInterstitial; StartCoinsGranted = o.StartCoinsGranted;
+            BoosterHand = o.BoosterHand; BoosterShuffle = o.BoosterShuffle; BoosterRemove = o.BoosterRemove;
+            BoostersUnlocked = new List<string>(o.BoostersUnlocked);
         }
     }
 

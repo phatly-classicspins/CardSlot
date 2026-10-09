@@ -47,3 +47,21 @@ hud.coins,"{0:#,0}"
 win.reward,+{0}
 win.claim,Claim ×{0}
 lose.revive_price,"{0:#,0}"
+booster.hand.name,Hand
+booster.shuffle.name,Shuffle
+booster.remove.name,Remove
+booster.hand.tip,Pick any stack of cards!
+booster.shuffle.tip,Shuffle the poles in queues!
+booster.remove.tip,Tap the pole to sort it instantly!
+booster.locked,Lv {0}
+booster.count,{0}
+booster.price,"{0:#,0}"
+booster.buy.title,Need a boost?
+booster.buy.ad,Free
+booster.buy.not_enough,Not enough coins
+booster.unlock.title,New booster: {0}!
+booster.unlock.gift,×{0}
+booster.unlock.ok,Got it
+booster.pick.hand,Tap any stack
+booster.pick.remove,Tap a pole to fill it
+lose.use_booster,or use a booster ▼

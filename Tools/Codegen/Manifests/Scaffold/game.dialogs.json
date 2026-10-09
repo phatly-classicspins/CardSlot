@@ -1,1 +1,1 @@
-{"kind":"Dialog","entries":[{"id":"Win"},{"id":"Lose"},{"id":"Pause"},{"id":"Settings"},{"id":"RestartConfirm"}]}
+{"kind":"Dialog","entries":[{"id":"Win"},{"id":"Lose"},{"id":"Pause"},{"id":"Settings"},{"id":"RestartConfirm"},{"id":"BoosterBuy"},{"id":"BoosterUnlock"}]}

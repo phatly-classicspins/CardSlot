@@ -64,8 +64,11 @@ namespace Game.Views
             TargetSlotWidthTwo = 470f, TargetSlotGapTwo = 60f, TargetCardTop = 120f, TargetCardStep = 34f;
         public const float BufferLabelTop = 606f, BufferTop = 650f, BufferHeight = 200f, BufferCellTop = 30f,
             BufferCellWidth = 66f, BufferCellHeight = 140f, BufferInnerWidth = 960f, BufferInset = 34f;
-        // CR-005: no booster bar — the tray runs down to the bottom margin; a level smaller than it is centred
-        public const float TrayTop = 900f, TrayHeight = 960f, TrayRimInset = 22f;
+        // CR-012 C2 (D-035): the booster bar is back under the tray, so the tray ends at y 1600 (was 1860 since CR-005)
+        public const float TrayTop = 900f, TrayHeight = 700f, TrayRimInset = 22f;
+        // the booster bar (mock-ups gameplay-boosters-v02): three tiles centred, measured from the screen bottom
+        public const float BoosterTileWidth = 170f, BoosterTileHeight = 182f, BoosterTileGap = 90f, BoosterBarBottom = 102f,
+            BoosterLabelGap = 8f, BoosterLabelHeight = 44f, BoosterBadge = 72f, TypeBoosterLabel = 34f;
         // CR-011: the tray is sized to the level (padding around the stacks, never smaller than these)
         public const float TrayPadding = 36f, TrayMinWidth = 560f, TrayMinHeight = 420f;
         public const float CardWidth = 150f, CardHeight = 216f, CardBody = 206f, CardUnderHeight = 214f, CardStep = 16f;

@@ -19,7 +19,8 @@ namespace Game.Presentation
     /// The Gameplay screen controller: loads the level, owns the attempt's <see cref="BoardModel"/>, turns taps
     /// into rules and the model into visuals, and runs the flows of milestone 6b — win/lose dialogs with
     /// Revive and RV Slot (rewarded ads, CR-012 stage B), pause/settings, restart confirm and the level 1–2 tutorial
-    /// (features/*.md). No boosters and no coins yet (stage C). Progress is saved before anything shows it (G18, G19), and a dialog that
+    /// (features/*.md), coins (C1) and the boosters Hand / Shuffle / Remove with their unlock, buy and pick flows (C2, features/boosters.md v2).
+    /// Progress is saved before anything shows it (G18, G19), and a dialog that
     /// comes back <see cref="DialogCloseReason.Aborted"/> changes nothing.
     /// </summary>
     public sealed class GameplayScreen : ScreenBase
@@ -49,6 +50,8 @@ namespace Game.Presentation
         private StackPlacement[] _placements;
         private BoardModel _board;
         private int _paidRevives;                 // revives paid with coins this attempt: the next costs more (GDD v2.0 §7)
+        private int _picking = -1;                // CR-012 C2: the booster (Hand / Remove) waiting for its target, or −1
+        private bool _pickFromLose;               // that pick started on the lose dialog: cancelling goes back to it
         private bool _busy;                       // a dialog or ad is up: board taps are ignored
         private int _ftuePointAt = -1;            // level 1 step 1: the only stack a tap may go to
         private float _lastAdTime = -999f;
@@ -83,6 +86,9 @@ namespace Game.Presentation
             _view.RestartPressed += () => Guard(ConfirmRestart);
             _view.PausePressed += () => Guard(Pause);
             _view.RvSlotPressed += () => Guard(RvSlotDuringPlay);
+            _view.BoosterPressed += OnBoosterPressed;
+            _view.PoleTapped += OnPoleTapped;
+            _view.PickCancelled += CancelPick;
             await StartLevel(Mathf.Clamp(_param.Level, 1, Mathf.Max(1, _levelCount)), ct);
         }
 
@@ -92,7 +98,11 @@ namespace Game.Presentation
             Guard(Intro);
         }
 
-        public override void OnBackRequested() => Guard(Pause);
+        public override void OnBackRequested()
+        {
+            if (_picking >= 0) { CancelPick(); return; }   // features/boosters.md: Back cancels a pick, nothing spent
+            Guard(Pause);
+        }
 
         public override UniTask OnUnloadAsync(CancellationToken ct)
         {
@@ -125,19 +135,28 @@ namespace Game.Presentation
             _level = level;
             _data = await _levels.LoadAsync(level, ct);
             _placements = StackPlacementRules.Resolve(_data);
-            _board = new BoardModel(_data, _tuning.BoardRules());
+            // R-15 / rule #14: Shuffle draws from a stream seeded here, once per attempt, and the seed is logged
+            long shuffleSeed = DateTime.UtcNow.Ticks;
+            _board = new BoardModel(_data, _tuning.BoardRules(), random: new Pcg32(shuffleSeed));
+            EndPick();
             _paidRevives = 0;
             _grooves.Clear();
+            _board3D.ResetAnimations();
             var start = _progress.BeginLevel(level);
-            _log.Info($"[GameplayScreen] level {level} attempt {start.AttemptNo} (seed {_data.Seed}).");
+            _log.Info($"[GameplayScreen] level {level} attempt {start.AttemptNo} (seed {_data.Seed}, shuffle seed {shuffleSeed}).");
             Draw();
         }
 
-        // what follows a level start once the screen is up: the tutorial
-        private UniTask Intro()
+        // what follows a level start once the screen is up: a booster unlocked by this level (gift first), then the tutorial
+        private async UniTask Intro()
         {
+            foreach (var id in _progress.UnlockBoostersFor(_level))
+            {
+                Draw();
+                if (!await ShowUnlock(id)) return;
+            }
+            Draw();
             Tutorial(afterTap: false, targetCompleted: false);
-            return UniTask.CompletedTask;
         }
 
         private async UniTask Restart(int level)
@@ -155,12 +174,15 @@ namespace Game.Presentation
             for (int i = 0; i < layers.Length; i++) layers[i] = v.Stacks[i].Layer;
             _view.SetHitAreas(_board3D.StackWorldRects(v.Stacks.Length), layers);
             _view.SetHud(_loc.Get(LocKeys.GameplayLevel, _level), Coins());
+            _view.SetBoosters(Tiles());
         }
 
         // ── taps ──────────────────────────────────────────────────────────────────────────────────────
         private void OnStackTapped(int stack)
         {
             if (_busy || _board == null) return;
+            if (_picking == (int)BoosterId.Hand) { PickStack(stack); return; }
+            if (_picking >= 0) return;
             if (_ftuePointAt >= 0 && stack != _ftuePointAt) return;      // ftue.l1.step1: only the pointed stack
             var steps = _board.Tap(stack);
             if (steps.Count == 0) return;                                // R-4: covered or finished — 6c adds the shake
@@ -217,6 +239,16 @@ namespace Game.Presentation
                             ToHeld = -1, ToHeldFinal = -1, After = from, SwapGen = Gen(s.Slot),
                         });
                         Into(s.Slot, flights.Count - 1);
+                        break;
+                    // CR-012 C2: Remove on a waiting pole — cards fly to the back row and leave with that pole
+                    case BoardStepKind.CardToQueued:
+                        flights.Add(new CardFlight { Color = s.Color, FromStack = s.Stack, FromDepth = Depth(s.Stack), FromHeld = -1, ToSlot = s.Slot, ToIndex = s.Filled - 1, ToHeld = -1, ToHeldFinal = -1, After = -1, ToQueued = true });
+                        break;
+                    case BoardStepKind.BufferToQueued:
+                        int qGroove = _grooves[s.BufferIndex], qFrom = arrival[s.BufferIndex];
+                        _grooves.RemoveAt(s.BufferIndex);
+                        arrival.RemoveAt(s.BufferIndex);
+                        flights.Add(new CardFlight { Color = s.Color, FromStack = -1, FromHeld = qGroove, ToSlot = s.Slot, ToIndex = s.Filled - 1, ToHeld = -1, ToHeldFinal = -1, After = qFrom, ToQueued = true });
                         break;
                     case BoardStepKind.TargetCompleted:
                         if (filling.TryGetValue(s.Slot, out var done))
@@ -302,7 +334,7 @@ namespace Game.Presentation
                 adReady,
                 _loc.Get(LocKeys.LoseNoThanks),
                 _loc.Get(LocKeys.LoseFailedTitle), _loc.Get(LocKeys.LoseSubtitle, _level), _loc.Get(LocKeys.LoseRetry), _loc.Get(LocKeys.LoseHome),
-                Fan());
+                Fan(), AnyUnlocked() ? Tiles() : null, _loc.Get(LocKeys.LoseUseBooster));
             var result = await _dialogs.ShowAsync<LoseDialog, LoseChoice>(args, default, _cts.Token);
             if (result.Reason == DialogCloseReason.Aborted) return;
             switch (result.Value)
@@ -319,6 +351,11 @@ namespace Game.Presentation
                     if (await Rewarded(AdPlacements.RewardedRvSlot)) await AfterRescue(_board.RvSlot());
                     else await Lost();
                     break;
+                case LoseChoice.Booster0:
+                case LoseChoice.Booster1:
+                case LoseChoice.Booster2:
+                    await BoosterFromLose((BoosterId)(result.Value - LoseChoice.Booster0));
+                    break;
                 case LoseChoice.Retry:
                     await Restart(_level);
                     break;
@@ -334,6 +371,173 @@ namespace Game.Presentation
             if (_board == null || _board.Result != BoardResult.Playing || !_board.CanRvSlot) return;
             if (!await _ads.IsReadyAsync(AdPlacements.RewardedRvSlot)) return;   // not ready: the button simply does nothing
             if (await Rewarded(AdPlacements.RewardedRvSlot)) { _board.RvSlot(); Draw(); }
+        }
+
+        // ── boosters (CR-012 C2, features/boosters.md v2) ─────────────────────────────────────────────
+
+        private void OnBoosterPressed(int index)
+        {
+            if (_board == null || index < 0 || index > 2) return;
+            if (_picking >= 0) { CancelPick(); return; }               // the active tile again = cancel
+            if (_busy || _board.Result != BoardResult.Playing) return;
+            var id = (BoosterId)index;
+            if (!_progress.IsUnlocked(id)) return;                      // a locked tile does nothing
+            if (_progress.Boosters(id) == 0) { Guard(() => Buy(id)); return; }
+            if (id == BoosterId.Shuffle) UseShuffle();
+            else BeginPick(id, fromLose: false);
+        }
+
+        // the lose dialog closed on a booster tile: use it, buy it, or pick its target; anything that does not change
+        // the board brings the dialog back
+        private async UniTask BoosterFromLose(BoosterId id)
+        {
+            if (!_progress.IsUnlocked(id)) { await Lost(); return; }
+            if (_progress.Boosters(id) == 0) { await Buy(id); await Lost(); return; }
+            if (id == BoosterId.Shuffle)
+            {
+                if (!_board.CanShuffle || !_progress.TryUseBooster(id)) { await Lost(); return; }
+                await AfterRescue(_board.Shuffle());
+                return;
+            }
+            if (id == BoosterId.Hand && !AnyHandTarget()) { await Lost(); return; }   // overflow: the pending cards come first
+            BeginPick(id, fromLose: true);                              // the flow ends here; the pick finishes it
+        }
+
+        private void UseShuffle()
+        {
+            if (!_board.CanShuffle || !_progress.TryUseBooster(BoosterId.Shuffle)) return;
+            AfterBooster(_board.Shuffle());
+        }
+
+        private void BeginPick(BoosterId id, bool fromLose)
+        {
+            _picking = (int)id;
+            _pickFromLose = fromLose;
+            _view.HideTutorial();
+            if (id == BoosterId.Hand)
+            {
+                _view.ShowPick(_picking, _loc.Get(LocKeys.BoosterPickHand), _board3D.TrayWorldRect(), bannerAbove: true);
+                return;
+            }
+            // Remove: the front pole of each slot and the one waiting right behind it (the poles the player can see)
+            var (front, back) = _board3D.PoleWorldRects(_board.SlotCount);
+            var rects = new List<Rect>(); var slots = new List<int>(); var depths = new List<int>();
+            Rect band = default;
+            for (int s = 0; s < _board.SlotCount; s++)
+            {
+                if (_board.CanRemove(s, 0) && front[s].width > 0f) { rects.Add(front[s]); slots.Add(s); depths.Add(0); }
+                if (_board.CanRemove(s, 1) && back[s].width > 0f) { rects.Add(back[s]); slots.Add(s); depths.Add(1); }
+            }
+            foreach (var r in rects) band = band.width > 0f ? Rect.MinMaxRect(Mathf.Min(band.xMin, r.xMin), Mathf.Min(band.yMin, r.yMin), Mathf.Max(band.xMax, r.xMax), Mathf.Max(band.yMax, r.yMax)) : r;
+            _view.ShowPick(_picking, _loc.Get(LocKeys.BoosterPickRemove), band, bannerAbove: false, rects.ToArray(), slots.ToArray(), depths.ToArray());
+        }
+
+        private void CancelPick()
+        {
+            if (_picking < 0) return;
+            bool fromLose = _pickFromLose;
+            EndPick();
+            if (fromLose) Guard(Lost);
+        }
+
+        private void EndPick()
+        {
+            _picking = -1;
+            _pickFromLose = false;
+            _view?.HidePick();
+        }
+
+        private void PickStack(int stack)
+        {
+            if (!_board.CanHand(stack) || !_progress.TryUseBooster(BoosterId.Hand)) return;
+            EndPick();
+            AfterBooster(_board.Hand(stack));
+        }
+
+        private void OnPoleTapped(int slot, int depth)
+        {
+            if (_busy || _picking != (int)BoosterId.Remove) return;
+            if (!_board.CanRemove(slot, depth) || !_progress.TryUseBooster(BoosterId.Remove)) return;
+            EndPick();
+            AfterBooster(_board.Remove(slot, depth));
+        }
+
+        // a booster is not a tap, but ends like one: animate, then win / lose as usual (a pick from the lose screen
+        // that leaves the board still lost brings the lose dialog back)
+        private void AfterBooster(IReadOnlyList<BoardStep> steps)
+        {
+            if (steps.Count == 0) return;
+            Draw(Flights(steps));
+            if (_board.Result == BoardResult.Won) Guard(Won);
+            else if (_board.Result == BoardResult.Lost) Guard(Lost);
+        }
+
+        private bool AnyHandTarget()
+        {
+            for (int i = 0; i < _board.StackCount; i++) if (_board.CanHand(i)) return true;
+            return false;
+        }
+
+        private bool AnyUnlocked() => _progress.IsUnlocked(BoosterId.Hand) || _progress.IsUnlocked(BoosterId.Shuffle) || _progress.IsUnlocked(BoosterId.Remove);
+
+        // out of a booster: buy one with coins or watch an ad for one (G18 / G19); the player then taps it to use it
+        private async UniTask Buy(BoosterId id)
+        {
+            while (true)
+            {
+                bool adReady = await _ads.IsReadyAsync(AdPlacements.RewardedBooster);
+                int price = _tuning.Price(id);
+                var args = new BoosterBuyArgs(_loc.Get(LocKeys.BoosterBuyTitle), _loc.Get(BoosterName(id)), _loc.Get(BoosterTip(id)), (int)id,
+                    _loc.Get(LocKeys.BoosterPrice, price), _progress.Coins >= price, _loc.Get(LocKeys.BoosterBuyNotEnough),
+                    adReady ? _loc.Get(LocKeys.BoosterBuyAd) : _loc.Get(LocKeys.AdsNotAvailable), adReady, Coins());
+                var result = await _dialogs.ShowAsync<BoosterBuyDialog, BoosterBuyChoice>(args, default, _cts.Token);
+                if (result.Reason == DialogCloseReason.Aborted || result.Value == BoosterBuyChoice.Close) return;
+                if (result.Value == BoosterBuyChoice.Coins)
+                {
+                    if (!_progress.TryBuyBooster(id)) continue;          // short or not saved: nothing changed, offer again
+                }
+                else if (!await Rewarded(AdPlacements.RewardedBooster) || !_progress.GrantBoosterFromAd(id)) continue;
+                Draw();
+                return;
+            }
+        }
+
+        // the unlock popup at the first start of level 5 / 8 / 10; false if the screen went away under it
+        private async UniTask<bool> ShowUnlock(BoosterId id)
+        {
+            var tiles = Tiles();
+            tiles[(int)id].Active = true;
+            var args = new BoosterUnlockArgs(_loc.Get(LocKeys.BoosterUnlockTitle, _loc.Get(BoosterName(id))), _loc.Get(BoosterTip(id)),
+                _loc.Get(LocKeys.BoosterUnlockGift, _tuning.BoosterUnlockGift), _loc.Get(LocKeys.BoosterUnlockOk), (int)id, tiles);
+            var result = await _dialogs.ShowAsync<BoosterUnlockDialog, Unit>(args, default, _cts.Token);
+            return result.Reason != DialogCloseReason.Aborted;
+        }
+
+        private static LocKey BoosterName(BoosterId id) =>
+            id == BoosterId.Hand ? LocKeys.BoosterHandName : id == BoosterId.Shuffle ? LocKeys.BoosterShuffleName : LocKeys.BoosterRemoveName;
+
+        private static LocKey BoosterTip(BoosterId id) =>
+            id == BoosterId.Hand ? LocKeys.BoosterHandTip : id == BoosterId.Shuffle ? LocKeys.BoosterShuffleTip : LocKeys.BoosterRemoveTip;
+
+        // the bar as the controller decides it: locked ("Lv N"), owned (count badge) or out (coin price)
+        private BoosterTileVisual[] Tiles()
+        {
+            var tiles = new BoosterTileVisual[3];
+            for (int i = 0; i < 3; i++)
+            {
+                var id = (BoosterId)i;
+                int n = _progress.Boosters(id);
+                bool open = _progress.IsUnlocked(id);
+                tiles[i] = new BoosterTileVisual
+                {
+                    Name = _loc.Get(BoosterName(id)),
+                    Locked = open ? null : _loc.Get(LocKeys.BoosterLocked, _tuning.UnlockLevel(id)),
+                    Badge = open && n > 0 ? _loc.Get(LocKeys.BoosterCount, n) : null,
+                    Price = open && n == 0 ? _loc.Get(LocKeys.BoosterPrice, _tuning.Price(id)) : null,
+                    Active = _picking == i,
+                };
+            }
+            return tiles;
         }
 
         // reward only on completion (G19)

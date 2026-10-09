@@ -20,6 +20,9 @@ namespace Game.Views
         [SerializeField] protected Sprite _iconPlay, _iconLock, _iconClose, _iconGear;
         [SerializeField] protected Sprite _closeButton, _rowSunken, _toggleOn, _toggleOff, _toggleKnob, _roundButton;
         [SerializeField] protected Sprite _pill, _coin;
+        // CR-012 C2: the booster bar redrawn above the dim, and the big booster icon of the buy / unlock dialogs
+        [SerializeField] protected Sprite _iconHolder, _boostTile, _badge, _priceTag, _lock;
+        [SerializeField] protected Sprite[] _boosterIcons = new Sprite[3];
         [SerializeField] protected Sprite[] _cardFace = new Sprite[8];
         [SerializeField] protected TMP_FontAsset _font;
 
@@ -105,6 +108,26 @@ namespace Game.Views
         /// <summary>The coin counter above the dim (mock-ups win / lose-offer-coins-v02): the same pill and place as the HUD's, so the
         /// player watches the balance while the dialog is up.</summary>
         protected void CoinPill(string coins) { if (coins != null) UiKit.CoinPill(Root, _pill, _coin, _font, coins); }
+
+        /// <summary>The booster bar at its board place, above the dim (mock-ups unlock-hand-v02, lose-offer-boosters-v02).</summary>
+        protected void Boosters(BoosterTileVisual[] tiles, Action<int> pressed, int only = -1)
+        {
+            if (tiles == null) return;
+            BoosterBar.Draw(Root, tiles, new BoosterBarArt(_boostTile, _boosterIcons, _badge, _priceTag, _lock, _coin, _font), pressed, only);
+        }
+
+        /// <summary>The big booster icon on its sunken holder, centred in the panel; <paramref name="gift"/> ("×3") adds a badge.</summary>
+        protected void BoosterIcon(Transform panel, float y, int booster, string gift = null)
+        {
+            const float w = 260f, h = 272f;
+            float x = (PanelWidth - w) / 2f;
+            var holder = UiKit.Image("Holder", panel, _iconHolder, x, y, w, h);
+            var icon = _boosterIcons != null && booster >= 0 && booster < _boosterIcons.Length ? _boosterIcons[booster] : null;
+            UiKit.Image("Icon", holder.transform, icon, 60f, 60f, 140f, 140f).color = DesignTokens.Secondary;
+            if (gift == null) return;
+            var badge = UiKit.Image("Gift", holder.transform, _badge, 180f, 196f, 110f, 84f, sliced: true);
+            UiKit.Text("Amount", badge.transform, _font, gift, 50f, DesignTokens.OnColor, 0f, 0f, 110f, 76f);
+        }
 
         /// <summary>A text-only action ("Home", "No thanks").</summary>
         protected GameObject Link(Transform parent, string label, float y, Action onClick)

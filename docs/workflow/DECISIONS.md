@@ -271,3 +271,9 @@ Phat xác nhận các rule nối vị trí/xoè áp dụng toàn game, không ch
 
 ### D-034 · 08-10-2026 · Bước 6 · Duyệt + commit bố cục level 1–5, rule đặt thẻ tự động, LevelBuilder
 Quyết định (người chốt: Phat, "ok làm 2 commit"): duyệt bản Codex — level 1–5 dựng lại theo video IMG_3750; `StackPlacementRules` (support tự động, hướng / góc xoè) cho mọi level; xoè rộng (`ReferencePileSpacing` 18) cho toàn game; tool `Tools/LevelBuilder/`. Chỉ commit ảnh lượt cuối (`docs/captures/video-layouts-1-5/`) và audit rule tự động (`docs/captures/automatic-stack-layout/`); ảnh các lượt thử trung gian không đưa vào repo.
+
+### D-035 · 08-10-2026 · Bước 6 · Duyệt mock-up C2 (booster) và chốt luật R-19 / R-21
+Quyết định (người chốt: Phat, "ok duyệt, làm theo GDD luôn đi"): duyệt 8 mock-up `gameplay-boosters-v02`, `gameplay-boosters-all-v02`, `gameplay-pick-hand-v02`, `gameplay-pick-remove-v02`, `booster-buy-v02`, `booster-buy-poor-v02`, `unlock-hand-v02`, `lose-offer-boosters-v02` (khay thu về y 900…1600 để chừa thanh booster; ba glyph mới Hand / Shuffle / Remove; nút xu là nút chính như C1). Các mục [XÁC NHẬN] của R-19 / R-21 làm đúng như GDD đang ghi: Remove lấy lá dở → ô chờ (FIFO) → bàn; Shuffle chọn tối đa 3 màu theo ô chờ rồi theo chồng mở; cọc đã có lá không bị xáo; mỗi cột giữ số cọc. Bắt đầu code C2.
+
+### D-036 · 09-10-2026 · Bước 6 · Duyệt + commit C2 (booster) và bay từng lá / nhiều cọc đồng thời
+Quyết định (người chốt: Phat, "Duyệt C2 + 1 commit chung"): duyệt code C2 (Hand / Remove / Shuffle, kho booster, mở khoá level 5 / 8 / 10, dialog mua / mở khoá, thanh booster ở màn thua) và bản sửa anim bay của Codex (lá trên cùng bay trước, lá chờ giữ pose, tap cọc khác không cắt animation; chỉ reset ở StartLevel). Hai phần đan xen trong `Board3DView` / `GameplayScreen` nên gộp một commit. File font fallback TMP (đổi do lượt play) không đưa vào commit.

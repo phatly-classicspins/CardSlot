@@ -113,12 +113,13 @@ namespace Game.Editor
                 Set(so, "_coin", S("ui", "coin"));                     // CR-012 C1 coin pill
                 Set(so, "_hand", S("ui", "hand_pointer"));
                 Set(so, "_ring", S("ui", "ftue_ring"));
+                WireBoosterBar(so);                                   // CR-012 C2 booster bar
                 Set(so, "_font", font);
                 SetBool(so, "_draw2DBoard", false);   // CR-003: the board is 3D; this view keeps HUD, labels, tap areas
             });
 
             // the scaffolded dialog prefab variants (Scaffold.Sync owns them; this only wires their sprites)
-            foreach (var id in new[] { "Win", "Lose", "Pause", "Settings", "RestartConfirm" })
+            foreach (var id in new[] { "Win", "Lose", "Pause", "Settings", "RestartConfirm", "BoosterBuy", "BoosterUnlock" })
                 WireDialog($"Assets/CardSlot/Content/UI/{id}/Prefabs/{id}Dialog.prefab", $"Game.Views.{id}DialogView, Game.Views", font);
 
             Save("Gameplay/Board3DView", "Game.Views.Board3DView, Game.Views", so =>
@@ -180,12 +181,24 @@ namespace Game.Editor
                 Set(so, "_toggleOff", S("ui", "toggle_off"));
                 Set(so, "_toggleKnob", S("ui", "toggle_knob"));
                 Set(so, "_roundButton", S("ui", "rbtn_secondary"));
+                Set(so, "_iconHolder", S("ui", "icon_holder"));          // CR-012 C2 buy / unlock dialogs
+                WireBoosterBar(so);
                 Set(so, "_cardFace", PerColour("gameplay", "card_face_"));
                 Set(so, "_font", font);
                 so.ApplyModifiedPropertiesWithoutUndo();
                 PrefabUtility.SaveAsPrefabAsset(root, path);
             }
             finally { PrefabUtility.UnloadPrefabContents(root); }
+        }
+
+        // CR-012 C2: the booster bar's sprites (BoardView and the dialogs that redraw the bar above the dim)
+        private static void WireBoosterBar(SerializedObject so)
+        {
+            Set(so, "_boostTile", S("ui", "boost_tile"));
+            Set(so, "_boosterIcons", new[] { S("ui", "icon_hand"), S("ui", "icon_shuffle"), S("ui", "icon_remove") });
+            Set(so, "_badge", S("ui", "badge_primary"));
+            Set(so, "_priceTag", S("ui", "pill_ink"));
+            Set(so, "_lock", S("ui", "icon_lock"));
         }
 
         private static void Save(string address, string componentType, Action<SerializedObject> wire, bool rectTransform = true)

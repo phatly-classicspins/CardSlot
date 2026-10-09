@@ -11,6 +11,7 @@
     { "id": "RewardedRevive", "value": "rewarded_revive", "order": 0 },
     { "id": "InterstitialLevelEnd", "value": "interstitial_level_end", "order": 1 },
     { "id": "RewardedRvSlot", "value": "rewarded_rv_slot", "order": 2 },
-    { "id": "RewardedWinDouble", "value": "rewarded_win_double", "order": 3 }
+    { "id": "RewardedWinDouble", "value": "rewarded_win_double", "order": 3 },
+    { "id": "RewardedBooster", "value": "rewarded_booster", "order": 4 }
   ]
 }

@@ -1,13 +1,13 @@
 # Báo cáo xuất art — CardSlot
 
-> Sinh tự động bởi `art/tools/build-art.ps1` từ `art/source/art.html` (design-tokens v1.0), 08-10-2026 09:25. Không sửa tay (G12).
+> Sinh tự động bởi `art/tools/build-art.ps1` từ `art/source/art.html` (design-tokens v1.0), 08-10-2026 17:41. Không sửa tay (G12).
 
 ## Tổng
 
-- Sprite: **81** · lỗi chặn: **0**
-- Bộ nhớ texture: 6.27 MB nếu RGBA32 · ~0.71 MB với ASTC 6×6 (ngân sách 16 MB, D-019)
+- Sprite: **84** · lỗi chặn: **0**
+- Bộ nhớ texture: 6.38 MB nếu RGBA32 · ~0.73 MB với ASTC 6×6 (ngân sách 16 MB, D-019)
 - Atlas: 
-`` 81 sprite
+`` 84 sprite
 - Kiểm tra: đúng kích thước spec · kích thước chẵn · cắt mép canvas · pixel lạc · quầng tối (sprite đục) · soi gương (sprite đối xứng) · đường nối 9-slice · ≤ 64 KB/sprite. Mọi sprite được bù màu alpha (alpha bleed) để không có viền tối khi lọc.
 
 ## Từng sprite
@@ -91,7 +91,10 @@
 | `icon_lock` | ui | 100×100 | — | icon | 1.1 | đạt | — |
 | `icon_undo` | ui | 100×100 | — | icon | 1.3 | đạt | — |
 | `icon_space` | ui | 100×100 | — | icon | 0.8 | đạt | — |
+| `icon_hand` | ui | 100×100 | — | icon | 1.4 | đạt | — |
+| `icon_shuffle` | ui | 100×100 | — | icon | 1.6 | đạt | — |
+| `icon_remove` | ui | 100×100 | — | icon | 1.6 | đạt | — |
 | `hand_pointer` | ui | 150×172 | — | opaque | 7.3 | đạt | — |
 | `ftue_ring` | ui | 170×170 | — | overlay | 5.2 | đạt | — |
 | `confetti` | ui | 26×44 | — | icon | 0.3 | đạt | — |
-| `bg_ground` | bg | 270×480 | — | opaque | 34.4 | đạt | — |
+| `bg_ground` | bg | 270×480 | — | opaque | 34.2 | đạt | — |

@@ -10,6 +10,23 @@ namespace Game.Gen
     public static class LocKeys
     {
         public static readonly LocKey AdsNotAvailable        = new("ads.not_available");
+        public static readonly LocKey BoosterBuyAd           = new("booster.buy.ad");
+        public static readonly LocKey BoosterBuyNotEnough    = new("booster.buy.not_enough");
+        public static readonly LocKey BoosterBuyTitle        = new("booster.buy.title");
+        public static readonly LocKey BoosterCount           = new("booster.count");
+        public static readonly LocKey BoosterHandName        = new("booster.hand.name");
+        public static readonly LocKey BoosterHandTip         = new("booster.hand.tip");
+        public static readonly LocKey BoosterLocked          = new("booster.locked");
+        public static readonly LocKey BoosterPickHand        = new("booster.pick.hand");
+        public static readonly LocKey BoosterPickRemove      = new("booster.pick.remove");
+        public static readonly LocKey BoosterPrice           = new("booster.price");
+        public static readonly LocKey BoosterRemoveName      = new("booster.remove.name");
+        public static readonly LocKey BoosterRemoveTip       = new("booster.remove.tip");
+        public static readonly LocKey BoosterShuffleName     = new("booster.shuffle.name");
+        public static readonly LocKey BoosterShuffleTip      = new("booster.shuffle.tip");
+        public static readonly LocKey BoosterUnlockGift      = new("booster.unlock.gift");
+        public static readonly LocKey BoosterUnlockOk        = new("booster.unlock.ok");
+        public static readonly LocKey BoosterUnlockTitle     = new("booster.unlock.title");
         public static readonly LocKey FtueL1Step1            = new("ftue.l1.step1");
         public static readonly LocKey FtueL1Step2            = new("ftue.l1.step2");
         public static readonly LocKey FtueL2Buffer           = new("ftue.l2.buffer");
@@ -40,6 +57,7 @@ namespace Game.Gen
         public static readonly LocKey LoseSubtitle           = new("lose.subtitle");
         public static readonly LocKey LoseTitle              = new("lose.title");
         public static readonly LocKey LoseTitleStuck         = new("lose.title_stuck");
+        public static readonly LocKey LoseUseBooster         = new("lose.use_booster");
         public static readonly LocKey PauseHome              = new("pause.home");
         public static readonly LocKey PauseRestart           = new("pause.restart");
         public static readonly LocKey PauseResume            = new("pause.resume");

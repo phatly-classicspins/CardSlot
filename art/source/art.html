@@ -150,6 +150,10 @@ const ICON = {
   lock:'<path transform="scale(4.1667)" d="M6 10V8a6 6 0 0 1 12 0v2h1v11H5V10zm3 0h6V8a3 3 0 0 0-6 0z"/>',
   undo:'<path transform="scale(4.1667)" d="M9 5 3 10.5 9 16v-4c5 0 8 1.5 10 5-1-5-4-9-10-9.5z"/>',
   space:'<g transform="scale(4.1667)"><rect x="2" y="7" width="5" height="10" rx="1.5"/><rect x="9.5" y="7" width="5" height="10" rx="1.5" fill-opacity=".55"/><path d="M19 8v3h-3v2h3v3h2v-3h3v-2h-3V8z"/></g>',
+  // CR-012 C2 boosters (mock-ups *-v02, D-035) — the same glyphs as .working/c2.html
+  hand:'<rect x="24" y="16" width="13" height="44" rx="6.5"/><rect x="39" y="6" width="13" height="52" rx="6.5"/><rect x="54" y="10" width="13" height="50" rx="6.5"/><rect x="69" y="22" width="12" height="38" rx="6"/><rect x="22" y="44" width="59" height="48" rx="22"/><rect x="14" y="44" width="13" height="32" rx="6.5" transform="rotate(-30 20 70)"/>',
+  shuffle:'<g fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><path d="M8 30h20c16 0 22 40 38 40h12"/><path d="M8 70h20c16 0 22-40 38-40h12"/></g><path d="M76 14l18 16-18 16zM76 54l18 16-18 16z"/>',
+  remove:'<ellipse cx="40" cy="80" rx="32" ry="12"/><rect x="35" y="18" width="10" height="64" rx="5"/><path d="M77 4 82.5 20.5 99 26 82.5 31.5 77 48 71.5 31.5 55 26 71.5 20.5z"/>',
 };
 const ICON_SYM = {pause:true, close:true};
 Object.entries(ICON).forEach(([n, body]) => add(`icon_${n}`, 'ui', 100, 100, `<g id="glyph" fill="#fff">${body}</g>`, {kind:'icon', sym:!!ICON_SYM[n], use:`${n} glyph, white — tint from tokens`}));

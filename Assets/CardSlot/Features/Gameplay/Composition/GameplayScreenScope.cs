@@ -23,6 +23,8 @@ namespace Game.Composition
             builder.Register<PauseDialog>(Lifetime.Transient);
             builder.Register<SettingsDialog>(Lifetime.Transient);
             builder.Register<RestartConfirmDialog>(Lifetime.Transient);
+            builder.Register<BoosterBuyDialog>(Lifetime.Transient);      // CR-012 C2
+            builder.Register<BoosterUnlockDialog>(Lifetime.Transient);
         }
     }
 }

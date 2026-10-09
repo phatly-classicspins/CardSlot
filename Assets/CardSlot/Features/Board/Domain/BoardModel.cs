@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ClassicSpins.PrototypeFramework.Domain;
 
 namespace Game.Domain
 {
@@ -28,6 +29,14 @@ namespace Game.Domain
         Overflow,
         Won,
         Lost,
+        /// <summary>R-19 Remove on a waiting target: a card left <c>Stack</c> for the target <c>Depth</c> places behind <c>Slot</c>.</summary>
+        CardToQueued,
+        /// <summary>R-19 Remove on a waiting target: the buffer card at <c>BufferIndex</c> went to it.</summary>
+        BufferToQueued,
+        /// <summary>R-19 Remove on a waiting target: it filled up and left; the targets behind it moved up one place.</summary>
+        QueuedTargetCompleted,
+        /// <summary>R-21 Shuffle: the targets that held no card changed places (redraw the pegs).</summary>
+        Shuffled,
     }
 
     /// <summary>One thing that happened while resolving a tap, in order — the view replays these
@@ -36,14 +45,16 @@ namespace Game.Domain
     {
         public readonly BoardStepKind Kind;
         public readonly int Stack, Slot, BufferIndex, Color, Filled, Capacity;
+        /// <summary>For the <c>*Queued*</c> kinds: which waiting target behind <see cref="Slot"/> (0 = right behind it).</summary>
+        public readonly int Depth;
 
-        public BoardStep(BoardStepKind kind, int stack = -1, int slot = -1, int bufferIndex = -1, int color = -1, int filled = 0, int capacity = 0)
+        public BoardStep(BoardStepKind kind, int stack = -1, int slot = -1, int bufferIndex = -1, int color = -1, int filled = 0, int capacity = 0, int depth = -1)
         {
-            Kind = kind; Stack = stack; Slot = slot; BufferIndex = bufferIndex; Color = color; Filled = filled; Capacity = capacity;
+            Kind = kind; Stack = stack; Slot = slot; BufferIndex = bufferIndex; Color = color; Filled = filled; Capacity = capacity; Depth = depth;
         }
 
         public override string ToString() =>
-            $"{Kind}(stack {Stack}, slot {Slot}, buf {BufferIndex}, colour {Color}, {Filled}/{Capacity})";
+            $"{Kind}(stack {Stack}, slot {Slot}, depth {Depth}, buf {BufferIndex}, colour {Color}, {Filled}/{Capacity})";
     }
 
     /// <summary>Revive / RV Slot amounts and limits (GDD v2.0 §2.8, §7) — tuning data, passed in by the caller.</summary>
@@ -58,8 +69,9 @@ namespace Game.Domain
     }
 
     /// <summary>
-    /// The rules of one attempt at a level (GDD v2.0 §2, R-2…R-15, R-19 Remove, R-22 Revive, R-23 RV Slot). Engine-free and deterministic: the final
-    /// state depends only on the level and the sequence of taps (R-15). Every mutation returns the steps
+    /// The rules of one attempt at a level (GDD v2.0 §2, R-2…R-15, boosters R-19 Remove / R-20 Hand / R-21 Shuffle, R-22 Revive,
+    /// R-23 RV Slot). Engine-free and deterministic: the final state depends only on the level, the sequence of taps and
+    /// boosters, and the seed of the <see cref="IRandom"/> Shuffle draws from (R-15). Every mutation returns the steps
     /// the view needs to animate it; no rule waits on a view.
     /// </summary>
     public sealed class BoardModel
@@ -67,14 +79,14 @@ namespace Game.Domain
         private struct Target
         {
             public bool Has;
-            public int Color, Capacity, Filled;
+            public int Id, Color, Capacity, Filled;
         }
 
         private sealed class Snapshot
         {
             public int[] Removed;
             public Target[] Slots;
-            public int[] ColumnNext;
+            public List<int>[] Queue;
             public int[] Buffer;
             public BoardResult Result;
             public BoardLoss Loss;
@@ -89,22 +101,26 @@ namespace Game.Domain
         private readonly List<BoardStep> _steps = new List<BoardStep>();
         // CR-009: the queue is dealt into columns — target i waits behind slot i % Slots — and a completed
         // slot takes the next target of its own column (the reference: the peg behind moves forward)
-        private int[] _columnNext;
+        private readonly List<int>[] _queue;     // per column: the waiting targets (indices into Level.Targets), nearest first
+        private readonly IRandom _random;         // R-15: Shuffle is the only randomness while playing (seeded by the caller)
         private int _revivesUsed, _rvSlotsUsed;
         // the cards left unplaced when the buffer overflowed (R-7.2) — Revive / RV Slot place them
         private int _pendingStack = -1, _pendingColor = -1, _pendingCount;
 
-        public BoardModel(LevelData level, BoardRules rules = null, int? bufferCapacityOverride = null)
+        public BoardModel(LevelData level, BoardRules rules = null, int? bufferCapacityOverride = null, IRandom random = null)
         {
             var errors = LevelValidator.Validate(level);
             if (errors.Count > 0) throw new ArgumentException($"Level '{level?.Id}' is invalid: {string.Join("; ", errors)}");
             _level = level;
             _rules = rules ?? new BoardRules();
+            _random = random;
             _removed = new int[level.Stacks.Count];
             _slots = new Target[level.Slots];
             BufferCapacity = bufferCapacityOverride ?? level.BufferCapacity;
             // R-2: the first n targets of the queue fill slots 0..n-1 in order
-            _columnNext = new int[_slots.Length];
+            _queue = new List<int>[_slots.Length];
+            for (int s = 0; s < _slots.Length; s++) _queue[s] = new List<int>();
+            for (int t = 0; t < level.Targets.Count; t++) _queue[t % _slots.Length].Add(t);
             for (int s = 0; s < _slots.Length; s++)
                 if (HasNext(s)) _slots[s] = NextTarget(s);
         }
@@ -119,7 +135,7 @@ namespace Game.Domain
         public IReadOnlyList<int> Buffer => _buffer;
         public int StackCount => _removed.Length;
         public int SlotCount => _slots.Length;
-        public int QueuedTargets { get { int used = 0; foreach (int c in _columnNext) used += c; return _level.Targets.Count - used; } }
+        public int QueuedTargets { get { int n = 0; foreach (var q in _queue) n += q.Count; return n; } }
         public int TapCount { get; private set; }
         /// <summary>R-22: after any loss, while revives are left this attempt.</summary>
         public bool CanRevive => Result == BoardResult.Lost && _revivesUsed < _rules.ReviveMaxPerAttempt;
@@ -140,10 +156,12 @@ namespace Game.Domain
         public int SlotFilled(int slot) => _slots[slot].Filled;
         public int SlotCapacity(int slot) => _slots[slot].Capacity;
         /// <summary>CR-009: the colour of the target waiting behind <paramref name="slot"/> (the back-row peg), or −1.</summary>
-        public int NextColorBehind(int slot) => HasNext(slot) ? _level.Targets[ColumnIndex(slot)].Color : -1;
+        public int NextColorBehind(int slot) => QueuedColor(slot, 0);
+        /// <summary>Colour of the <paramref name="index"/>-th target waiting in <paramref name="slot"/>'s column (0 = right behind the slot), or −1.</summary>
+        public int QueuedColor(int slot, int index) => index >= 0 && index < _queue[slot].Count ? _level.Targets[_queue[slot][index]].Color : -1;
+        public int QueuedCount(int slot) => _queue[slot].Count;
 
-        private int ColumnIndex(int slot) => slot + _columnNext[slot] * _slots.Length;
-        private bool HasNext(int slot) => ColumnIndex(slot) < _level.Targets.Count;
+        private bool HasNext(int slot) => _queue[slot].Count > 0;
 
         /// <summary>R-3: covered when another stack of a different colour that still has cards, on a higher layer,
         /// overlaps it. A same-colour stack on top does not cover (GDD v2.0).</summary>
@@ -263,21 +281,56 @@ namespace Game.Domain
         {
             var t = _slots[slot];
             if (!t.Has) return;
-            while (_pendingCount > 0 && _pendingColor == t.Color && _slots[slot].Filled < t.Capacity)
+            int filled = t.Filled;
+            Gather(t.Color, t.Capacity - t.Filled, (stack, bufferIndex) =>
             {
-                _pendingCount--;
-                Fill(slot, BoardStepKind.CardToTarget, _pendingStack, -1);
+                _slots[slot].Filled = ++filled;
+                _steps.Add(new BoardStep(stack >= 0 || bufferIndex < 0 ? BoardStepKind.CardToTarget : BoardStepKind.BufferToTarget,
+                    stack: stack, slot: slot, bufferIndex: bufferIndex, color: t.Color, filled: filled, capacity: t.Capacity));
+            });
+            Settle();
+        }
+
+        // R-19 on the target waiting depth places behind slot: it fills the same way, leaves, and the ones behind move up
+        private void RemoveQueued(int slot, int depth)
+        {
+            var t = MakeTarget(_queue[slot][depth]);
+            int filled = 0;
+            Gather(t.Color, t.Capacity, (stack, bufferIndex) =>
+            {
+                filled++;
+                _steps.Add(new BoardStep(stack >= 0 || bufferIndex < 0 ? BoardStepKind.CardToQueued : BoardStepKind.BufferToQueued,
+                    stack: stack, slot: slot, bufferIndex: bufferIndex, color: t.Color, filled: filled, capacity: t.Capacity, depth: depth));
+            });
+            _queue[slot].RemoveAt(depth);
+            _steps.Add(new BoardStep(BoardStepKind.QueuedTargetCompleted, slot: slot, color: t.Color, depth: depth));
+            Settle();
+        }
+
+        /// <summary>
+        /// R-19 source order for <paramref name="need"/> cards of <paramref name="color"/>: the pending cards, then the
+        /// buffer (FIFO), then the board (open stacks before covered ones, higher layer first, then id).
+        /// <paramref name="take"/> gets (stack, −1) for a card from a stack or the pending run, (−1, index) for a buffer card.
+        /// </summary>
+        private void Gather(int color, int need, Action<int, int> take)
+        {
+            while (need > 0 && _pendingCount > 0 && _pendingColor == color)
+            {
+                _pendingCount--; need--;
+                take(_pendingStack, -1);
             }
             if (_pendingCount == 0) _pendingStack = _pendingColor = -1;
-            for (int i = 0; i < _buffer.Count && _slots[slot].Filled < t.Capacity;)
+            for (int i = 0; i < _buffer.Count && need > 0;)
             {
-                if (_buffer[i] != t.Color) { i++; continue; }
+                if (_buffer[i] != color) { i++; continue; }
                 _buffer.RemoveAt(i);
-                Fill(slot, BoardStepKind.BufferToTarget, -1, i);
+                need--;
+                take(-1, i);
             }
+            if (need == 0) return;
             var order = new List<int>();
             for (int i = 0; i < _removed.Length; i++)
-                if (Remaining(i) > 0 && _level.Stacks[i].Color == t.Color) order.Add(i);
+                if (Remaining(i) > 0 && _level.Stacks[i].Color == color) order.Add(i);
             order.Sort((a, b) =>
             {
                 bool ca = IsCovered(a), cb = IsCovered(b);
@@ -287,22 +340,145 @@ namespace Game.Domain
             });
             foreach (int i in order)
             {
-                while (Remaining(i) > 0 && _slots[slot].Filled < t.Capacity)
+                while (Remaining(i) > 0 && need > 0)
                 {
-                    _removed[i]++;
-                    Fill(slot, BoardStepKind.CardToTarget, i, -1);
+                    _removed[i]++; need--;
+                    take(i, -1);
                 }
                 if (Remaining(i) == 0) _steps.Add(new BoardStep(BoardStepKind.StackEmptied, stack: i));
-                if (_slots[slot].Filled >= t.Capacity) break;
+                if (need == 0) break;
             }
-            Settle();
         }
 
-        private void Fill(int slot, BoardStepKind kind, int stack, int bufferIndex)
+        // ── boosters (GDD v2.0 §2.7; features/boosters.md v2) ─────────────────────────────────────────
+        // Usable while playing, or on the lose screen: then the board goes back to playing, the booster acts, the
+        // pending cards are placed, and it ends as usual (won, playing, or lost again). A booster is not a tap.
+
+        private bool BoosterTime => Result == BoardResult.Playing || Result == BoardResult.Lost;
+
+        /// <summary>R-20 Hand: any stack with cards, covered or not. After an overflow loss the pending cards still
+        /// have nowhere to go, so Hand waits for Revive / RV Slot / Remove; after a stuck loss it may save the board.</summary>
+        public bool CanHand(int stack) =>
+            BoosterTime && stack >= 0 && stack < _removed.Length && Remaining(stack) > 0
+            && (Result == BoardResult.Playing || _pendingCount == 0);
+
+        public IReadOnlyList<BoardStep> Hand(int stack)
         {
-            _slots[slot].Filled++;
-            _steps.Add(new BoardStep(kind, stack: stack, slot: slot, bufferIndex: bufferIndex, color: _slots[slot].Color,
-                filled: _slots[slot].Filled, capacity: _slots[slot].Capacity));
+            _steps.Clear();
+            if (!CanHand(stack)) return Array.Empty<BoardStep>();
+            Result = BoardResult.Playing;
+            Loss = BoardLoss.None;
+            SendStack(stack);
+            return _steps.ToArray();
+        }
+
+        /// <summary>R-19 Remove: the target in <paramref name="slot"/> (<paramref name="depth"/> 0) or one waiting
+        /// behind it (depth 1 = right behind the slot, …).</summary>
+        public bool CanRemove(int slot, int depth) =>
+            BoosterTime && slot >= 0 && slot < _slots.Length
+            && (depth == 0 ? _slots[slot].Has : depth > 0 && depth - 1 < _queue[slot].Count);
+
+        public IReadOnlyList<BoardStep> Remove(int slot, int depth = 0)
+        {
+            _steps.Clear();
+            if (!CanRemove(slot, depth)) return Array.Empty<BoardStep>();
+            bool lost = Result == BoardResult.Lost;
+            if (depth == 0) RemoveTarget(slot);
+            else RemoveQueued(slot, depth - 1);
+            AfterBooster(lost);
+            return _steps.ToArray();
+        }
+
+        /// <summary>R-21 Shuffle: needs the seeded random and at least two targets that hold no card (front or waiting).</summary>
+        public bool CanShuffle => BoosterTime && _random != null && EmptyTargetPlaces().Count >= 2;
+
+        /// <summary>
+        /// R-21 Shuffle: (1) up to 3 colours — the buffer's in FIFO order (each once), then the open stacks' (higher
+        /// layer first, then id); (2) each slot whose target holds no card, in slot order, takes a target of the next
+        /// chosen colour; (3) the other targets that hold no card are shuffled among their places, so every column
+        /// keeps its count. A target that holds cards never moves (D-035). Then settle.
+        /// </summary>
+        public IReadOnlyList<BoardStep> Shuffle()
+        {
+            _steps.Clear();
+            if (!CanShuffle) return Array.Empty<BoardStep>();
+            bool lost = Result == BoardResult.Lost;
+            var places = EmptyTargetPlaces();
+            var colors = new List<int>();
+            foreach (int c in _buffer) { if (colors.Count == 3) break; if (!colors.Contains(c)) colors.Add(c); }
+            if (colors.Count < 3)
+            {
+                var open = new List<int>();
+                for (int i = 0; i < _removed.Length; i++) if (Remaining(i) > 0 && !IsCovered(i)) open.Add(i);
+                open.Sort((a, b) =>
+                {
+                    int la = _level.Stacks[a].Layer, lb = _level.Stacks[b].Layer;
+                    return la != lb ? lb.CompareTo(la) : a.CompareTo(b);
+                });
+                foreach (int i in open) { if (colors.Count == 3) break; int c = _level.Stacks[i].Color; if (!colors.Contains(c)) colors.Add(c); }
+            }
+            var fixedPlaces = new List<(int slot, int depth)>();
+            int nextFront = 0;
+            foreach (int c in colors)
+            {
+                while (nextFront < places.Count && places[nextFront].depth != 0) nextFront++;
+                if (nextFront >= places.Count) break;
+                var front = places[nextFront];
+                int found = -1;
+                for (int p = 0; p < places.Count; p++)
+                {
+                    if (fixedPlaces.Contains(places[p])) continue;
+                    if (_level.Targets[TargetAt(places[p])].Color == c) { found = p; break; }
+                }
+                if (found < 0) continue;                       // no target of that colour is free to move: next colour
+                Swap(front, places[found]);
+                fixedPlaces.Add(front);
+                nextFront++;
+            }
+            var rest = new List<(int slot, int depth)>();
+            foreach (var p in places) if (!fixedPlaces.Contains(p)) rest.Add(p);
+            var ids = new List<int>();
+            foreach (var p in rest) ids.Add(TargetAt(p));
+            _random.Shuffle(ids);
+            for (int k = 0; k < rest.Count; k++) SetTargetAt(rest[k], ids[k]);
+            _steps.Add(new BoardStep(BoardStepKind.Shuffled));
+            Settle();
+            AfterBooster(lost);
+            return _steps.ToArray();
+        }
+
+        private void AfterBooster(bool wasLost)
+        {
+            if (wasLost) Resume();
+            else CheckEnd();
+        }
+
+        // every target holding no card: the front ones (depth 0) in slot order, then the waiting ones nearest first
+        private List<(int slot, int depth)> EmptyTargetPlaces()
+        {
+            var places = new List<(int slot, int depth)>();
+            for (int s = 0; s < _slots.Length; s++) if (_slots[s].Has && _slots[s].Filled == 0) places.Add((s, 0));
+            int deepest = 0;
+            foreach (var q in _queue) deepest = Math.Max(deepest, q.Count);
+            for (int d = 0; d < deepest; d++)
+                for (int s = 0; s < _slots.Length; s++)
+                    if (d < _queue[s].Count) places.Add((s, d + 1));
+            return places;
+        }
+
+        private int TargetAt((int slot, int depth) p) => p.depth == 0 ? _slots[p.slot].Id : _queue[p.slot][p.depth - 1];
+
+        private void SetTargetAt((int slot, int depth) p, int id)
+        {
+            if (p.depth == 0) _slots[p.slot] = MakeTarget(id);
+            else _queue[p.slot][p.depth - 1] = id;
+        }
+
+        private void Swap((int slot, int depth) a, (int slot, int depth) b)
+        {
+            int ia = TargetAt(a), ib = TargetAt(b);
+            SetTargetAt(a, ib);
+            SetTargetAt(b, ia);
         }
 
         private void PlaceRun(int stack, int color, int count)
@@ -417,16 +593,29 @@ namespace Game.Domain
 
         private Target NextTarget(int slot)
         {
-            var t = _level.Targets[ColumnIndex(slot)];
-            _columnNext[slot]++;
-            return new Target { Has = true, Color = t.Color, Capacity = t.Capacity };
+            int id = _queue[slot][0];
+            _queue[slot].RemoveAt(0);
+            return MakeTarget(id);
+        }
+
+        private Target MakeTarget(int id)
+        {
+            var t = _level.Targets[id];
+            return new Target { Has = true, Id = id, Color = t.Color, Capacity = t.Capacity };
+        }
+
+        private static List<int>[] CloneQueue(List<int>[] queue)
+        {
+            var copy = new List<int>[queue.Length];
+            for (int c = 0; c < queue.Length; c++) copy[c] = new List<int>(queue[c]);
+            return copy;
         }
 
         private Snapshot Capture() => new Snapshot
         {
             Removed = (int[])_removed.Clone(),
             Slots = (Target[])_slots.Clone(),
-            ColumnNext = (int[])_columnNext.Clone(),
+            Queue = CloneQueue(_queue),
             Buffer = _buffer.ToArray(),
             Result = Result,
             Loss = Loss,
@@ -436,7 +625,7 @@ namespace Game.Domain
         {
             Array.Copy(s.Removed, _removed, _removed.Length);
             Array.Copy(s.Slots, _slots, _slots.Length);
-            Array.Copy(s.ColumnNext, _columnNext, _columnNext.Length);
+            for (int c = 0; c < _queue.Length; c++) { _queue[c].Clear(); _queue[c].AddRange(s.Queue[c]); }
             _buffer.Clear(); _buffer.AddRange(s.Buffer);
             Result = s.Result;
             Loss = s.Loss;
@@ -456,7 +645,8 @@ namespace Game.Domain
             foreach (var r in _removed) sb.Append(r).Append(',');
             sb.Append('|');
             foreach (var t in _slots) sb.Append(t.Has ? t.Color : -1).Append(':').Append(t.Filled).Append(',');
-            sb.Append('|'); foreach (int c in _columnNext) sb.Append(c).Append(','); sb.Append('|');
+            foreach (var q in _queue) { sb.Append('|'); foreach (int id in q) sb.Append(id).Append(','); }
+            sb.Append('|');
             foreach (var b in _buffer) sb.Append(b);
             return sb.ToString();
         }

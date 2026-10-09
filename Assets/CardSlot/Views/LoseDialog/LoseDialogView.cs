@@ -10,18 +10,23 @@ namespace Game.Views
     public sealed class LoseDialogView : CardDialogView
     {
         public event Action ReviveCoinsPressed, ReviveAdPressed, RvSlotPressed, NoThanksPressed, RetryPressed, HomePressed;
+        /// <summary>CR-012 C2: a booster tile of the bar drawn above the dim (index in bar order).</summary>
+        public event Action<int> BoosterPressed;
 
-        /// <summary><paramref name="revive"/> / <paramref name="rvSlot"/> null = that offer is not shown.</summary>
+        /// <summary><paramref name="revive"/> / <paramref name="rvSlot"/> null = that offer is not shown. <paramref name="boosters"/> non-null
+        /// (mock-up lose-offer-boosters-v02): the booster bar stays usable above the dim, the card fan gives way to a hint line.</summary>
         public void ShowOffer(string title, string coins, string revive, string revivePrice, bool reviveAffordable, string reviveNote,
-            string rvSlot, bool adEnabled, string noThanks, int[] fan)
+            string rvSlot, bool adEnabled, string noThanks, int[] fan, BoosterTileVisual[] boosters = null, string useBooster = null)
         {
             Clear();
             const float gap = 24f;
-            float h = 440f + (revive != null ? 164f + 56f + gap : 0f) + (rvSlot != null ? 140f + gap : 0f) + 140f;
+            bool bar = boosters != null;
+            float top = bar ? 140f : 470f;
+            float h = top - 30f + (revive != null ? 164f + 56f + gap : 0f) + (rvSlot != null ? 140f + gap : 0f) + 140f + (bar ? 100f : 0f);
             var p = Panel(title, h, danger: true);
             CoinPill(coins);
-            CardFan(p, 150f, fan);
-            float y = 470f;
+            if (!bar) CardFan(p, 150f, fan);
+            float y = top;
             if (revive != null)
             {
                 PriceButton(p, revive, revivePrice, reviveAffordable ? ButtonStyle.Primary : ButtonStyle.Disabled, y, 30f, 420f, 164f, 50f,
@@ -37,6 +42,9 @@ namespace Game.Views
                 y += 140f + gap;
             }
             Link(p, noThanks, y, () => NoThanksPressed?.Invoke());
+            if (!bar) return;
+            Line(p, useBooster, y + 110f, DesignTokens.TypeBody - 4f, DesignTokens.InkSoft, 60f);
+            Boosters(boosters, i => BoosterPressed?.Invoke(i));
         }
 
         public void ShowFailed(string title, string subtitle, string retry, string home, string coins, int[] fan)

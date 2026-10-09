@@ -1753,6 +1753,69 @@
                                   ]
                     },
                     {
+                        "id":  "icon_hand",
+                        "atlas":  "ui",
+                        "file":  "ui/icon_hand.png",
+                        "w":  100,
+                        "h":  100,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "icon",
+                        "use":  "hand glyph, white — tint from tokens",
+                        "kb":  1.4,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "icon_shuffle",
+                        "atlas":  "ui",
+                        "file":  "ui/icon_shuffle.png",
+                        "w":  100,
+                        "h":  100,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "icon",
+                        "use":  "shuffle glyph, white — tint from tokens",
+                        "kb":  1.6,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
+                        "id":  "icon_remove",
+                        "atlas":  "ui",
+                        "file":  "ui/icon_remove.png",
+                        "w":  100,
+                        "h":  100,
+                        "pivot":  [
+                                      0.5,
+                                      0.5
+                                  ],
+                        "slice":  null,
+                        "kind":  "icon",
+                        "use":  "remove glyph, white — tint from tokens",
+                        "kb":  1.6,
+                        "issues":  [
+
+                                   ],
+                        "fixes":  [
+                                      "alpha bleed 4 px"
+                                  ]
+                    },
+                    {
                         "id":  "hand_pointer",
                         "atlas":  "ui",
                         "file":  "ui/hand_pointer.png",
@@ -1828,7 +1891,7 @@
                         "slice":  null,
                         "kind":  "opaque",
                         "use":  "screen background, stretched to the screen (Ground token)",
-                        "kb":  34.4,
+                        "kb":  34.2,
                         "issues":  [
 
                                    ],

@@ -38,6 +38,9 @@ namespace Game.Views
         /// 1 = the one that replaced it, … A card for a replacement peg waits until the full one has left and the
         /// replacement has moved up (Phat: the next peg only takes cards after the old one is gone).</summary>
         public int SwapGen;
+        /// <summary>CR-012 C2 Remove on a waiting pole: the card flies to the pole waiting behind <see cref="ToSlot"/> (the back row),
+        /// which leaves with it — nothing on the board takes the card.</summary>
+        public bool ToQueued;
     }
 
     public struct TargetVisual
@@ -99,14 +102,27 @@ namespace Game.Views
         [SerializeField] private Sprite _coin;
         [SerializeField] private Sprite _hand;
         [SerializeField] private Sprite _ring;
+        [Header("Booster bar (CR-012 C2)")]
+        [SerializeField] private Sprite _boostTile;
+        [SerializeField] private Sprite[] _boosterIcons = new Sprite[3];
+        [SerializeField] private Sprite _badge;
+        [SerializeField] private Sprite _priceTag;
+        [SerializeField] private Sprite _lock;
         [SerializeField] private TMP_FontAsset _font;
         [Tooltip("False when the board is drawn in 3D (CR-003): this view then draws only the HUD, labels and tap areas.")]
         [SerializeField] private bool _draw2DBoard = true;
 
         public event Action<int> StackTapped;
         public event Action PausePressed, RestartPressed, RvSlotPressed;
+        /// <summary>CR-012 C2: a booster tile was pressed (index in bar order).</summary>
+        public event Action<int> BoosterPressed;
+        /// <summary>Pick mode (Remove): a pole was tapped — the slot, and 0 for the front pole or 1 for the one waiting behind it.</summary>
+        public event Action<int, int> PoleTapped;
+        /// <summary>Pick mode: the dim or the active tile was tapped.</summary>
+        public event Action PickCancelled;
 
-        private RectTransform _root, _boardLayer, _tutorialLayer;
+        private RectTransform _root, _boardLayer, _barLayer, _pickLayer, _tutorialLayer;
+        private BoosterTileVisual[] _tiles = Array.Empty<BoosterTileVisual>();
         private TextMeshProUGUI _levelLabel, _coinsLabel;
 
         private float Height => _root != null && _root.rect.height > 1f ? _root.rect.height : 1920f;
@@ -123,6 +139,8 @@ namespace Game.Views
             }
             _boardLayer = UiKit.Stretch("Board", _root);
             BuildHud();
+            _barLayer = UiKit.Stretch("Boosters", _root);
+            _pickLayer = UiKit.Stretch("Pick", _root);
             _tutorialLayer = UiKit.Stretch("Tutorial", _root);
         }
 
@@ -289,6 +307,83 @@ namespace Game.Views
                 relay.Index = i;
                 relay.Tapped = index => StackTapped?.Invoke(index);
             }
+        }
+
+        // ── booster bar and pick mode (CR-012 C2, mock-ups gameplay-boosters-v02, gameplay-pick-*-v02) ───────────
+
+        private BoosterBarArt BarArt => new BoosterBarArt(_boostTile, _boosterIcons, _badge, _priceTag, _lock, _coin, _font);
+
+        /// <summary>Redraw the booster bar under the tray.</summary>
+        public void SetBoosters(BoosterTileVisual[] tiles)
+        {
+            EnsureBuilt();
+            _tiles = tiles ?? Array.Empty<BoosterTileVisual>();
+            for (int i = _barLayer.childCount - 1; i >= 0; i--) Destroy(_barLayer.GetChild(i).gameObject);
+            BoosterBar.Draw(_barLayer, _tiles, BarArt, i => BoosterPressed?.Invoke(i));
+        }
+
+        /// <summary>
+        /// Pick mode: dim everything outside the horizontal band <paramref name="litWorld"/> (world rect: the tray for Hand,
+        /// the poles for Remove), keep the active tile <paramref name="active"/> lit above the dim, and show <paramref name="banner"/>
+        /// just above the band or below it. <paramref name="poles"/> (world rects) become tap areas relaying
+        /// (<paramref name="poleSlots"/>[k], <paramref name="poleDepths"/>[k]); null for Hand, whose taps go through the
+        /// stack tap areas. A tap on the dim or on the active tile cancels.
+        /// </summary>
+        public void ShowPick(int active, string banner, Rect litWorld, bool bannerAbove, Rect[] poles = null, int[] poleSlots = null, int[] poleDepths = null)
+        {
+            EnsureBuilt();
+            HidePick();
+            var rect = _root.rect;
+            float Top(float worldY) => rect.yMax - _root.InverseTransformPoint(new Vector3(0f, worldY, _root.position.z)).y;
+            const float margin = 20f;
+            float litTop = Mathf.Max(0f, Top(litWorld.yMax) - margin), litBottom = Mathf.Min(Height, Top(litWorld.yMin) + margin);
+            Dim("DimTop", 0f, litTop);
+            Dim("DimBottom", litBottom, Height - litBottom);
+            if (poles != null)
+                for (int k = 0; k < poles.Length; k++)
+                {
+                    var r = poles[k];
+                    if (r.width <= 0f) continue;
+                    var min = _root.InverseTransformPoint(new Vector3(r.xMin, r.yMin, _root.position.z));
+                    var max = _root.InverseTransformPoint(new Vector3(r.xMax, r.yMax, _root.position.z));
+                    var hit = UiKit.Image($"Pole{k}", _pickLayer, null, min.x - rect.xMin, rect.yMax - max.y, max.x - min.x, max.y - min.y, raycast: true);
+                    hit.color = Color.clear;
+                    int slot = poleSlots[k], depth = poleDepths[k];
+                    UiKit.Button(hit, () => PoleTapped?.Invoke(slot, depth));
+                }
+            if (active >= 0 && active < _tiles.Length)
+            {
+                var lit = (BoosterTileVisual[])_tiles.Clone();
+                lit[active].Active = true;
+                BoosterBar.Draw(_pickLayer, lit, BarArt, _ => PickCancelled?.Invoke(), only: active);
+            }
+            if (!string.IsNullOrEmpty(banner))
+            {
+                const float w = 840f, h = 104f;
+                float y = bannerAbove ? litTop - h - 16f : litBottom + 16f;
+                var bar = UiKit.Image("Banner", _pickLayer, _priceTag, (1080f - w) / 2f, y, w, h, sliced: true);
+                var t = UiKit.Text("Text", bar.transform, _font, banner, 44f, DesignTokens.OnColor, 0f, 0f, w, h - 4f);
+                float tw = t.GetPreferredValues(banner).x, s = 56f, total = s + 16f + tw;
+                var icon = _boosterIcons != null && active >= 0 && active < _boosterIcons.Length ? _boosterIcons[active] : null;
+                UiKit.Image("Icon", bar.transform, icon, (w - total) / 2f, (h - 4f - s) / 2f, s, s).color = DesignTokens.OnColor;
+                t.rectTransform.anchoredPosition = new Vector2((w - total) / 2f + s + 16f, 0f);
+                t.rectTransform.sizeDelta = new Vector2(tw + 4f, h - 4f);
+            }
+        }
+
+        public void HidePick()
+        {
+            if (_pickLayer == null) return;
+            for (int i = _pickLayer.childCount - 1; i >= 0; i--) Destroy(_pickLayer.GetChild(i).gameObject);
+        }
+
+        private void Dim(string name, float y, float h)
+        {
+            if (h <= 0f) return;
+            var dim = UiKit.Image(name, _pickLayer, null, 0f, y, 1080f, h, raycast: true);
+            dim.color = DesignTokens.Scrim;
+            UiKit.Button(dim, () => PickCancelled?.Invoke());
+            dim.color = DesignTokens.Scrim;                  // Button resets the canvas colour, not the Image colour
         }
 
         /// <summary>FTUE (features/ftue.md): a hand + ring over <paramref name="pointAt"/> (world rect; empty = no

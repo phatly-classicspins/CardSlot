@@ -125,6 +125,59 @@ namespace CardSlot.SkuHeadlessTests.Meta
             Assert.That(new[] { 0, 1, 2 }.Select(tuning.RevivePriceAfter), Is.EqualTo(new long[] { 100, 200, 400 }));
         }
 
+        // ── C2 boosters ────────────────────────────────────────────────────────────────────────────────
+        [Test]
+        public void Boosters_unlock_at_levels_5_8_10_with_a_gift_of_3_once()
+        {
+            Assert.That(svc.UnlockBoostersFor(4), Is.Empty);
+            Assert.That(svc.UnlockBoostersFor(5), Is.EqualTo(new[] { BoosterId.Hand }));
+            Assert.That(svc.UnlockBoostersFor(5), Is.Empty, "once");
+            Assert.That(svc.Boosters(BoosterId.Hand), Is.EqualTo(3));
+            Assert.That(svc.UnlockBoostersFor(12), Is.EqualTo(new[] { BoosterId.Shuffle, BoosterId.Remove }), "a save already past them catches up");
+            Assert.That((svc.Boosters(BoosterId.Shuffle), svc.Boosters(BoosterId.Remove)), Is.EqualTo((3, 3)));
+        }
+
+        [Test]
+        public void G18_a_failed_save_unlocks_nothing_and_gives_nothing()
+        {
+            store.Fail = true;
+            Assert.That(svc.UnlockBoostersFor(5), Is.Empty);
+            Assert.That((svc.IsUnlocked(BoosterId.Hand), svc.Boosters(BoosterId.Hand)), Is.EqualTo((false, 0)));
+        }
+
+        [Test]
+        public void Using_a_booster_needs_one_and_a_failed_save_keeps_it()
+        {
+            Assert.That(svc.TryUseBooster(BoosterId.Remove), Is.False, "none owned");
+            svc.UnlockBoostersFor(10);
+            Assert.That(svc.TryUseBooster(BoosterId.Remove), Is.True);
+            Assert.That(svc.Boosters(BoosterId.Remove), Is.EqualTo(2));
+            store.Fail = true;
+            Assert.That(svc.TryUseBooster(BoosterId.Remove), Is.False);
+            Assert.That(svc.Boosters(BoosterId.Remove), Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Buying_a_booster_spends_its_price_and_a_failed_save_refunds_and_takes_it_back()
+        {
+            wallet.Grant(CardSlotResources.Coin, 100, GrantSource.Reward);
+            Assert.That(svc.TryBuyBooster(BoosterId.Remove), Is.False, "120 > 100");
+            Assert.That((svc.Coins, svc.Boosters(BoosterId.Remove)), Is.EqualTo((100L, 0)));
+            Assert.That(svc.TryBuyBooster(BoosterId.Shuffle), Is.True);
+            Assert.That((svc.Coins, svc.Boosters(BoosterId.Shuffle)), Is.EqualTo((20L, 1)));
+            wallet.Grant(CardSlotResources.Coin, 200, GrantSource.Reward);
+            store.Fail = true;
+            Assert.That(svc.TryBuyBooster(BoosterId.Hand), Is.False);
+            Assert.That((svc.Coins, svc.Boosters(BoosterId.Hand)), Is.EqualTo((220L, 0)), "G18: coins and booster both restored");
+        }
+
+        [Test]
+        public void An_ad_gives_one_booster()
+        {
+            Assert.That(svc.GrantBoosterFromAd(BoosterId.Hand), Is.True);
+            Assert.That(svc.Boosters(BoosterId.Hand), Is.EqualTo(1));
+        }
+
         [Test]
         public void Ftue_steps_are_recorded_once()
         {

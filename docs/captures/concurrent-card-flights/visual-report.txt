@@ -1,0 +1,30 @@
+PASS first departure is top card's exact pose
+PASS departure order top to bottom 1
+PASS departure order top to bottom 2
+PASS departure order top to bottom 3
+PASS departure order top to bottom 4
+PASS departure order top to bottom 5
+PASS departure order top to bottom 6
+PASS departure order top to bottom 7
+PASS departure order top to bottom 8
+PASS all waiting cards stay visible at source
+PASS last card has not departed
+PASS waiting card stays fixed
+PASS untapped stack stays fixed
+PASS second tap retains first flight object
+PASS two batches coexist (18 cards)
+PASS independent stack begins before first stack finishes departing
+PASS HUD-only redraw retains flights
+PASS both batches finish normally
+PASS landed target renderers are visible after redraw
+PASS two completed generations retain all incoming cards
+PASS original outgoing peg remains owned by first batch
+PASS next generation waits for predecessor to arrive
+PASS ordinary redraw retains both swaps
+PASS consecutive peg swaps finish without cancellation
+PASS final successor is visible at full size
+PASS cross-batch buffer handoff waits for actual arrival
+PASS buffer card is not duplicated before arrival
+PASS buffer handoff finishes
+PASS attempt reset clears animation state
+No player model or progress was changed by the offscreen visual probe.

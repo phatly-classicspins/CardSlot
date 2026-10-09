@@ -1,0 +1,201 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>CardSlot C2 mock-ups</title>
+<!-- CR-012 stage C2 (D-031): boosters Hand / Shuffle / Remove. Same kit as c1.html: real sprites from art/export/ui on top of a
+     real game capture. The three booster glyphs are new (drawn here as 100×100 white glyphs, tinted like icon_undo / icon_space);
+     after approval they move into art/source/art.html as icon_hand / icon_shuffle / icon_remove.
+     Render: render.ps1 -Page c2.html -OutDir c2 -Jobs "b:<screen>:1920" -->
+<style>
+  :root { --ink:#5A3415; --ink-soft:#9A6A3F; --on:#fff; --scrim:rgba(70,35,8,.55); --accent:#E8613C; --primary:#21B8A6; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { width:1080px; height:1920px; overflow:hidden; position:relative; font-family:"Liberation Sans", Arial, sans-serif; font-weight:700; background:#FFE9C8; }
+  .abs { position:absolute; }
+  .scrim { position:absolute; background:var(--scrim); }
+  .nine { position:absolute; border-style:solid; }
+  .pill { border-width:0 50px; border-image:url(../../../../../art/export/ui/pill_surface.png) 0 50 0 50 fill; }
+  .pill.ink { border-image-source:url(../../../../../art/export/ui/pill_ink.png); }
+  .panel { border-width:70px 70px 88px 70px; border-image:url(../../../../../art/export/ui/panel.png) 70 70 88 70 fill; }
+  .ribbon { border-width:0 50px; border-image:url(../../../../../art/export/ui/ribbon_secondary.png) 0 50 0 50 fill; }
+  .ribbon.danger { border-image-source:url(../../../../../art/export/ui/ribbon_danger.png); }
+  .btn { border-width:60px 64px 74px 64px; border-image:url(../../../../../art/export/ui/btn_primary.png) 60 64 74 64 fill; }
+  .btn.secondary { border-image-source:url(../../../../../art/export/ui/btn_secondary.png); }
+  .btn.disabled { border-image-source:url(../../../../../art/export/ui/btn_disabled.png); }
+  .badge { position:absolute; background:var(--primary); border-radius:36px; border-bottom:7px solid #138A7B; }
+  .tag { position:absolute; background:#5A3415; border-radius:32px; }
+  .ground { position:absolute; left:0; top:0; width:1080px; height:1920px; background:radial-gradient(ellipse 105% 59% at 50% 10%, #FFF6E6, #FFD9A8); }
+  .label { position:absolute; display:flex; align-items:center; justify-content:center; gap:16px; color:var(--on); white-space:nowrap; }
+  .text { position:absolute; display:flex; align-items:center; justify-content:center; white-space:nowrap; }
+  img.icon { display:block; }
+  .play { filter:brightness(0) invert(1); }
+  svg.glyph { position:absolute; overflow:visible; }
+</style></head>
+<body>
+<script>
+const q = new URLSearchParams(location.search), screen = q.get('screen') || 'gameplay';
+const UI = '../../../../../art/export/ui/', CAP = '../../../../../docs/captures/';
+const H = 1920, PW = 900, PX = 90;
+const el = (html) => { document.body.insertAdjacentHTML('beforeend', html); return document.body.lastElementChild; };
+
+// ── booster glyphs, 100×100, white body (tinted by the caller) ───────────────────────────────────────────────
+const GLYPH = {
+  hand: `<rect x="24" y="16" width="13" height="44" rx="6.5"/><rect x="39" y="6" width="13" height="52" rx="6.5"/><rect x="54" y="10" width="13" height="50" rx="6.5"/>
+         <rect x="69" y="22" width="12" height="40" rx="6"/><rect x="22" y="44" width="59" height="48" rx="22"/>
+         <rect x="14" y="44" width="13" height="32" rx="6.5" transform="rotate(-30 20 70)"/>`,
+  shuffle: `<g fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><path d="M8 30h20c16 0 22 40 38 40h12"/><path d="M8 70h20c16 0 22-40 38-40h12"/></g>
+            <path d="M76 14l18 16-18 16zM76 54l18 16-18 16z"/>`,
+  remove: `<ellipse cx="40" cy="80" rx="32" ry="12"/><rect x="35" y="18" width="10" height="64" rx="5"/>
+           <path d="M77 4 82.5 20.5 99 26 82.5 31.5 77 48 71.5 31.5 55 26 71.5 20.5z"/>`,
+};
+const glyph = (id, x, y, s, color) =>
+  el(`<svg class="glyph" viewBox="0 0 100 100" style="left:${x}px;top:${y}px;width:${s}px;height:${s}px"><g fill="${color}">${GLYPH[id].replace(/stroke="#fff"/g, `stroke="${color}"`)}</g></svg>`);
+const glyphHtml = (id, s, color) =>
+  `<svg viewBox="0 0 100 100" style="width:${s}px;height:${s}px;overflow:visible"><g fill="${color}">${GLYPH[id].replace(/stroke="#fff"/g, `stroke="${color}"`)}</g></svg>`;
+const NAME = { hand:'Hand', shuffle:'Shuffle', remove:'Remove' };
+const TIP = { hand:'Pick any stack of cards!', shuffle:'Shuffle the poles in queues!', remove:'Tap the pole to sort it instantly!' };
+
+// ── the gameplay capture with the tray made room for the booster bar ───────────────────────────────────────
+// top half (HUD, poles, holding area) as captured; the tray fits into 900…1600 instead of 900…1860 (Board3DView fit).
+function board(level) {
+  el(`<div class="ground"></div>`);
+  el(`<div class="abs" style="left:0;top:0;width:1080px;height:880px;overflow:hidden"><img src="${CAP}video-layouts-1-5/level-5.png" style="width:1080px"></div>`);
+  // the captured tray (x 40…1040, y 898…1860) scaled to 0.72 and centred: 720 × 693 at y 900
+  const s = 0.72;
+  el(`<div class="abs" style="left:180px;top:900px;width:${1000 * s}px;height:${962 * s}px;overflow:hidden;border-radius:40px">
+        <img src="${CAP}video-layouts-1-5/level-5.png" style="position:absolute;left:${-40 * s}px;top:${-898 * s}px;width:${1080 * s}px"></div>`);
+  if (level) {   // the capture says "Level 5": relabel for the later-level states
+    el(`<div class="nine pill" style="left:415px;top:70px;width:250px;height:104px"></div>`);
+    el(`<div class="text" style="left:415px;top:70px;width:250px;height:96px;font-size:54px;color:var(--ink)">Level ${level}</div>`);
+  }
+}
+function coinPill(n, x = 34, y = 66) {
+  el(`<div class="nine pill" style="left:${x + 40}px;top:${y + 2}px;width:236px;height:100px"></div>`);
+  el(`<img class="abs icon" src="${UI}coin.png" style="left:${x}px;top:${y + 2}px;width:96px;height:96px">`);
+  el(`<div class="text" style="left:${x + 96}px;top:${y}px;width:170px;height:100px;font-size:50px;color:var(--ink)">${n}</div>`);
+}
+
+// ── booster bar: three tiles under the tray ───────────────────────────────────────────────────────────────────
+// state: {n} count badge · {price} out of stock → coin price · {lock: level} not unlocked yet · active: picking a target
+const BAR_TOP = 1636, TILE_W = 170, TILE_H = 182, TILE_GAP = 90, BAR_X = (1080 - (3 * TILE_W + 2 * TILE_GAP)) / 2;
+function tile(i, id, st) {
+  const x = BAR_X + i * (TILE_W + TILE_GAP), y = BAR_TOP;
+  if (st.active) el(`<div class="abs" style="left:${x - 14}px;top:${y - 14}px;width:${TILE_W + 28}px;height:${TILE_H + 22}px;border-radius:60px;border:8px solid #fff;box-shadow:0 0 24px rgba(255,255,255,.9)"></div>`);
+  el(`<img class="abs" src="${UI}boost_tile.png" style="left:${x}px;top:${y}px;width:${TILE_W}px;height:${TILE_H}px;${st.lock ? 'filter:saturate(.2) brightness(.9)' : ''}">`);
+  if (st.lock) {
+    el(`<img class="abs icon" src="${UI}icon_lock.png" style="left:${x + 45}px;top:${y + 30}px;width:80px;height:80px;filter:brightness(0) invert(.62) sepia(.4)">`);
+    el(`<div class="text" style="left:${x}px;top:${y + 112}px;width:${TILE_W}px;height:50px;font-size:36px;color:var(--ink-soft)">Lv ${st.lock}</div>`);
+  } else {
+    glyph(id, x + 40, y + 34, 90, 'var(--accent)');
+  }
+  if (st.n != null) {
+    el(`<div class="badge" style="left:${x + TILE_W - 50}px;top:${y - 22}px;width:72px;height:72px"></div>`);
+    el(`<div class="text" style="left:${x + TILE_W - 50}px;top:${y - 22}px;width:72px;height:62px;font-size:40px;color:var(--on)">${st.n}</div>`);
+  }
+  if (st.price != null) {
+    el(`<div class="tag" style="left:${x + 18}px;top:${y + TILE_H - 50}px;width:134px;height:64px"></div>`);
+    el(`<div class="text" style="left:${x + 18}px;top:${y + TILE_H - 50}px;width:134px;height:60px;gap:6px;font-size:34px;color:var(--on)"><img class="icon" src="${UI}coin.png" style="width:40px;height:40px">${st.price}</div>`);
+  }
+  el(`<div class="text" style="left:${x - 20}px;top:${y + TILE_H + 8}px;width:${TILE_W + 40}px;height:44px;font-size:34px;color:${st.lock ? 'var(--ink-soft)' : 'var(--ink)'}">${st.lock ? '' : NAME[id]}</div>`);
+}
+function bar(hand, shuffle, remove) { tile(0, 'hand', hand); tile(1, 'shuffle', shuffle); tile(2, 'remove', remove); }
+
+// ── dialog kit (same numbers as c1.html / CardDialogView) ───────────────────────────────────────────────────
+function panel(title, h, danger, top) {
+  top = top ?? (H - h) / 2 + 40;
+  el(`<div class="nine panel" style="left:${PX}px;top:${top}px;width:${PW}px;height:${h}px"></div>`);
+  const ts = Math.min(76, 1500 / title.length);
+  el(`<div class="nine ribbon${danger ? ' danger' : ''}" style="left:${PX - 30}px;top:${top - 70}px;width:${PW + 60}px;height:184px"></div>`);
+  el(`<div class="text" style="left:${PX - 30}px;top:${top - 70}px;width:${PW + 60}px;height:170px;font-size:${ts}px;color:var(--on)">${title}</div>`);
+  return top;
+}
+function closeBtn(top) {
+  el(`<img class="abs" src="${UI}close_btn.png" style="left:${PX + PW - 90}px;top:${top - 60}px;width:110px;height:120px">`);
+  el(`<img class="abs icon" src="${UI}icon_close.png" style="left:${PX + PW - 65}px;top:${top - 40}px;width:60px;height:60px">`);
+}
+function button(top, y, w, h, style, inner, x, fs) {
+  const left = PX + (x ?? (PW - w) / 2);
+  el(`<div class="nine btn ${style}" style="left:${left}px;top:${top + y}px;width:${w}px;height:${h}px"></div>`);
+  el(`<div class="label" style="left:${left}px;top:${top + y}px;width:${w}px;height:${h - 14}px;font-size:${fs ?? Math.round(h * 0.36)}px">${inner}</div>`);
+}
+const playIcon = (s) => `<img class="icon play" src="${UI}icon_play.png" style="width:${s}px;height:${s}px">`;
+const coinIcon = (s) => `<img class="icon" src="${UI}coin.png" style="width:${s}px;height:${s}px">`;
+function line(top, y, text, size, color, h = 70) {
+  el(`<div class="text" style="left:${PX + 60}px;top:${top + y}px;width:${PW - 120}px;height:${h}px;font-size:${size}px;color:${color}">${text}</div>`);
+}
+function link(top, y, text) { line(top, y, text, 44, 'var(--ink-soft)', 80); }
+function holder(top, y, id, gift) {
+  const x = PX + (PW - 260) / 2;
+  el(`<img class="abs" src="${UI}icon_holder.png" style="left:${x}px;top:${top + y}px;width:260px;height:272px">`);
+  glyph(id, x + 60, top + y + 60, 140, 'var(--accent)');
+  if (gift) {
+    el(`<div class="badge" style="left:${x + 180}px;top:${top + y + 196}px;width:110px;height:84px;border-radius:42px"></div>`);
+    el(`<div class="text" style="left:${x + 180}px;top:${top + y + 196}px;width:110px;height:76px;font-size:50px;color:var(--on)">×${gift}</div>`);
+  }
+}
+// a banner over the dim while the player picks a target for Hand / Remove (tap outside or Back cancels, nothing is spent)
+function pickBanner(y, text) {
+  el(`<div class="tag" style="left:120px;top:${y}px;width:840px;height:104px;border-radius:52px"></div>`);
+  el(`<div class="text" style="left:120px;top:${y}px;width:840px;height:100px;font-size:44px;color:var(--on)">${text}</div>`);
+}
+
+// ── screens ─────────────────────────────────────────────────────────────────────────────────────────────
+if (screen === 'gameplay') {                      // level 5: Hand just unlocked (gift 3), the other two still locked
+  board();
+  bar({ n: 3 }, { lock: 8 }, { lock: 10 });
+} else if (screen === 'gameplay-all') {           // level 12: all three unlocked — one owned, one out (price), one owned
+  board(12);
+  coinPill('240');
+  bar({ n: 2 }, { price: 80 }, { n: 1 });
+} else if (screen === 'pick-hand') {              // Hand armed: everything but the board dims; any stack can be taken
+  board(12);
+  coinPill('240');
+  bar({ n: 2 }, { price: 80 }, { n: 1 });
+  el(`<div class="scrim" style="left:0;top:0;width:1080px;height:880px"></div>`);
+  el(`<div class="scrim" style="left:0;top:1610px;width:1080px;height:310px"></div>`);
+  tile(0, 'hand', { n: 2, active: true });
+  pickBanner(760, `${glyphHtml('hand', 56, '#fff')}<span style="margin-left:16px">Tap any stack</span>`);
+} else if (screen === 'pick-remove') {            // Remove armed: only the poles stay lit; any pole (front or queued) can be picked
+  board(12);
+  coinPill('240');
+  bar({ n: 2 }, { price: 80 }, { n: 1 });
+  el(`<div class="scrim" style="left:0;top:0;width:1080px;height:190px"></div>`);
+  el(`<div class="scrim" style="left:0;top:600px;width:1080px;height:1320px"></div>`);
+  tile(2, 'remove', { n: 1, active: true });
+  pickBanner(700, `${glyphHtml('remove', 56, '#fff')}<span style="margin-left:16px">Tap a pole to fill it</span>`);
+} else if (screen === 'buy' || screen === 'buy-poor') {   // out of a booster: buy one with coins, or watch an ad for one
+  const poor = screen === 'buy-poor';
+  board(12);
+  bar({ n: 2 }, { price: 80 }, { n: 1 });
+  el(`<div class="scrim" style="left:0;top:0;width:1080px;height:1920px"></div>`);
+  coinPill(poor ? '40' : '240');
+  const top = panel('Need a boost?', 1080);
+  closeBtn(top);
+  holder(top, 130, 'shuffle');
+  line(top, 430, 'Shuffle', 66, 'var(--ink)', 90);
+  line(top, 520, TIP.shuffle, 42, 'var(--ink-soft)');
+  button(top, 640, 620, 164, poor ? 'disabled' : '', `${coinIcon(66)}<span>80</span>`);
+  if (poor) line(top, 806, 'Not enough coins', 36, 'var(--ink-soft)', 50);
+  button(top, poor ? 866 : 830, 620, 150, 'secondary', `${playIcon(56)}<span>Free</span>`);
+} else if (screen === 'unlock') {                 // first start of level 5 / 8 / 10: the booster arrives with a gift of 3
+  board();
+  bar({ n: 3 }, { lock: 8 }, { lock: 10 });
+  el(`<div class="scrim" style="left:0;top:0;width:1080px;height:1920px"></div>`);
+  tile(0, 'hand', { n: 3, active: true });        // the new tile stays above the dim and is highlighted once
+  const top = panel('New booster: Hand!', 860, false, 420);
+  holder(top, 130, 'hand', 3);
+  line(top, 470, TIP.hand, 46, 'var(--ink)');
+  button(top, 600, 560, 164, '', `<span>Got it</span>`);
+} else if (screen === 'lose-boosters') {          // a booster may still save a lost board (GDD R-13): the bar stays live above the dim
+  board(12);
+  el(`<div class="scrim" style="left:0;top:0;width:1080px;height:1920px"></div>`);
+  coinPill('240');
+  const top = panel('Out of space!', 840, true, 480);
+  // same body as lose-offer-coins-v02 (approved C1)
+  button(top, 140, 420, 164, '', `<span>Revive</span>${coinIcon(58)}<span>100</span>`, 30, 50);
+  button(top, 140, 400, 164, 'secondary', `${playIcon(52)}<span>Revive</span>`, PW - 30 - 400, 50);
+  line(top, 304, 'Clears 2 poles', 34, 'var(--ink-soft)', 56);
+  button(top, 384, 560, 140, 'secondary', `${playIcon(52)}<span>+8 slots</span>`);
+  link(top, 560, 'No thanks');
+  line(top, 680, 'or use a booster ▼', 40, 'var(--ink-soft)', 60);
+  bar({ n: 2 }, { price: 80 }, { n: 1 });
+}
+</script>
+</body></html>

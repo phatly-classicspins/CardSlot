@@ -91,6 +91,70 @@ namespace Game.Application
             }
         }
 
+        // ── boosters (CR-012 C2, features/boosters.md v2) ─────────────────────────────────────────────
+
+        public int Boosters(BoosterId id) => Count(_store.Progress, id);
+        public bool IsUnlocked(BoosterId id) => _store.Progress.BoostersUnlocked.Contains(Name(id));
+
+        /// <summary>Unlock every booster whose level <paramref name="level"/> has reached and give its gift, once each
+        /// (a save from before C2 past level 5 gets them at its next start). Returns the ones unlocked now, in bar
+        /// order; empty if none, or if saving failed (rolled back, they come again next start).</summary>
+        public BoosterId[] UnlockBoostersFor(int level)
+        {
+            var now = new System.Collections.Generic.List<BoosterId>();
+            foreach (BoosterId id in Enum.GetValues(typeof(BoosterId)))
+                if (level >= _tuning.UnlockLevel(id) && !IsUnlocked(id)) now.Add(id);
+            if (now.Count == 0) return Array.Empty<BoosterId>();
+            bool ok = Transact(p =>
+            {
+                foreach (var id in now) { p.BoostersUnlocked.Add(Name(id)); Add(p, id, _tuning.BoosterUnlockGift); }
+            }, 0);
+            return ok ? now.ToArray() : Array.Empty<BoosterId>();
+        }
+
+        /// <summary>Use one: false — nothing taken — if there is none or saving failed.</summary>
+        public bool TryUseBooster(BoosterId id)
+        {
+            if (Boosters(id) <= 0) return false;
+            return Transact(p => Add(p, id, -1), 0);
+        }
+
+        /// <summary>Buy <see cref="EconomyTuning.BoosterBuyAmount"/> for its coin price, as one transaction: false — no coins
+        /// spent, no booster given — if the balance is short or saving failed (G18).</summary>
+        public bool TryBuyBooster(BoosterId id)
+        {
+            long price = _tuning.Price(id);
+            if (!_wallet.TrySpend(CardSlotResources.Coin, price, GrantSource.Reward)) return false;
+            var before = _store.Progress.Clone();
+            try
+            {
+                Add(_store.Progress, id, _tuning.BoosterBuyAmount);
+                _store.Save();
+                return true;
+            }
+            catch (Exception)
+            {
+                _store.Progress.CopyFrom(before);
+                _wallet.Grant(CardSlotResources.Coin, price, GrantSource.Compensation);
+                return false;
+            }
+        }
+
+        /// <summary>"▶ Free" after a completed rewarded ad (G19). False if saving failed.</summary>
+        public bool GrantBoosterFromAd(BoosterId id) => Transact(p => Add(p, id, _tuning.BoosterAdAmount), 0);
+
+        private static string Name(BoosterId id) => id == BoosterId.Hand ? "booster_hand" : id == BoosterId.Shuffle ? "booster_shuffle" : "booster_remove";
+
+        private static int Count(ProgressModel p, BoosterId id) =>
+            id == BoosterId.Hand ? p.BoosterHand : id == BoosterId.Shuffle ? p.BoosterShuffle : p.BoosterRemove;
+
+        private static void Add(ProgressModel p, BoosterId id, int n)
+        {
+            if (id == BoosterId.Hand) p.BoosterHand = Math.Max(0, p.BoosterHand + n);
+            else if (id == BoosterId.Shuffle) p.BoosterShuffle = Math.Max(0, p.BoosterShuffle + n);
+            else p.BoosterRemove = Math.Max(0, p.BoosterRemove + n);
+        }
+
         public bool MarkFtueDone(string step)
         {
             if (_store.Progress.FtueCompleted.Contains(step)) return true;
